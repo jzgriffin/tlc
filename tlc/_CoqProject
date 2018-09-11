@@ -20,6 +20,7 @@ assert/all_assert.v
 comp/comp.v
 comp/flc.v
 comp/stack.v
+comp/slc.v
 comp/all_comp.v
 logic/sequent.v
 logic/program_basic.v
