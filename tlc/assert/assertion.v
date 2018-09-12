@@ -1,5 +1,5 @@
 From mathcomp.ssreflect
-Require Import ssreflect eqtype ssrbool seq.
+Require Import ssreflect eqtype ssrbool ssrnat seq.
 From tlc.utility
 Require Import seq.
 
@@ -97,6 +97,19 @@ Definition Aprecby A1 A2 := (* A1 is preceded by A2 *)
 
 (* Operations *)
 Section assertion_op.
+  Fixpoint assertion_height (A : assertion) : nat :=
+    match A with
+    | Aconj A1 A2 => maxn (assertion_height A1) (assertion_height A2)
+    | Aneg A0 => assertion_height A0
+    | Auniv _ A0 => assertion_height A0
+    | Aalwaysfs A0 => assertion_height A0
+    | Aalwaysps A0 => assertion_height A0
+    | Aeventfs A0 => assertion_height A0
+    | Aeventps A0 => assertion_height A0
+    | Anext A0 => assertion_height A0
+    | Aself A0 => assertion_height A0
+    | _ => 0
+    end.+1.
 
   Fixpoint free_vars A :=
     match A with
