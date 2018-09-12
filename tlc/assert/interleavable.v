@@ -34,3 +34,7 @@ Inductive Interleavable : assertion -> Type :=
 | Interleavable_eventps A :
   Interleavable A ->
   Interleavable (Aeventps A).
+
+Notation InterleavableAssertionT :=
+  {x : assertion & Interleavable x}
+  (only parsing).
