@@ -3,7 +3,7 @@ Require Import ssreflect eqtype ssrbool seq.
 From tlc.utility
 Require Import seq.
 
-Require Import term predicate assertion.
+Require Import term predicate assertion interleavable.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -37,3 +37,11 @@ Inductive StackAssertion (d : term) : assertion -> Type :=
 | StackAssertion_eventps A :
   StackAssertion d A ->
   StackAssertion d (Aeventps A).
+
+Lemma stackassertion_interleavable d A (SA : StackAssertion d A) :
+  Interleavable A.
+Proof.
+  elim: SA; try by constructor.
+  (* event *)
+  move=> ?????; rewrite /Aon /Aev /Aeq; by repeat constructor.
+Qed.
