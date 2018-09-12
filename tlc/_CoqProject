@@ -1,3 +1,5 @@
+-arg -w
+-arg -notation-overridden
 -R . tlc
 
 utility/promote.v
