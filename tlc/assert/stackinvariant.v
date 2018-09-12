@@ -9,5 +9,5 @@ Unset Printing Implicit Defensive.
 
 Inductive StackInvariant (d : term) : assertion -> Type :=
 | StackInvariant_alwaysf A :
-  StackInvariant d A ->
+  StackAssertion d A ->
   StackInvariant d (Aalwaysf A).
