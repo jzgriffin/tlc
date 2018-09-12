@@ -7,7 +7,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Inductive NonTemporal : assertion -> Prop :=
+Inductive NonTemporal : assertion -> Type :=
 | NonTemporal_false :
   NonTemporal Afalse
 | NonTemporal_pred p ts :

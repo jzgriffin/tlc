@@ -9,7 +9,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Inductive StackAssertion (d : term) : assertion -> Prop :=
+Inductive StackAssertion (d : term) : assertion -> Type :=
 | StackAssertion_correct t :
   StackAssertion d (Apred Pcorrect [:: t])
 | StackAssertion_event n d' o e :

@@ -7,7 +7,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Inductive Interleavable : assertion -> Prop :=
+Inductive Interleavable : assertion -> Type :=
 | Interleavable_false :
   Interleavable Afalse
 | Interleavable_pred p ts :

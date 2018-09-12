@@ -9,7 +9,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Inductive SelfInvariant' : assertion -> Prop :=
+Inductive SelfInvariant' : assertion -> Type :=
 | SelfInvariant'_correct t :
   SelfInvariant' (Apred Pcorrect [:: t])
 | SelfInvariant'_req_ev n e :
@@ -41,7 +41,7 @@ Inductive SelfInvariant' : assertion -> Prop :=
   SelfInvariant' A ->
   SelfInvariant' (Aeventps A).
 
-Inductive SelfInvariant : assertion -> Prop :=
+Inductive SelfInvariant : assertion -> Type :=
 | SelfInvariant_alwaysf A :
   SelfInvariant' A ->
   SelfInvariant (Aalwaysf A).
