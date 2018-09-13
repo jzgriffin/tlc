@@ -37,3 +37,18 @@ Section mapseq.
   | mapcons x xs : f x -> mapseq f xs -> mapseq f (x :: xs).
 
 End mapseq.
+
+Section optionseq.
+
+  Variable T : Type.
+
+  Definition osome (o : option T) :=
+    if o is Some t then [:: t] else [::].
+
+  Definition osomes (s : seq (option T)) :=
+    flatten [seq osome o | o <- s].
+
+  Definition owrap (s : seq T) :=
+    [seq Some t | t <- s].
+
+End optionseq.
