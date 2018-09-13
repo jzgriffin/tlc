@@ -11,13 +11,23 @@ Module AssertNotations.
 (* Terms *)
 
 Notation "f // ts" :=
-  (Tfunc f ts)
+  (Tappf f ts)
   (at level 95, no associativity) : assert_scope.
 Notation "f /()" :=
-  (Tfunc f nil)
+  (Tappf f nil)
   (at level 95, no associativity) : assert_scope.
 Notation "f /( x , .. , y )" :=
-  (Tfunc f (@cons term x (.. (@cons term y nil) .. )))
+  (Tappf f (@cons term x (.. (@cons term y nil) .. )))
+  (at level 95, no associativity) : assert_scope.
+
+Notation "x /: ts" :=
+  (Tappv x ts)
+  (at level 95, no associativity) : assert_scope.
+Notation "x :()" :=
+  (Tappv x nil)
+  (at level 95, no associativity) : assert_scope.
+Notation "x :( y , .. , z )" :=
+  (Tappv x (@cons term y (.. (@cons term z nil) .. )))
   (at level 95, no associativity) : assert_scope.
 
 Notation "[]" :=

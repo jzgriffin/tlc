@@ -10,7 +10,8 @@ Unset Printing Implicit Defensive.
 Inductive term : Type :=
 | Tvar : variable -> term
 | Tconst : constant -> term
-| Tfunc : function -> seq term -> term.
+| Tappf : function -> seq term -> term
+| Tappv : variable -> seq term -> term.
 
 (* Equality *)
 Section term_eq.
@@ -28,8 +29,10 @@ Section term_eq.
     | Tvar _, _ => false
     | Tconst c, Tconst c' => c == c'
     | Tconst _, _ => false
-    | Tfunc f ts, Tfunc f' ts' => (f == f') && eq_terms ts ts'
-    | Tfunc _ _, _ => false
+    | Tappf f ts, Tappf f' ts' => (f == f') && eq_terms ts ts'
+    | Tappf _ _, _ => false
+    | Tappv x ts, Tappv x' ts' => (x == x') && eq_terms ts ts'
+    | Tappv _ _, _ => false
     end.
 
   Lemma eq_termP : Equality.axiom eq_term.
@@ -48,26 +51,27 @@ End term_eq.
 Coercion Tvar : variable >-> term.
 Coercion Tconst : constant >-> term.
 
-Fixpoint term_seq (ts : seq term) : term :=
-  match ts with
-  | [::] => Cnil
-  | h :: ts' => Tfunc Fcons [:: h; term_seq ts']
-  end.
-
-Fixpoint seq_term (t : term) : seq term :=
-  match t with
-  | Tfunc Fcons [:: h; t'] => h :: seq_term t'
-  | _ => [::] (* Including Cnil *)
-  end.
-
 (* Operations *)
 Section term_op.
+
+  Fixpoint term_seq (ts : seq term) : term :=
+    match ts with
+    | [::] => Cnil
+    | h :: ts' => Tappf Fcons [:: h; term_seq ts']
+    end.
+
+  Fixpoint seq_term t :=
+    match t with
+    | Tappf Fcons [:: h; t'] => h :: seq_term t'
+    | _ => [::] (* Including Cnil *)
+    end.
 
   Fixpoint term_free_vars t :=
     match t with
     | Tvar x => [:: x]
     | Tconst _ => [::]
-    | Tfunc _ ts => flatten [seq term_free_vars t' | t' <- ts]
+    | Tappf _ ts => flatten [seq term_free_vars t' | t' <- ts]
+    | Tappv _ ts => flatten [seq term_free_vars t' | t' <- ts]
     end.
 
   Definition term_transformer := variable -> option term.
@@ -76,7 +80,8 @@ Section term_op.
     match t with
     | Tvar x => if tr x is Some t' then t' else t
     | Tconst _ => t
-    | Tfunc f ts => Tfunc f [seq term_subst tr t' | t' <- ts]
+    | Tappf f ts => Tappf f [seq term_subst tr t' | t' <- ts]
+    | Tappv x ts => Tappv x [seq term_subst tr t' | t' <- ts]
     end.
 
 End term_op.
