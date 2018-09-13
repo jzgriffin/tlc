@@ -1,7 +1,10 @@
 Require Export assertion.
 Require Export constant.
 Require Export function.
+Require Export general_variable.
 Require Export interleavable.
+Require Export message_variable.
+Require Export node_variable.
 Require Export nontemporal.
 Require Export notation.
 Require Export predicate.

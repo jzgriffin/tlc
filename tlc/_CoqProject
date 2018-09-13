@@ -6,6 +6,9 @@ utility/promote.v
 utility/seq.v
 utility/variant.v
 utility/all_utility.v
+assert/node_variable.v
+assert/message_variable.v
+assert/general_variable.v
 assert/variable.v
 assert/constant.v
 assert/function.v
