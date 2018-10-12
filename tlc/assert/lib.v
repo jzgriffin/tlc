@@ -5,7 +5,7 @@ Require Import ssreflect eqtype ssrbool ssrnat seq fintype.
 From tlc.utility
 Require Import seq variant lemmas.
 From tlc.comp
-Require Import all_comp.
+Require Import p_event component flc.
 From tlc.assert
 Require Import scope orientation type flexible_var rigid_var term atom prop.
 
@@ -43,6 +43,8 @@ Fixpoint denote_eq {C} t : @denote_type C (t -> t -> Bool) :=
   | Nat => fun x y => x == y
   | Node => fun x y => x == y
   | Message => fun x y => x == y
+  | FLRequest => fun x y => x == y
+  | FLIndication => fun x y => x == y
   | Orientation => fun x y => x == y
   | IREvent => fun x y => x == y
   | OIEvent => fun x y => x == y
@@ -54,17 +56,25 @@ Fixpoint denote_eq {C} t : @denote_type C (t -> t -> Bool) :=
 
 Module TLC.
 
-(* Constructors for events *)
-Definition EventIR {C} :=
-  @Const C (IREvent -> Event) (fun x => inl (inl (inl (inl x)))).
-Definition EventOI {C} :=
-  @Const C (OIEvent -> Event) (fun x => inl (inl (inl (inr x)))).
-Definition EventOR {C} :=
-  @Const C (OREvent -> Event) (fun x => inl (inl (inr x))).
-Definition EventII {C} :=
-  @Const C (IIEvent -> Event) (fun x => inl (inr x)).
-Definition per {C} :=
-  @Const C Event (inr per).
+Section event.
+
+  (* Constructors for events *)
+  Definition Send_fl {C} :=
+    @Const C (Node -> Message -> FLRequest) Send_fl.
+  Definition Deliver_fl {C} :=
+    @Const C (Node -> Message -> FLIndication) Deliver_fl.
+  Definition EventIR {C} :=
+    @Const C (IREvent -> Event) (fun x => inl (inl (inl (inl x)))).
+  Definition EventOI {C} :=
+    @Const C (OIEvent -> Event) (fun x => inl (inl (inl (inr x)))).
+  Definition EventOR {C} :=
+    @Const C (OREvent -> Event) (fun x => inl (inl (inr x))).
+  Definition EventII {C} :=
+    @Const C (IIEvent -> Event) (fun x => inl (inr x)).
+  Definition per {C} :=
+    @Const C Event (inr per).
+
+End event.
 
 (* Equality of terms *)
 Section eq.

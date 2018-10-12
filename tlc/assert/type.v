@@ -3,7 +3,7 @@ Require Import ssreflect eqtype ssrbool ssrnat seq fintype.
 From tlc.utility
 Require Import indeq seq func variant lemmas.
 From tlc.comp
-Require Import p_event component.
+Require Import p_event component flc.
 From tlc.assert
 Require Import scope orientation.
 
@@ -23,6 +23,8 @@ Inductive type {C : component} : Type :=
 | Node
 | Message
 | Orientation
+| FLRequest
+| FLIndication
 | IREvent
 | OIEvent
 | OREvent' (i : 'I_(size (or_events C)))
@@ -52,26 +54,21 @@ Section eq.
   Fixpoint type_eq {C} (t t' : @type C) :=
     match t, t' with
     | Unit, Unit => true
-    | Unit, _ => false
     | Func t1 t2, Func t1' t2' => type_eq t1 t1' && type_eq t2 t2'
-    | Func _ _, _ => false
     | Product t1 t2, Product t1' t2' => type_eq t1 t1' && type_eq t2 t2'
-    | Product _ _, _ => false
     | Sum t1 t2, Sum t1' t2' => type_eq t1 t1' && type_eq t2 t2'
-    | Sum _ _, _ => false
     | List t1, List t1' => type_eq t1 t1'
-    | List _, _ => false
     | Bool, Bool => true
     | Nat, Nat => true
     | Node, Node => true
     | Message, Message => true
     | Orientation, Orientation => true
+    | FLRequest, FLRequest => true
+    | FLIndication, FLIndication => true
     | IREvent, IREvent => true
     | OIEvent, OIEvent => true
     | OREvent' i1, OREvent' i2 => i1 == i2
-    | OREvent' _, _ => false
     | IIEvent' i1, IIEvent' i2 => i1 == i2
-    | IIEvent' _, _ => false
     | State, State => true
     | _, _ => false
     end.
@@ -104,6 +101,8 @@ Section denote.
     | Node => node C
     | Message => message C
     | Orientation => [eqType of orientation]
+    | FLRequest => [eqType of (@req_fl (node C) (message C))]
+    | FLIndication => [eqType of (@ind_fl (node C) (message C))]
     | IREvent => ir_event C
     | OIEvent => oi_event C
     | OREvent' i => ith i
