@@ -38,9 +38,18 @@ Section basic.
   (* TODO: PLSInv *)
   | PCSet (n : @term C Node) : |- TLC.PCSet n
   | PAPer (n : @term C Node) : |- TLC.PAPer n
-  (* TODO: PLFLoss *)
-  (* TODO: PLFDup *)
-  (* TODO: PLNForge *)
+  | PFLoss (ir : 'I_(size (@OREvents C))) (ii : 'I_(size (@IIEvents C)))
+    (Hr : ith ir = FLRequest) (Hi : ith ii = FLIndication)
+    (n n' : @term C Node) (m : @term C Message) :
+    |- TLC.PFLoss Hr Hi n n' m
+  | PFDup (ir : 'I_(size (@OREvents C))) (ii : 'I_(size (@IIEvents C)))
+    (Hr : ith ir = FLRequest) (Hi : ith ii = FLIndication)
+    (n n' : @term C Node) (m : @term C Message) :
+    |- TLC.PFDup Hr Hi n n' m
+  | PNForge (ir : 'I_(size (@OREvents C))) (ii : 'I_(size (@IIEvents C)))
+    (Hr : ith ir = FLRequest) (Hi : ith ii = FLIndication)
+    (n n' : @term C Node) (m : @term C Message) :
+    |- TLC.PNForge Hr Hi n n' m
   | PUniOR (n : @term C Node) (i : 'I_(size OREvents)) (e : @term C (ith i)) :
     |- TLC.PUniOR n e
   | PUniOI (n : @term C Node) (e : @term C OIEvent) :

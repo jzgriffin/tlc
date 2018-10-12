@@ -74,6 +74,16 @@ Section event.
   Definition per {C} :=
     @Const C Event (inr per).
 
+  Lemma ith_FLRequest {C} (i : 'I_(size (@OREvents C)))
+  (H : ith i = FLRequest) (e : @term C FLRequest) : @term C (ith i).
+    by rewrite H.
+  Qed.
+
+  Lemma ith_FLIndication {C} (i : 'I_(size (@IIEvents C)))
+  (H : ith i = FLIndication) (e : @term C FLIndication) : @term C (ith i).
+    by rewrite H.
+  Qed.
+
 End event.
 
 (* Equality of terms *)
@@ -140,7 +150,7 @@ Section sum.
       have Ht: (denote_type (ith i) = ith I).
         subst i I; move: HS; rewrite -map_cons => HS; exact: ith_map.
       rewrite -Hi Ht -Hts -HeqTs HeqTs'; exact: eq_ini.
-  Unshelve. apply Ts.
+  Unshelve. apply Ts. (* What is this? *)
   Defined.
 
 End sum.
@@ -331,22 +341,37 @@ Definition PCSet {C} (n : @term C Node) : @prop C :=
 Definition PAPer {C} (n : @term C Node) : @prop C :=
   (Atom (mem <- n <- Correct)) ->
   alwaysf: existsf: on: n, ev: [], Periodic, per.
-Lemma InP (T : eqType) (x : T) (s : seq T) : reflect (In x s) (x \in s).
-  (* TODO *)
-Admitted.
 Definition PFLoss {C}
-(Hr : In req_fl (@or_events C))
-(Hi : In ind_fl (@ii_events C))
+(ir : 'I_(size (@OREvents C))) (ii : 'I_(size (@IIEvents C)))
+(Hr : ith ir = FLRequest) (Hi : ith ii = FLIndication)
 (n n' : @term C Node) (m : @term C Message) : @prop C :=
-  let: ir := ith (findex (Hr) in
-  let: ii := ith (findex Hi) in
-  let: ie := @Const C Nat ir in
+  let: ier := @Const C Nat ir in
+  let: iei := @Const C Nat ii in
   (Atom (correct <- n')) ->
-  alwaysf: existsf: on: n, ev: [ie], Request, (Send_fl <- n' <- m) ->
-  alwaysf: existsf: on: n', ev: [ie], Indication, (Deliver_fl <- n <- m).
-*)
-(* TODO: PLFDup; how to construct events from FLC *)
-(* TODO: PLNForge; how to construct events from FLC *)
+  alwaysf: existsf: on: n, ev: [ier], Request,
+    (EventOR <- (ini ir <- (ith_FLRequest Hr (Send_fl <- n' <- m)))) ->
+  alwaysf: existsf: on: n', ev: [iei], Indication,
+    (EventII <- (ini ii <- (ith_FLIndication Hi (Deliver_fl <- n' <- m)))).
+Definition PFDup {C}
+(ir : 'I_(size (@OREvents C))) (ii : 'I_(size (@IIEvents C)))
+(Hr : ith ir = FLRequest) (Hi : ith ii = FLIndication)
+(n n' : @term C Node) (m : @term C Message) : @prop C :=
+  let: ier := @Const C Nat ir in
+  let: iei := @Const C Nat ii in
+  alwaysf: existsf: on: n', ev: [iei], Indication,
+    (EventII <- (ini ii <- (ith_FLIndication Hi (Deliver_fl <- n' <- m)))) ->
+  alwaysf: existsf: on: n, ev: [ier], Request,
+    (EventOR <- (ini ir <- (ith_FLRequest Hr (Send_fl <- n' <- m)))).
+Definition PNForge {C}
+(ir : 'I_(size (@OREvents C))) (ii : 'I_(size (@IIEvents C)))
+(Hr : ith ir = FLRequest) (Hi : ith ii = FLIndication)
+(n n' : @term C Node) (m : @term C Message) : @prop C :=
+  let: ier := @Const C Nat ir in
+  let: iei := @Const C Nat ii in
+  (on: n', ev: [iei], Indication,
+    (EventII <- (ini ii <- (ith_FLIndication Hi (Deliver_fl <- n' <- m))))) =>:
+  existsp: on: n, ev: [ier], Request,
+    (EventOR <- (ini ir <- (ith_FLRequest Hr (Send_fl <- n' <- m)))).
 Definition PUniOR {C} (n : @term C Node)
 (i : 'I_(size OREvents)) (e : @term C (ith i)) : @prop C :=
   let: ie := @Const C Nat i in
