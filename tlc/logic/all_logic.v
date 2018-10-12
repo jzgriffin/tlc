@@ -1,2 +1,2 @@
-Require Export program_basic.
+Require Export program.
 Require Export sequent.

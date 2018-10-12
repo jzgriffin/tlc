@@ -1,10 +1,11 @@
 From mathcomp.ssreflect
-Require Import ssreflect eqtype ssrbool seq.
+Require Import ssreflect eqtype ssrbool ssrnat seq fintype.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+(* Sequences of eqTypes *)
 Section eqseq.
 
   Variable T : eqType.
@@ -12,11 +13,17 @@ Section eqseq.
 
   Fixpoint union s1 s2 := undup (s1 ++ s2).
   Fixpoint intersection s1 s2 := [seq t <- undup s1 | t \in s2].
+
+  (* Predicate: s' is an extension of s <-> s is a suffix of s' *)
   Fixpoint extension s' s :=
     if s' == s then true else
     if s' is x :: t then extension t s else false.
 
 End eqseq.
+
+Arguments union {T}.
+Arguments intersection {T}.
+Arguments extension {T}.
 
 Notation "x <+> y" :=
   (union x y)
@@ -28,27 +35,48 @@ Notation "x <<< y" :=
   (extension x y)
   (at level 30, no associativity).
 
-Section mapseq.
+(* Dependent nth element *)
+Fixpoint ith T (s : seq T) (i : 'I_(size s)) : T.
+  case: i;
+  elim: s => [ | t s IHs] n Hn; first by [];
+  case: n Hn => [ | n] Hn; first by [].
+  have SltnS x y: (x.+1 < y.+1 -> x < y) by [].
+  rewrite /= in Hn; apply SltnS in Hn.
+  apply (ith T s (Ordinal Hn)).
+Defined.
 
-  Variable T : Type.
+Lemma ith0 T (t : T) (ts : seq T) (H : 0 < size (t :: ts)) :
+  ith (Ordinal H) = t.
+Proof.
+  by [].
+Qed.
 
-  Inductive mapseq (f : T -> Type) : seq T -> Type :=
-  | mapnil : mapseq f nil
-  | mapcons x xs : f x -> mapseq f xs -> mapseq f (x :: xs).
+Lemma ith_map T T' (f : T -> T') (s : seq T) (s' : seq T')
+(i : 'I_(size s)) (i' : 'I_(size s')) (H : s' = [seq f x | x <- s])
+: f (ith i) = ith i'.
+Admitted.
 
-End mapseq.
+Lemma map_ith_ord_enum T (s : seq T) :
+  [seq ith i | i <- ord_enum (size s)] = s.
+Proof.
+  elim: s => [ | x s' IHs] //=; admit. (* TODO *)
+Admitted.
 
-Section optionseq.
+(* Finite successor *)
+Definition fsucc n (i : 'I_n) : 'I_n.+1.
+  case: i => m E; apply ltnW in E; rewrite -ltnS in E.
+  exact: (Ordinal E).
+Defined.
 
-  Variable T : Type.
-
-  Definition osome (o : option T) :=
-    if o is Some t then [:: t] else [::].
-
-  Definition osomes (s : seq (option T)) :=
-    flatten [seq osome o | o <- s].
-
-  Definition owrap (s : seq T) :=
-    [seq Some t | t <- s].
-
-End optionseq.
+(* Dependent index of element *)
+Fixpoint findex (T : eqType) (x : T) (s : seq T) (H : x \in s) : 'I_(size s).
+  elim Hs: s H => [ | x' s' IHs] H; first by [].
+  case Hx: (x == x').
+  - (* x == x' *)
+    have E : (0 < size (x' :: s')) by [];
+    by exact: (Ordinal E).
+  - (* x != x' *)
+    move: H; rewrite in_cons Hx orFb => H.
+    specialize (findex _ x s' H); apply fsucc.
+    by exact: findex.
+Defined.

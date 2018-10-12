@@ -1,87 +1,67 @@
 From mathcomp.ssreflect
 Require Import ssreflect eqtype ssrbool seq.
-
-Require Import variable constant function.
+From tlc.utility
+Require Import hseq.
+From tlc.assert
+Require Import scope type flexible_var rigid_var.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Inductive term : Type :=
-| Tvar : variable -> term
-| Tconst : constant -> term
-| Tappf : function -> seq term -> term
-| Tappv : variable -> seq term -> term.
+(* Typed terms representing variables, constants, and applications *)
+Inductive term {C} : type -> Type :=
+| Flexible (x : flexible_var) : term (type_flexible_var x)
+| Rigid {t} (x : @rigid_var C t) : term t
+| Const {t} (c : @denote_type C t) : term t
+| App {d r} (f : term (d -> r)) (x : term d) : term r.
 
-(* Equality *)
-Section term_eq.
+Coercion Rigid : rigid_var >-> term.
 
-  Fixpoint eq_term (t t' : term) :=
-    (* TODO: Re-evaluate this approach *)
-    let eq_terms := fix eq_terms ts ts' :=
-      match ts, ts' with
-      | [::], [::] => true
-      | t :: h, t' :: h' => eq_term t t' && eq_terms h h'
-      | _, _ => false
-      end in
-    match t, t' with
-    | Tvar x, Tvar x' => x == x'
-    | Tvar _, _ => false
-    | Tconst c, Tconst c' => c == c'
-    | Tconst _, _ => false
-    | Tappf f ts, Tappf f' ts' => (f == f') && eq_terms ts ts'
-    | Tappf _ _, _ => false
-    | Tappv x ts, Tappv x' ts' => (x == x') && eq_terms ts ts'
-    | Tappv _ _, _ => false
-    end.
+Bind Scope tlc_core_scope with term.
 
-  Lemma eq_termP : Equality.axiom eq_term.
-  Proof.
-    (* TODO *)
-  Admitted.
+(* Notations for constructing terms *)
+Notation "f <- x" :=
+  (App f x)
+  (at level 10, left associativity) : tlc_core_scope.
 
-  Canonical term_eqMixin :=
-    Eval hnf in EqMixin eq_termP.
-  Canonical term_eqType :=
-    Eval hnf in EqType term term_eqMixin.
+(* Extracts the types of rigid variable used in a term *)
+Fixpoint term_var_types {C te} (e : @term C te) :=
+  match e with
+  | Flexible _ => [::]
+  | Rigid t _ => [:: t]
+  | Const _ _ => [::]
+  | App _ _ f x => undup (term_var_types f ++ term_var_types x)
+  end.
 
-End term_eq.
+(* Extracts the rigid variables used in a term *)
+Fixpoint term_vars {C te} (e : @term C te) (t : type) : seq (@rigid_var C t) :=
+  match e with
+  | Flexible _ => [::]
+  | Rigid t' x =>
+    if t' == t then
+      let: n := unwrap_rigid_var x in
+      [:: RigidVar t n]
+    else [::]
+  | Const _ _ => [::]
+  | App _ _ f x => undup (term_vars f t ++ term_vars x t)
+  end.
 
-(* Coercions *)
-Coercion Tvar : variable >-> term.
-Coercion Tconst : constant >-> term.
+(* Transformations *)
+Definition substitution {C t} := @rigid_var C t -> option (@term C t).
 
-(* Operations *)
-Section term_op.
-
-  Fixpoint term_seq (ts : seq term) : term :=
-    match ts with
-    | [::] => Cnil
-    | h :: ts' => Tappf Fcons [:: h; term_seq ts']
-    end.
-
-  Fixpoint seq_term t :=
-    match t with
-    | Tappf Fcons [:: h; t'] => h :: seq_term t'
-    | _ => [::] (* Including Cnil *)
-    end.
-
-  Fixpoint term_free_vars t :=
-    match t with
-    | Tvar x => [:: x]
-    | Tconst _ => [::]
-    | Tappf _ ts => flatten [seq term_free_vars t' | t' <- ts]
-    | Tappv _ ts => flatten [seq term_free_vars t' | t' <- ts]
-    end.
-
-  Definition term_transformer := variable -> option term.
-
-  Fixpoint term_subst tr t :=
-    match t with
-    | Tvar x => if tr x is Some t' then t' else t
-    | Tconst _ => t
-    | Tappf f ts => Tappf f [seq term_subst tr t' | t' <- ts]
-    | Tappv x ts => Tappv x [seq term_subst tr t' | t' <- ts]
-    end.
-
-End term_op.
+(* Substitution of terms in place of rigid variables *)
+Fixpoint term_subst {C te} (s : forall t, @substitution C t) (e : @term C te)
+: @term C te.
+  inversion e.
+  - (* Flexible *)
+    rewrite H; by assumption.
+  - (* Rigid *)
+    specialize (s _ x); case s => [e' | ]; by assumption.
+  - (* Const *)
+    by assumption.
+  - (* App *)
+    specialize (term_subst _ _ s f) as f'.
+    specialize (term_subst _ _ s x) as x'.
+    by exact: (App f' x').
+Defined.

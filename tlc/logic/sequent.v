@@ -1,89 +1,86 @@
 From mathcomp.ssreflect
-Require Import ssreflect eqtype ssrbool seq.
+Require Import ssreflect seq.
+From tlc.comp
+Require Import all_comp.
 From tlc.assert
 Require Import all_assert.
-From tlc.comp
-Require Import comp.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+(* Sequent logic for the assertion language *)
 Section sequent.
 
-  Import AssertNotations.
+  Reserved Notation "X |- A"
+    (at level 80, no associativity).
 
-  Variable node : eqType.
-  Variable IR : eqType.
-  Variable OI : eqType.
-  Variable scs : subcomps.
-
-  Reserved Notation "X |- c , A" (at level 80, no associativity).
-  Inductive concludes (c : @comp node IR OI scs) :
-    seq assertion -> assertion -> Prop :=
-  | ConcludesAxiom A :
-    [:: A] |- c, A
-  | ConcludesThin X A A' :
-    X |- c, A' ->
-    A :: X |- c, A'
-  | ConcludesContraction X A A' :
-    A :: A :: X |- c, A' ->
-    A :: X |- c, A'
-  | ConcludesExchange X A A' A'' :
-    A :: A' :: X |- c, A'' ->
-    A' :: A :: X |- c, A''
-  | ConcludesCut X A A' :
-    X |- c, A ->
-    A :: X |- c, A' ->
-    X |- c, A'
-  | ConcludesNegL X A A' :
-    X |- c, A ->
-    (~A)%A :: X |- c, A'
-  | ConcludesNegR X A :
-    A :: X |- c, Afalse ->
-    X |- c, (~A)%A
-  | ConcludesConjL X A A' A'' :
-    A :: A' :: X |- c, A'' ->
-    (A /\ A')%A :: X |- c, A''
-  | ConcludesConjR X A A' :
-    X |- c, A ->
-    X |- c, A' ->
-    X |- c, (A /\ A')%A
-  | ConcludesDisjL X A A' A'' :
-    A :: X |- c, A'' ->
-    A' :: X |- c, A'' ->
-    (A \/ A')%A :: X |- c, A''
-  | ConcludesDisjRL X A A' :
-    X |- c, A ->
-    X |- c, (A \/ A')%A
-  | ConcludesDisjRR X A A' :
-    X |- c, A' ->
-    X |- c, (A \/ A')%A
-  | ConcludesImplL X A A' A'' :
-    X |- c, A ->
-    A' :: X |- c, A'' ->
-    (A -> A')%A :: X |- c, A''
-  | ConcludesImplR X A A' :
-    A :: X |- c, A' ->
-    X |- c, (A -> A')%A
-  | ConcludesUnivL X A A' x x' :
-    var_subst x (Tvar x') A :: X |- c, A' ->
-    (univ: x, A)%A :: X |- c, A'
-  | ConcludesUnivR X A x x' :
+  Inductive sequent {C : component} : seq (@prop C) -> @prop C -> Prop :=
+  | SAxiom A :
+    [:: A] |- A
+  | SThin X A A' :
+    X |- A' ->
+    A :: X |- A'
+  | SContraction X A A' :
+    A :: A :: X |- A' ->
+    A :: X |- A'
+  | SExchange X A A' A'' :
+    A :: A' :: X |- A'' ->
+    A' :: A :: X |- A''
+  | SCut X A A' :
+    X |- A ->
+    A :: X |- A' ->
+    X |- A'
+  | SNegL X A A' :
+    X |- A ->
+    (~A)%tlc :: X |- A'
+  | SNegR X A :
+    A :: X |- Atom TLC.false ->
+    X |- (~A)%tlc
+  | SConjL X A A' A'' :
+    A :: A' :: X |- A'' ->
+    (A /\ A')%tlc :: X |- A''
+  | SConjR X A A' :
+    X |- A ->
+    X |- A' ->
+    X |- (A /\ A')%tlc
+  | SDisjL X A A' A'' :
+    A :: X |- A'' ->
+    A' :: X |- A'' ->
+    (A \/ A')%tlc :: X |- A''
+  | SDisjRL X A A' :
+    X |- A ->
+    X |- (A \/ A')%tlc
+  | SDisjRR X A A' :
+    X |- A' ->
+    X |- (A \/ A')%tlc
+  | SImplL X A A' A'' :
+    X |- A ->
+    A' :: X |- A'' ->
+    (A -> A')%tlc :: X |- A''
+  | SImplR X A A' :
+    A :: X |- A' ->
+    X |- (A -> A')%tlc
+  (*
+  | SUnivL X A A' x x' :
+    var_subst x (Tvar x') A :: X A' ->
+    (always: x, A)%tlc :: X A'
+  | SUnivR X A x x' :
     free_var x' A ->
-    X |- c, var_subst x (Tvar x') A ->
-    X |- c, (univ: x, A)%A
-  | ConcludesExistL X A A' x x' :
+    X var_subst x (Tvar x') A ->
+    X (always: x, A)%tlc
+  | SExistL X A A' x x' :
     free_var x' A ->
-    var_subst x (Tvar x') A :: X |- c, A' ->
-    (exis: x, A)%A :: X |- c, A'
-  | ConcludesExistR X A x x' :
-    X |- c, var_subst x (Tvar x') A ->
-    X |- c, (exis: x, A)%A
-  where "X |- c , A" := (concludes c X A).
+    var_subst x (Tvar x') A :: X A' ->
+    (exists: x, A)%tlc :: X A'
+  | SExistR X A x x' :
+    X var_subst x (Tvar x') A ->
+    X (exists: x, A)%tlc
+  *)
+  where "X |- A" := (sequent X A).
 
 End sequent.
 
-Notation "X |- c , A" :=
-  (concludes c X A)
+Notation "X |-s C , A" :=
+  (@sequent C X A)
   (at level 80, no associativity).

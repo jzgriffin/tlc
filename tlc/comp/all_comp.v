@@ -1,5 +1,5 @@
-Require Export comp.
+Require Export component.
 Require Export flc.
-Require Export restrict.
+Require Export p_event.
 Require Export slc.
 Require Export stack.
