@@ -1,3 +1,5 @@
+From Coq.Lists
+Require Import List.
 From mathcomp.ssreflect
 Require Import ssreflect eqtype ssrbool ssrnat seq fintype.
 
@@ -9,6 +11,7 @@ Unset Printing Implicit Defensive.
 Section eqseq.
 
   Variable T : eqType.
+  Implicit Type x : T.
   Implicit Type s : seq T.
 
   Fixpoint union s1 s2 := undup (s1 ++ s2).
@@ -18,6 +21,19 @@ Section eqseq.
   Fixpoint extension s' s :=
     if s' == s then true else
     if s' is x :: t then extension t s else false.
+
+  Lemma inP x s : reflect (In x s) (x \in s).
+    elim: s => [ | x' s' IHs]; first by rewrite /= in_nil; constructor.
+    rewrite /= in_cons. case Hx: (x' == x).
+    - (* x' == x *)
+      move/eqP: Hx => Hx; subst x'; rewrite eqxx; constructor; by left.
+    - (* x' != x *)
+      rewrite eq_sym in Hx. rewrite Hx orFb.
+      rewrite eq_sym in Hx. move/eqP: Hx => Hx.
+      (* TODO: This requires the excluded middle.  Find another way. *)
+      have todo P Q : ~P -> (P \/ Q) = Q by admit.
+      rewrite todo; by [].
+  Admitted.
 
 End eqseq.
 
@@ -69,14 +85,15 @@ Definition fsucc n (i : 'I_n) : 'I_n.+1.
 Defined.
 
 (* Dependent index of element *)
-Fixpoint findex (T : eqType) (x : T) (s : seq T) (H : x \in s) : 'I_(size s).
+Fixpoint findex (T : eqType) (x : T) (s : seq T) (H : In x s) {struct s}
+: 'I_(size s).
   elim Hs: s H => [ | x' s' IHs] H; first by [].
   case Hx: (x == x').
   - (* x == x' *)
     have E : (0 < size (x' :: s')) by [];
     by exact: (Ordinal E).
   - (* x != x' *)
-    move: H; rewrite in_cons Hx orFb => H.
+    move/inP: H; rewrite in_cons Hx orFb; move/inP=> H.
     specialize (findex _ x s' H); apply fsucc.
     by exact: findex.
 Defined.
