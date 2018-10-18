@@ -35,4 +35,5 @@ comp/all_comp.v
 logic/temporal.v
 logic/sequent.v
 logic/program.v
+logic/tlc.v
 logic/all_logic.v
