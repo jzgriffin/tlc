@@ -3,7 +3,9 @@ Require Import ssreflect eqtype ssrbool ssrfun seq.
 From tlc.utility
 Require Import indeq hseq.
 From tlc.assert
-Require Import scope type rigid_var term atom prop lib.
+Require Import scope type flexible_var rigid_var term atom prop lib.
+From tlc.logic
+Require Import all_logic.
 From tlc.comp
 Require Import component flc.
 
@@ -117,21 +119,24 @@ Definition Send_sl {N M} :=
 Definition Deliver_sl {N M} :=
   @Const (slc N M) (Node -> Message -> OIEvent) (@Deliver_sl N M).
 
-Local Notation n' := (RigidVar Node 0).
+Local Notation n := (RigidVar Node 0).
+Local Notation n' := (RigidVar Node 1).
 Local Notation m := (RigidVar Message 0).
 
 (* SL_1: Stubborn delivery *)
-Definition SL_1 {N M}
-: @prop (slc N M) :=
-  Atom (correct <- Fn) /\ Atom (correct <- n') ->
-  (on: Fn, ev: [], Request, EventIR <- (Send_sl <- n' <- m)) =>:
-  (alwaysf: existsf: on: n', ev: [], Indication,
-    EventOI <- (Deliver_sl <- Fn <- m)).
+Theorem SL_1 {N M} : [::] |- (slc N M),
+  (Atom (correct <- n) /\ Atom (correct <- n') ->
+  (on: n, event: [], Request, EventIR <- (Send_sl <- n' <- m)) =>>
+  (henceforth: eventually: on: n', event: [], Indication,
+    EventOI <- (Deliver_sl <- n <- m))).
+Proof.
+Admitted. (* TODO *)
 
 (* SL_2: No-forge *)
-Definition SL_2 {N M}
-: @prop (slc N M) :=
-  on: Fn, ev: [], Indication, EventOI <- (Deliver_sl <- n' <- m) <~
-  on: n', ev: [], Request, EventIR <- (Send_sl <- Fn <- m).
+Theorem SL_2 {N M} : [::] |- (slc N M),
+  (on: Fn, event: [], Indication, EventOI <- (Deliver_sl <- n' <- m) <~
+  on: n', event: [], Request, EventIR <- (Send_sl <- Fn <- m)).
+Proof.
+Admitted. (* TODO *)
 
 End SLCSpec.
