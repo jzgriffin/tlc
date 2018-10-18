@@ -89,10 +89,8 @@ End event.
 (* Equality of terms *)
 Section eq.
 
-  Definition eq {C t} :=
-    @Const C _ (@denote_eq C t).
-  Definition Eq {C t} (x y : @term C t) : atom :=
-    eq <- x <- y.
+  Definition eq {C t} := @Const C _ (@denote_eq C t).
+  Definition Eq {C t} (x y : @term C t) : atom := eq <- x <- y.
 
 End eq.
 
@@ -112,8 +110,7 @@ End bool.
 (* Product functions *)
 Section product.
 
-  Definition pair {C t1 t2} :=
-    @Const C (t1 -> t2 -> t1 * t2) pair.
+  Definition pair {C t1 t2} := @Const C (t1 -> t2 -> t1 * t2) pair.
 
 End product.
 
@@ -125,10 +122,8 @@ Notation "( x , y , .. , z )" :=
 (* Sum functions *)
 Section sum.
 
-  Definition inl {C t1 t2} :=
-    @Const C (t1 -> t1 + t2) inl.
-  Definition inr {C t1 t2} :=
-    @Const C (t2 -> t1 + t2) inr.
+  Definition inl {C t1 t2} := @Const C (t1 -> t1 + t2) inl.
+  Definition inr {C t1 t2} := @Const C (t2 -> t1 + t2) inr.
 
   Definition ini {C} {ts : seq (@type C)} (i : 'I_(size ts)) :
     @term C (ith i -> Variant ts).
@@ -136,21 +131,21 @@ Section sum.
     case Hn: n Hs Hi => [ | n'] Hs Hi; try by [];
     apply Const; rewrite denote_func denote_variant;
     remember [seq denote_type t | t <- ts] as Ts;
-    have H: (size Ts = size ts) by subst Ts; exact: size_map.
+    have H: (size Ts = size ts) by subst Ts; by exact: size_map.
     - (* ts = t :: ts', n = 0 *)
       assert (HeqTs' := HeqTs); rewrite Hts /= in HeqTs'.
       have HS: (0 < size Ts) by rewrite HeqTs'.
       rewrite HeqTs' in HS; pose I := Ordinal HS.
       have Ht: (denote_type t = ith I) by subst I; exact: ith0.
-      rewrite ith0 Ht -Hts -HeqTs HeqTs'; exact: eq_ini.
+      rewrite ith0 Ht -Hts -HeqTs HeqTs'; by exact: eq_ini.
     - (* ts = t :: ts', n = n'.+1 *)
       assert (HeqTs' := HeqTs); rewrite Hts /= in HeqTs'.
       have HS: (n'.+1 < size Ts) by rewrite HeqTs /= size_map Hts //.
       rewrite HeqTs' in HS; pose I := Ordinal HS.
       have Ht: (denote_type (ith i) = ith I).
-        subst i I; move: HS; rewrite -map_cons => HS; exact: ith_map.
-      rewrite -Hi Ht -Hts -HeqTs HeqTs'; exact: eq_ini.
-  Unshelve. apply Ts. (* What is this? *)
+        subst i I; move: HS; rewrite -map_cons => HS; by exact: ith_map.
+      rewrite -Hi Ht -Hts -HeqTs HeqTs'; by exact: eq_ini.
+  Unshelve. by exact: Ts. (* What is this? *)
   Defined.
 
 End sum.
@@ -158,12 +153,9 @@ End sum.
 (* List constants and functions *)
 Section list.
 
-  Definition nil {C t} :=
-    @Const C [t] nil.
-  Definition cons {C t} :=
-    @Const C (t -> [t] -> [t]) cons.
-  Definition rcons {C t} :=
-    @Const C ([t] -> t -> [t]) rcons.
+  Definition nil {C t} := @Const C [t] nil.
+  Definition cons {C t} := @Const C (t -> [t] -> [t]) cons.
+  Definition rcons {C t} := @Const C ([t] -> t -> [t]) rcons.
 
   Definition mem {C t} :=
     @Const C (t -> [t] -> Bool) (fun x s => has (@denote_eq C t x) s).
@@ -173,11 +165,9 @@ Section list.
 End list.
 
 (* Notations for building lists *)
-Notation "[ ]" :=
-  nil
+Notation "[ ]" := nil
   : tlc_core_scope.
-Notation "[ x ]" :=
-  (cons <- x <- nil)%tlc
+Notation "[ x ]" := (cons <- x <- nil)%tlc
   : tlc_core_scope.
 Notation "[ x ; y ; .. ; z ]" :=
   (cons <- x <- (cons <- y <- (.. (cons <- z <- nil) ..)))%tlc
@@ -198,17 +188,13 @@ Section nat.
 End nat.
 
 (* Notations for natural comparisons *)
-Notation "x < y" :=
-  (ltn <- x <- y)%tlc
+Notation "x < y" := (ltn <- x <- y)%tlc
   : tlc_core_scope.
-Notation "x <= y" :=
-  (len x y)%tlc
+Notation "x <= y" := (len x y)%tlc
   : tlc_core_scope.
-Notation "x > y" :=
-  (gtn x y)%tlc
+Notation "x > y" := (gtn x y)%tlc
   : tlc_core_scope.
-Notation "x >= y" :=
-  (gen x y)%tlc
+Notation "x >= y" := (gen x y)%tlc
   : tlc_core_scope.
 
 (* Orientation constants *)
@@ -235,8 +221,7 @@ Section component.
 
   (* Event handler functions *)
   Definition Output {C} : @type C := State * [OREvent] * [OIEvent].
-  Definition init {C} :=
-    @Const C (Node -> State) (@init C).
+  Definition init {C} := @Const C (Node -> State) (@init C).
   Definition request {C} : @term C (Node -> State -> IREvent -> Output).
     apply Const; rewrite /= denote_or_event.
     by exact: request.
@@ -255,126 +240,25 @@ End component.
 (* Syntactic sugar for events *)
 Section sugar.
 
-  Definition On {C} n A : @prop C :=
-    Fn = n /\ A.
-  Definition Ev {C} d o e : @prop C :=
-    Fd = d /\ Fo = o /\ Fe = e.
-  Definition SelfEv {C} : @prop C :=
+  Definition IsOn {C} n A : @prop C := Fn = n /\ A.
+  Definition IsEvent {C} d o e : @prop C := Fd = d /\ Fo = o /\ Fe = e.
+  Definition IsSelf {C} : @prop C :=
     let: request_ev := Fd = nil /\ Fo = Request in
     let: periodic_ev := Fd = nil /\ Fo = Periodic in
     let: indication_ev :=
       let: i := RigidVar Nat 0 in
-      always: i, (Fd = [Rigid i] /\ Fo = Indication) in
+      forall: i, (Fd = [Rigid i] /\ Fo = Indication) in
     request_ev \/ periodic_ev \/ indication_ev.
 
 End sugar.
 
 (* Notations for syntactic sugars *)
-Notation "'on:' n , P" :=
-  (On n P)
+Notation "'on:' n , P" := (IsOn n P)
   (at level 65, right associativity) : tlc_core_scope.
-Notation "'ev:' d , o , e" :=
-  (Ev d o e)
+Notation "'event:' d , o , e" := (IsEvent d o e)
   (at level 65, right associativity) : tlc_core_scope.
-Notation "'self'" := (SelfEv)
+Notation "'self'" := (IsSelf)
   : tlc_core_scope.
-
-(* Basic program logic rules *)
-Definition PNode {C} : @prop C :=
-  alwaysf: Atom (mem <- Fn <- Nodes).
-Definition PIR {C} (e : @term C IREvent) : @prop C :=
-  ev: [], Request, EventIR <- e =>:
-  (Fs' <- Fn, Fors, Fois) = request <- Fn <- (Fs <- Fn) <- e.
-Definition PII {C} (i : 'I_(size (@IIEvents C))) (e : @term C (ith i))
-: @prop C :=
-  let: ie := @Const C Nat i in
-  let: ei := ini i <- e in
-  ev: [ie], Indication, EventII <- ei =>:
-  (Fs' <- Fn, Fors, Fois) = indication <- Fn <- (Fs <- Fn) <- ei.
-Definition PPe {C} : @prop C :=
-  ev: [], Periodic, per =>:
-  (Fs' <- Fn, Fors, Fois) = periodic <- Fn <- (Fs <- Fn).
-Definition POR {C} (n : @term C Node)
-(i : 'I_(size (@OREvents C))) (e : @term C (ith i)) : @prop C :=
-  let: ie := @Const C Nat i in
-  let: ei := ini i <- e in
-  on: n, (Atom (mem <- ei <- Fors) /\ self) =>:
-  existsf^: on: n, ev: [ie], Request, EventOR <- ei.
-Definition POI {C} (n : @term C Node) (e : @term C OIEvent) : @prop C :=
-  on: n, (Atom (mem <- e <- Fois) /\ self) =>:
-  existsf^: on: n, ev: [], Indication, EventOI <- e.
-Definition POR' {C} (n : @term C Node)
-(i : 'I_(size (@OREvents C))) (e : @term C (ith i)) : @prop C :=
-  let: ie := @Const C Nat i in
-  let: ei := ini i <- e in
-  on: n, ev: [ie], Request, EventOR <- ei =>:
-  existsp^: on: n, (Atom (mem <- ei <- Fors) /\ self).
-Definition POI' {C} (n : @term C Node) (e : @term C OIEvent) : @prop C :=
-  on: n, ev: [], Indication, EventOI <- e =>:
-  existsp^: on: n, (Atom (mem <- e <- Fois) /\ self).
-Definition PInit {C} (n : @term C Node) : @prop C :=
-  self: (Fs <- n = init <- n).
-Definition PPostPre {C} (n : @term C Node) (s : @term C State) : @prop C :=
-  self: (Atom (mem <- n <- Nodes) ->
-    (Fs' <- n = s <=>: next: (Fs <- n = s))).
-Definition PSeq {C} (n : @term C Node) : @prop C :=
-  ~(Fn = n) =>: (Fs' <- n = Fs <- n).
-Definition PASelf {C} : @prop C :=
-  self: alwaysf: self.
-(* TODO: PLSInv; need restrict *)
-Definition PCSet {C} (n : @term C Node) : @prop C :=
-  (Atom (correct <- n)) <-> (Atom (mem <- n <- Correct)).
-Definition PAPer {C} (n : @term C Node) : @prop C :=
-  (Atom (mem <- n <- Correct)) ->
-  alwaysf: existsf: on: n, ev: [], Periodic, per.
-Definition PFLoss {C}
-(ir : 'I_(size (@OREvents C))) (ii : 'I_(size (@IIEvents C)))
-(Hr : ith ir = FLRequest) (Hi : ith ii = FLIndication)
-(n n' : @term C Node) (m : @term C Message) : @prop C :=
-  let: ier := @Const C Nat ir in
-  let: iei := @Const C Nat ii in
-  (Atom (correct <- n')) ->
-  alwaysf: existsf: on: n, ev: [ier], Request,
-    (EventOR <- (ini ir <- (ith_FLRequest Hr (Send_fl <- n' <- m)))) ->
-  alwaysf: existsf: on: n', ev: [iei], Indication,
-    (EventII <- (ini ii <- (ith_FLIndication Hi (Deliver_fl <- n' <- m)))).
-Definition PFDup {C}
-(ir : 'I_(size (@OREvents C))) (ii : 'I_(size (@IIEvents C)))
-(Hr : ith ir = FLRequest) (Hi : ith ii = FLIndication)
-(n n' : @term C Node) (m : @term C Message) : @prop C :=
-  let: ier := @Const C Nat ir in
-  let: iei := @Const C Nat ii in
-  alwaysf: existsf: on: n', ev: [iei], Indication,
-    (EventII <- (ini ii <- (ith_FLIndication Hi (Deliver_fl <- n' <- m)))) ->
-  alwaysf: existsf: on: n, ev: [ier], Request,
-    (EventOR <- (ini ir <- (ith_FLRequest Hr (Send_fl <- n' <- m)))).
-Definition PNForge {C}
-(ir : 'I_(size (@OREvents C))) (ii : 'I_(size (@IIEvents C)))
-(Hr : ith ir = FLRequest) (Hi : ith ii = FLIndication)
-(n n' : @term C Node) (m : @term C Message) : @prop C :=
-  let: ier := @Const C Nat ir in
-  let: iei := @Const C Nat ii in
-  (on: n', ev: [iei], Indication,
-    (EventII <- (ini ii <- (ith_FLIndication Hi (Deliver_fl <- n' <- m))))) =>:
-  existsp: on: n, ev: [ier], Request,
-    (EventOR <- (ini ir <- (ith_FLRequest Hr (Send_fl <- n' <- m)))).
-Definition PUniOR {C} (n : @term C Node)
-(i : 'I_(size OREvents)) (e : @term C (ith i)) : @prop C :=
-  let: ie := @Const C Nat i in
-  let: ei := ini i <- e in
-  ((occ <- ei <- Fors) <= (@Const _ Nat 1) /\
-    alwaysp^: (Fn = n /\ self -> ~(Atom (mem <- ei <- Fors))) /\
-    alwaysf^: (Fn = n /\ self -> ~(Atom (mem <- ei <- Fors)))) =>:
-  (on: n, ev: [], Indication, EventOR <- ei) =>:
-  ((alwaysp^: ~(on: n, ev: [ie], Request, EventOR <- ei)) /\
-    (alwaysf^: ~(on: n, ev: [ie], Request, EventOR <- ei))).
-Definition PUniOI {C} (n : @term C Node) (e : @term C OIEvent) : @prop C :=
-  ((occ <- e <- Fois) <= (@Const _ Nat 1) /\
-    alwaysp^: (Fn = n /\ self -> ~(Atom (mem <- e <- Fois))) /\
-    alwaysf^: (Fn = n /\ self -> ~(Atom (mem <- e <- Fois)))) =>:
-  (on: n, ev: [], Indication, EventOI <- e) =>:
-  ((alwaysp^: ~(on: n, ev: [], Indication, EventOI <- e)) /\
-    (alwaysf^: ~(on: n, ev: [], Indication, EventOI <- e))).
 
 End TLC.
 
