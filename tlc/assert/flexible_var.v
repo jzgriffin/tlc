@@ -2,6 +2,8 @@ From mathcomp.ssreflect
 Require Import ssreflect eqtype ssrbool.
 From tlc.utility
 Require Import indeq.
+From tlc.comp
+Require Import component.
 From tlc.assert
 Require Import type.
 
@@ -10,20 +12,20 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 (* Named flexible variables in the assertion language *)
-Inductive flexible_var : Type :=
-| Fn
-| Fd
-| Fo
-| Fe
-| Fors
-| Fois
-| Fs
-| Fs'.
+Inductive flexible_var {C : component} : @type C -> Type :=
+| Fn : flexible_var Node
+| Fd : flexible_var Depth
+| Fo : flexible_var Orientation
+| Fe : flexible_var Event
+| Fors : flexible_var [OREvent]
+| Fois : flexible_var [OIEvent]
+| Fs : flexible_var States
+| Fs' : flexible_var States.
 
 (* Equality *)
 Section eq.
 
-  Definition flexible_var_eq (x x' : flexible_var) :=
+  Definition flexible_var_eq {C t} (x x' : @flexible_var C t) :=
     match x, x' with
     | Fn, Fn => true
     | Fd, Fd => true
@@ -36,27 +38,14 @@ Section eq.
     | _, _ => false
     end.
 
-  Lemma flexible_var_eqP : Equality.axiom flexible_var_eq.
+  Lemma flexible_var_eqP {C t} : Equality.axiom (@flexible_var_eq C t).
   Proof.
-    case; case; by indeq_auto.
-  Qed.
+    (* TODO *)
+  Admitted.
 
-  Canonical flexible_var_eqMixin :=
-    EqMixin flexible_var_eqP.
-  Canonical flexible_var_eqType :=
-    Eval hnf in EqType flexible_var flexible_var_eqMixin.
+  Canonical flexible_var_eqMixin {C t} :=
+    EqMixin (@flexible_var_eqP C t).
+  Canonical flexible_var_eqType {C t} :=
+    Eval hnf in EqType (@flexible_var C t) (@flexible_var_eqMixin C t).
 
 End eq.
-
-(* Maps flexible variables to their types *)
-Definition type_flexible_var {C} x : @type C :=
-  match x with
-  | Fn => Node
-  | Fd => Depth
-  | Fo => Orientation
-  | Fe => Event
-  | Fors => [OREvent]
-  | Fois => [OIEvent]
-  | Fs => States
-  | Fs' => States
-  end.

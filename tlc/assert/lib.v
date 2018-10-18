@@ -230,20 +230,6 @@ Section correct.
 
 End correct.
 
-(* Flexible variables *)
-Section flexible.
-
-  Definition Fn {C} := @Flexible C Fn.
-  Definition Fd {C} := @Flexible C Fd.
-  Definition Fo {C} := @Flexible C Fo.
-  Definition Fe {C} := @Flexible C Fe.
-  Definition Fors {C} := @Flexible C Fors.
-  Definition Fois {C} := @Flexible C Fois.
-  Definition Fs {C} := @Flexible C Fs.
-  Definition Fs' {C} := @Flexible C Fs'.
-
-End flexible.
-
 (* Component types and functions *)
 Section component.
 
