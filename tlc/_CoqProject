@@ -32,6 +32,7 @@ assert/top_inv.v
 assert/all_assert.v
 comp/slc.v
 comp/all_comp.v
+logic/temporal.v
 logic/sequent.v
 logic/program.v
 logic/all_logic.v
