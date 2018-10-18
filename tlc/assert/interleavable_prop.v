@@ -1,37 +1,34 @@
 From mathcomp.ssreflect
 Require Import ssreflect.
 From tlc.assert
-Require Import rigid_var atom prop.
+Require Import type rigid_var term atom prop.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Inductive interleavable_prop {C} : @prop C -> Type :=
-| IAAtom a :
+| IPAtom a :
   interleavable_prop (Atom a)
-| IAConj A1 A2 :
-  interleavable_prop A1 ->
-  interleavable_prop A2 ->
-  interleavable_prop (Conj A1 A2)
-| IANeg A0 :
-  interleavable_prop A0 ->
-  interleavable_prop (Neg A0)
-| IAAlways t (x : rigid_var t) A0 :
-  interleavable_prop A0 ->
-  interleavable_prop (Always x A0)
-| IAAlwaysF' A0 :
-  interleavable_prop A0 ->
-  interleavable_prop (AlwaysF' A0)
-| IAAlwaysP' A0 :
-  interleavable_prop A0 ->
-  interleavable_prop (AlwaysP' A0)
-| IAExistsF' A0 :
-  interleavable_prop A0 ->
-  interleavable_prop (ExistsF' A0)
-| IAExistsP' A0 :
-  interleavable_prop A0 ->
-  interleavable_prop (ExistsP' A0).
+| IPNot p :
+  interleavable_prop p ->
+  interleavable_prop (Not p)
+| IPOr p q :
+  interleavable_prop p ->
+  interleavable_prop q ->
+  interleavable_prop (Or p q)
+| IPForall t (x : rigid_var t) p :
+  interleavable_prop p ->
+  interleavable_prop (Forall x p)
+| IPUntil' p q :
+  p <> Atom (@Const _ Bool false) ->
+  interleavable_prop p ->
+  interleavable_prop q ->
+  interleavable_prop (Until' p q)
+| IPSince' p q :
+  p <> Atom (@Const _ Bool false) ->
+  interleavable_prop p ->
+  interleavable_prop q ->
+  interleavable_prop (Since' p q).
 
-Definition interleavable_prop_t {C} :=
-  {A : @prop C & interleavable_prop A}.
+Definition interleavable_prop_t {C} := {p : @prop C & interleavable_prop p}.

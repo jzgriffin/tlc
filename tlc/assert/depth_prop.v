@@ -10,38 +10,35 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Inductive depth_prop {C} (d : seq nat) : @prop C -> Type :=
-| DACorrect t :
+| DPCorrect t :
   depth_prop d (Atom (App TLC.correct t))
-| DAEv n d' o e :
+| DPEvent n d' o e :
   d' <<< d ->
-  depth_prop d (TLC.On n (TLC.Ev (@seq_to_term C Nat d') o e))
-| DAConj A1 A2 :
-  depth_prop d A1 ->
-  depth_prop d A2 ->
-  depth_prop d (Conj A1 A2)
-| DANeg A0 :
-  depth_prop d A0 ->
-  depth_prop d (Neg A0)
-| DAAlways t (x : rigid_var t) A0 :
-  depth_prop d A0 ->
-  depth_prop d (Always x A0)
-| DAAlwaysF' A0 :
-  depth_prop d A0 ->
-  depth_prop d (AlwaysF' A0)
-| DAAlwaysP' A0 :
-  depth_prop d A0 ->
-  depth_prop d (AlwaysP' A0)
-| DAExistsF' A0 :
-  depth_prop d A0 ->
-  depth_prop d (ExistsF' A0)
-| DAExistsP' A0 :
-  depth_prop d A0 ->
-  depth_prop d (ExistsP' A0).
+  depth_prop d (TLC.IsOn n (TLC.IsEvent (@seq_to_term C Nat d') o e))
+| DPNot p :
+  depth_prop d p ->
+  depth_prop d (Not p)
+| DPOr p q :
+  depth_prop d p ->
+  depth_prop d q ->
+  depth_prop d (Or p q)
+| DPForall t (x : rigid_var t) p :
+  depth_prop d p ->
+  depth_prop d (Forall x p)
+| DPUntil' p q :
+  p <> Atom (@Const _ Bool false) ->
+  depth_prop d p ->
+  depth_prop d q ->
+  depth_prop d (Until' p q)
+| DPSince' p q :
+  p <> Atom (@Const _ Bool false) ->
+  depth_prop d p ->
+  depth_prop d q ->
+  depth_prop d (Since' p q).
 
-Lemma depth_prop_is_interleavable {C} d A
-  (DA : @depth_prop C d A) :
-  interleavable_prop A.
+Lemma depth_prop_is_interleavable {C} d p (DP : @depth_prop C d p)
+: interleavable_prop p.
 Proof.
-  elim: DA; try by constructor;
-  try by (rewrite /TLC.On /TLC.Ev /TLC.Eq; repeat constructor).
+  elim: DP; try by constructor;
+  try by (rewrite /TLC.IsOn /TLC.IsEvent /TLC.Eq; repeat constructor).
 Qed.

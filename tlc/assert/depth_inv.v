@@ -8,6 +8,6 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Inductive depth_inv {C} (d : seq nat) : @prop C -> Type :=
-| DI A :
-  depth_prop d A ->
-  depth_inv d (AlwaysF A).
+| DI p :
+  depth_prop d p ->
+  depth_inv d (Henceforth p).

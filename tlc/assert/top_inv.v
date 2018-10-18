@@ -8,6 +8,6 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Inductive top_inv {C} : @prop C -> Type :=
-| TI A :
-  top_prop A ->
-  top_inv (AlwaysF A).
+| TI p :
+  top_prop p ->
+  top_inv (Henceforth p).
