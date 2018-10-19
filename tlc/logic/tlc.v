@@ -17,13 +17,13 @@ Section tlc.
 
   Inductive tlc {C} : seq (@prop C) -> @prop C -> Prop :=
   | TProgram X p :
-    |-p C, p ->
+    X |-p C, p ->
     X |- p
   | TSequent X p :
     X |-s C, p ->
     X |- p
   | TTemporal X p :
-    |-t C, p ->
+    X |-t C, p ->
     X |- p
   where "X |- p" := (tlc X p).
 
