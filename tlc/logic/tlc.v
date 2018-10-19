@@ -31,3 +31,15 @@ End tlc.
 
 Notation "X |- C , p" := (@tlc C X p)
   (at level 80, no associativity).
+
+Lemma TProgram' {C} X p : X |- C, p -> X |-p C, p.
+Proof.
+Admitted. (* TODO *)
+
+Lemma TSequent' {C} X p : X |- C, p -> X |-s C, p.
+Proof.
+Admitted. (* TODO *)
+
+Lemma TTemporal' {C} X p : X |- C, p -> X |-t C, p.
+Proof.
+Admitted. (* TODO *)
