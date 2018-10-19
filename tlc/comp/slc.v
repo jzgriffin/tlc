@@ -130,6 +130,8 @@ Theorem SL_1 {N M} : [::] |- (slc N M),
   (henceforth: eventually: on: n', event: [], Indication,
     EventOI <- (Deliver_sl <- n <- m))).
 Proof.
+  (* Assume correct *)
+  apply TSequent, SIfR, SAndL, TSequent'.
 Admitted. (* TODO *)
 
 (* SL_2: No-forge *)
