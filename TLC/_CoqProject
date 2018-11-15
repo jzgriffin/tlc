@@ -1,0 +1,19 @@
+-arg -w
+-arg -notation-overridden
+-R . TLC
+
+TupleMap.v
+Variant.v
+Orientation.v
+Component.v
+Event.v
+FairLossLink.v
+Stack.v
+Location.v
+Flexible.v
+StaticTerm.v
+Term.v
+TemporalLogic.v
+ProgramLogic.v
+SequentLogic.v
+StubbornLink.v
