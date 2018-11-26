@@ -44,7 +44,7 @@ Bind Scope tlc_core_scope with term.
 
 (* Notations for building terms *)
 Notation "^ x" := (Value x)
-  (at level 0) : tlc_core_scope.
+  (at level 0, format "'^' x") : tlc_core_scope.
 Notation "x <- y" := (Application x y)
   (at level 10, left associativity) : tlc_core_scope.
 Notation "'apply:' f x .. y" := (Application .. (Application f x) .. y)
