@@ -23,40 +23,36 @@ Section program_basic.
     ^(@List.In _) <- ^n <- NodeSet
 
   | ProgramIR : |- forall: e,
-    when[]: ^Request, ^(IREvent e) =>>
+    when[]->: ^e =>>
     (Fs' <- Fn, Fors, Fois) = ^(@request C) <- Fn <- (Fs <- Fn) <- ^e
 
-  | ProgramII : |- forall: i : Fin.t (projT1 (sub_interfaces C)),
-    forall: e : Vector.nth (ii_events C) i,
+  | ProgramII : |- forall: i, forall: e : Vector.nth (ii_events C) i,
     let ii := in_variant e in
-    when: ^(proj1_sig (Fin.to_nat i)), ^Indication, ^(IIEvent ii) /\
+    when<-: ^e /\
     ((Fs' <- Fn, Fors, Fois) = ^(indication C) <- Fn <- (Fs <- Fn) <- ^ii)
 
   | ProgramPe : |-
-    when[]: ^Periodic, ^(PEvent per) =>>
+    when[]~> =>>
       (Fs' <- Fn, Fors, Fois) = ^(@periodic C) <- Fn <- (Fs <- Fn)
 
   | ProgramOR : |- forall: n,
-    forall: i : Fin.t (projT1 (sub_interfaces C)),
-    forall: e : Vector.nth (or_events C) i,
+    forall: i, forall: e : Vector.nth (or_events C) i,
     let or := in_variant e in
     on: ^n, ^(@List.In _) <- ^or <- Fors /\ self =>>
-      eventually^: on: ^n,
-        when: ^(proj1_sig (Fin.to_nat i)), ^Request, ^(OREvent or)
+      eventually^: on: ^n, when->: ^e
 
   | ProgramOI : |- forall: n, forall: e,
     on: ^n, ^(@List.In _) <- ^e <- Fois /\ self =>>
-      eventually^: on: ^n, when[]: ^Request, ^(OIEvent e)
+      eventually^: on: ^n, when[]<-: ^e
 
   | ProgramOR' : |- forall: n,
-    forall: i : Fin.t (projT1 (sub_interfaces C)),
-    forall: e : Vector.nth (or_events C) i,
+    forall: i, forall: e : Vector.nth (or_events C) i,
     let or := in_variant e in
-    on: ^n, when: ^(proj1_sig (Fin.to_nat i)), ^Request, ^(OREvent or) =>>
+    on: ^n, when->: ^e =>>
       eventuallyp^: on: ^n, ^(@List.In _) <- ^or <- Fors /\ self
 
   | ProgramOI' : |- forall: n, forall: e,
-    on: ^n, when[]: ^Indication, ^(OIEvent e) =>>
+    on: ^n, when[]<-: ^e =>>
       eventuallyp^: on: ^n, ^(@List.In _) <- ^e <- Fois /\ self
 
   | ProgramInitialize : |- forall: n,
@@ -78,7 +74,7 @@ Section program_basic.
 
   | ProgramAPer : |- forall: n,
     Correct <- ^n -> always: eventually: on: ^n,
-      when[]: ^Periodic, ^(PEvent per)
+      when[]~>
 
   (* TODO: FLoss *)
   (* TODO: FDup *)
@@ -98,23 +94,20 @@ Section program_derived.
 
   Lemma ProgramInvL'R {C} (A : term C Prop) (SA : static_term A) :
     static_term ((forall: e,
-      when[]: ^Request, ^(IREvent e) /\
-      (^(request C) <- Fn <- (Fs <- Fn) <- ^e = (Fs' <- Fn, Fors, Fois))) ->
-      A).
+      when[]->: ^e /\
+      (^(request C) <- Fn <- (Fs <- Fn) <- ^e = (Fs' <- Fn, Fors, Fois))) -> A).
   Proof. repeat econstructor. assumption. Qed.
 
   Lemma ProgramInvL'I {C} (A : term C Prop) (SA : static_term A) :
-    static_term ((forall: i : Fin.t (projT1 (sub_interfaces C)),
-      forall: e : Vector.nth (ii_events C) i,
-      let ii := in_variant e in (* TODO *)
-      when: ^(proj1_sig (Fin.to_nat i)), ^Indication, ^(IIEvent ii) /\
-      (^(indication C) <- Fn <- (Fs <- Fn) <- ^ii =
-        (Fs' <- Fn, Fors, Fois))) ->
+    static_term ((forall: i, forall: e : Vector.nth (ii_events C) i,
+      let ii := in_variant e in
+      when<-: ^e /\
+      (^(indication C) <- Fn <- (Fs <- Fn) <- ^ii = (Fs' <- Fn, Fors, Fois))) ->
       A).
   Proof. repeat constructor. assumption. Qed.
 
   Lemma ProgramInvL'P {C} (A : term C Prop) (SA : static_term A) :
-    static_term ((when[]: ^Periodic, ^(PEvent per) /\
+    static_term ((when[]~> /\
       (^(periodic C) <- Fn <- (Fs <- Fn) = (Fs' <- Fn, Fors, Fois))) ->
       A).
   Proof. repeat constructor. assumption. Qed.

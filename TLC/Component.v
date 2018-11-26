@@ -25,10 +25,12 @@ Record component :=
     request : node -> state -> ir_event -> output;
     indication : node -> state -> ii_event -> output;
     periodic : node -> state -> output;
-    states := node -> state;
   }.
 
 Arguments initialize : clear implicits.
 Arguments request : clear implicits.
 Arguments indication : clear implicits.
 Arguments periodic : clear implicits.
+
+Definition states C := node C -> state C.
+Definition sub_index C := Fin.t (projT1 (sub_interfaces C)).

@@ -137,15 +137,40 @@ Notation "[ x ; y ; .. ; z ]" :=
 Definition On {C} n A : term C _ := Fn = n /\ A.
 Notation "'on:' n , A" := (On n A)
   (at level 65, right associativity) : tlc_core_scope.
-Definition WhenTop {C} o e : term C _ := Fd = [] /\ Fo = o /\ Fe = e.
-Notation "'when[]:' o , e" := (WhenTop o e)
-  (at level 65, right associativity) : tlc_core_scope.
-Definition WhenSub {C} i o e : term C _ := Fd = [i] /\ Fo = o /\ Fe = e.
-Notation "'when:' i , o , e" := (WhenSub i o e)
-  (at level 65, right associativity) : tlc_core_scope.
 Definition WhenSelf {C} : term C _ :=
-  (Fd = [] /\ Fo = ^Request) \/
-  (Fd = [] /\ Fo = ^Periodic) \/
-  exists: i, Fd = [^i] /\ Fo = ^Indication.
+  (Fd = ^None /\ Fo = ^Request) \/
+  (Fd = ^None /\ Fo = ^Periodic) \/
+  (exists: i, Fd = (^Some <- ^i) /\ Fo = ^Indication).
 Notation "'self'" := (WhenSelf)
+  (at level 65, right associativity) : tlc_core_scope.
+
+(* Top component event predicates *)
+Definition WhenTopIR {C} e : term C _ :=
+  Fd = ^None /\ Fo = ^Request /\ Fe = (^IREvent <- e).
+Notation "'when[]->:' e" := (WhenTopIR e)
+  (at level 65, right associativity) : tlc_core_scope.
+Definition WhenTopOI {C} e : term C _ :=
+  Fd = ^None /\ Fo = ^Indication /\ Fe = (^OIEvent <- e).
+Notation "'when[]<-:' e" := (WhenTopOI e)
+  (at level 65, right associativity) : tlc_core_scope.
+Definition WhenTopPer {C} : term C _ :=
+  Fd = ^None /\ Fo = ^Periodic /\ Fe = (^PEvent <- ^per).
+Notation "'when[]~>'" := (WhenTopPer)
+  (at level 65, right associativity) : tlc_core_scope.
+
+(* Sub-component event predicates *)
+Definition WhenSubOR {C} i (e : term C (Vector.nth (or_events C) i)) : term C _ :=
+  Fd = (^Some <- ^i) /\ Fo = ^Request /\
+  Fe = (^OREvent <- (^(@in_variant _ _ _) <- e)).
+Notation "'when->:' e" := (WhenSubOR e)
+  (at level 65, right associativity) : tlc_core_scope.
+Definition WhenSubII {C} i (e : term C (Vector.nth (ii_events C) i)) : term C _ :=
+  Fd = (^Some <- ^i) /\ Fo = ^Indication /\
+  Fe = (^IIEvent <- (^(@in_variant _ _ _) <- e)).
+Notation "'when<-:' e" := (WhenSubII e)
+  (at level 65, right associativity) : tlc_core_scope.
+Definition WhenSubPer {C} i : term C _ :=
+  Fd = (^Some <- ^i) /\ Fo = ^Periodic /\
+  Fe = (^PEvent <- ^per).
+Notation "'when~>'" := (WhenSubPer)
   (at level 65, right associativity) : tlc_core_scope.
