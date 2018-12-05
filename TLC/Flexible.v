@@ -19,5 +19,18 @@ Inductive flexible {C} : Type -> Type :=
 
 Arguments flexible : clear implicits.
 
+Definition flexible_eq {C} T (x y : flexible C T) : bool :=
+  match x, y with
+  | Fn, Fn => true
+  | Fd, Fd => true
+  | Fo, Fo => true
+  | Fe, Fe => true
+  | Fors, Fors => true
+  | Fois, Fois => true
+  | Fs, Fs => true
+  | Fs', Fs' => true
+  | _, _ => false
+  end.
+
 Definition flexible_denotation C : Type :=
   forall T, flexible C T -> T.
