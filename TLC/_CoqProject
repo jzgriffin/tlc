@@ -4,6 +4,7 @@
 
 Nomega.v
 Word.v
+Byte.v
 TupleMap.v
 Variant.v
 Orientation.v
