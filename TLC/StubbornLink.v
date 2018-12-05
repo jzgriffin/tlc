@@ -1,6 +1,10 @@
 Require Import Coq.Lists.List.
 Require Import TLC.Component.
 Require Import TLC.FairLossLink.
+Require Import TLC.ProgramLogic.
+Require Import TLC.SequentLogic.
+Require Import TLC.TemporalLogic.
+Require Import TLC.Term.
 Require Coq.Vectors.Vector.
 
 Import ListNotations.
@@ -56,5 +60,26 @@ Section stubborn_link.
       (s', ors, ois) in
     @Component node message request_sl indication_sl sub_interfaces_sl state_sl
       initialize request indication periodic.
+
+  Lemma slc_ir_term (x : term slc request_sl) : term slc (ir_event slc).
+  Proof. assumption. Qed.
+  Lemma slc_oi_term (x : term slc indication_sl) : term slc (oi_event slc).
+  Proof. assumption. Qed.
+
+  Theorem SL_1 (n n' : term slc node) (m : term slc message) : [] |- slc, (
+    Correct <- n /\ Correct <- n' ->
+    (on: n, when[]->: slc_ir_term (^Send_sl <- n' <- m)) =>>
+    always: eventually:
+      on: n', when[]<-: slc_oi_term (^Deliver_sl <- n <- m)
+  ).
+  Proof.
+  Admitted. (* TODO *)
+
+  Theorem SL_2 (n n' : term slc node) (m : term slc message) : [] |- slc, (
+    (on: n, when[]<-: slc_oi_term (^Deliver_sl <- n' <- m)) <~
+    (on: n', when[]->: slc_ir_term (^Send_sl <- n <- m))
+  ).
+  Proof.
+  Admitted. (* TODO *)
 
 End stubborn_link.
