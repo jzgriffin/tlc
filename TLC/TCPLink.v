@@ -21,6 +21,17 @@ Section tcp.
 
   Definition tcp_connection := nat.
 
+  (* From RFC 791 page 51 *)
+  Definition tcp_ip_ttl := natToWord 8 60.
+  Definition tcp_ip_service_type :=
+    IpServiceType
+      IpPrecedenceRoutine
+      IpDelayNormal
+      IpThroughputNormal
+      IpReliabilityNormal.
+  (* From RFC 790 page 6 *)
+  Definition tcp_ip_protocol := natToWord 8 6.
+
   Inductive tcp_open_mode : Type :=
   | Active_tcp
   | Passive_tcp.
