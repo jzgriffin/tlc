@@ -2,6 +2,8 @@
 -arg -notation-overridden
 -R . TLC
 
+Nomega.v
+Word.v
 TupleMap.v
 Variant.v
 Orientation.v
