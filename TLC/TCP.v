@@ -1,6 +1,6 @@
 Require Import TLC.Byte.
 Require Import TLC.Component.
-Require Import TLC.IPLink.
+Require Import TLC.IP.
 Require Import TLC.Word.
 Require Import Coq.FSets.FMapAVL.
 Require Import Coq.Lists.List.

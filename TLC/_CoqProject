@@ -20,5 +20,5 @@ TemporalLogic.v
 ProgramLogic.v
 SequentLogic.v
 StubbornLink.v
-IPLink.v
-TCPLink.v
+IP.v
+TCP.v
