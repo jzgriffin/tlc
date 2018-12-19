@@ -1,11 +1,13 @@
-Require Import TLC.Byte.
-Require Import TLC.Component.
-Require Import TLC.IP.
-Require Import TLC.Word.
 Require Import Coq.FSets.FMapAVL.
 Require Import Coq.Lists.List.
 Require Import Coq.Structures.OrderedTypeEx.
 Require Import Coq.Vectors.Vector.
+Require Import TLC.Byte.
+Require Import TLC.Component.
+Require Import TLC.IP.
+Require Import TLC.Stack.
+Require Import TLC.TupleMap.
+Require Import TLC.Word.
 
 Import ListNotations.
 
@@ -44,10 +46,8 @@ Record tcp_header :=
     tcp_header_dst_port : tcp_port;
     tcp_header_seq_num : tcp_number;
     tcp_header_ack_num : tcp_number;
-    tcp_header_data_offset : tcp_offset;
     tcp_header_control : tcp_control;
     tcp_header_window : tcp_window;
-    tcp_header_checksum : tcp_checksum;
     tcp_header_urgent_ptr : tcp_pointer;
     tcp_header_options : tcp_options;
   }.
@@ -71,15 +71,10 @@ Definition tcp_connection := nat.
 Module TcpConnectionMap := FMapAVL.Make(Nat_as_OT).
 
 (* From RFC 791 page 51 *)
-Definition tcp_ip_ttl : ip_time_to_live := natToWord _ 60.
-Definition tcp_ip_service_type :=
-  IpServiceType
-    IpPrecedenceRoutine
-    IpDelayNormal
-    IpThroughputNormal
-    IpReliabilityNormal.
-(* From RFC 790 page 6 *)
-Definition tcp_ip_protocol : ip_protocol := natToWord _ 6.
+Definition tcp_ip_traffic_class : ip_traffic_class := $0.
+Definition tcp_ip_flow_label : ip_flow_label := $0.
+Definition tcp_ip_next_header : ip_next_header := IpNextHeaderTcp.
+Definition tcp_ip_hop_limit : ip_hop_limit := $60.
 
 Inductive tcp_open_mode : Type :=
 | Active_tcp
@@ -139,7 +134,9 @@ Section sub_interfaces.
   Import VectorNotations.
 
   Definition tcp_sub_interfaces : interfaces :=
-      existT _ _ [].
+    let ip_ir : Type := ip_request in
+    let ip_oi : Type := ip_indication in
+    existT _ _ [(ip_ir, ip_oi)].
 
 End sub_interfaces.
 
@@ -199,3 +196,9 @@ Definition tcp :=
   @Component tcp_node tcp_message tcp_request tcp_indication
     tcp_sub_interfaces tcp_state
     initialize request indication periodic.
+
+Definition tcp_stack :
+  stack tcp_node tcp_message (ir_event tcp) (oi_event tcp).
+Proof.
+  apply ComponentStack, TupleMapCons; [apply ip_stack | apply TupleMapNil].
+Defined.
