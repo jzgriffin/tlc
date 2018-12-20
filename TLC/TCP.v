@@ -15,7 +15,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Definition tcp_data := bytes.
+Definition tcp_payload := bytes.
 Definition tcp_port := word 16.
 Definition tcp_number := word 32.
 Definition tcp_offset := word 4.
@@ -37,7 +37,7 @@ Record tcp_control :=
 Inductive tcp_option :=
 | TcpOptionEnd
 | TcpOptionNone
-| TcpOptionMSS (mss : tcp_mss).
+| TcpOptionMss (mss : tcp_mss).
 Definition tcp_options := list tcp_option.
 
 Record tcp_header :=
@@ -46,6 +46,7 @@ Record tcp_header :=
     tcp_header_dst_port : tcp_port;
     tcp_header_seq_num : tcp_number;
     tcp_header_ack_num : tcp_number;
+    tcp_header_offset : tcp_offset;
     tcp_header_control : tcp_control;
     tcp_header_window : tcp_window;
     tcp_header_urgent_ptr : tcp_pointer;
@@ -55,7 +56,7 @@ Record tcp_header :=
 Record tcp_segment :=
   TcpSegment {
     tcp_segment_header : tcp_header;
-    tcp_segment_data : tcp_data;
+    tcp_segment_payload : tcp_payload;
   }.
 
 Record tcp_socket :=
@@ -64,8 +65,9 @@ Record tcp_socket :=
     tcp_socket_port : tcp_port;
   }.
 
+(* Component *)
 Definition tcp_node := ip_address.
-Definition tcp_message := tcp_data.
+Definition tcp_message := bytes.
 
 Definition tcp_connection := nat.
 Module TcpConnectionMap := FMapAVL.Make(Nat_as_OT).
@@ -76,58 +78,30 @@ Definition tcp_ip_flow_label : ip_flow_label := $0.
 Definition tcp_ip_next_header : ip_next_header := IpNextHeaderTcp.
 Definition tcp_ip_hop_limit : ip_hop_limit := $60.
 
-Inductive tcp_open_mode : Type :=
+Inductive tcp_open_mode :=
 | Active_tcp
 | Passive_tcp.
 
-Inductive tcp_request : Type :=
-| Open_tcp :
-  tcp_node -> tcp_port -> option tcp_socket -> tcp_open_mode ->
-  tcp_request
-| Close_tcp :
-  tcp_node -> tcp_connection ->
-  tcp_request
-| Send_tcp :
-  tcp_node -> tcp_connection -> tcp_message ->
-  tcp_request
-| Receive_tcp :
-  tcp_node -> tcp_connection ->
-  tcp_request
-| Abort_tcp :
-  tcp_node -> tcp_connection ->
-  tcp_request.
+Inductive tcp_request :=
+| Open_tcp
+  (p : tcp_port) (fs : option tcp_socket) (om : tcp_open_mode)
+| Close_tcp (c : tcp_connection)
+| Send_tcp (c : tcp_connection) (p : tcp_payload)
+| Receive_tcp (c : tcp_connection)
+| Abort_tcp (c : tcp_connection).
 
-Inductive tcp_indication : Type :=
-| OpenSuccess_tcp :
-  tcp_node -> tcp_port -> option tcp_socket -> tcp_open_mode ->
-  tcp_connection -> tcp_indication
-| OpenFailure_tcp :
-  tcp_node -> tcp_port -> option tcp_socket -> tcp_open_mode ->
-  tcp_indication
-| CloseSuccess_tcp :
-  tcp_node -> tcp_connection ->
-  tcp_indication
-| CloseFailure_tcp :
-  tcp_node -> tcp_connection ->
-  tcp_indication
-| SendSuccess_tcp :
-  tcp_node -> tcp_connection -> tcp_message ->
-  tcp_indication
-| SendFailure_tcp :
-  tcp_node -> tcp_connection -> tcp_message ->
-  tcp_indication
-| ReceiveSuccess_tcp :
-  tcp_node -> tcp_connection ->
-  tcp_message -> tcp_indication
-| ReceiveFailure_tcp :
-  tcp_node -> tcp_connection ->
-  tcp_indication
-| AbortSuccess_tcp :
-  tcp_node -> tcp_connection ->
-  tcp_indication
-| AbortFailure_tcp :
-  tcp_node -> tcp_connection ->
-  tcp_indication.
+Inductive tcp_indication :=
+| OpenSuccess_tcp (p : tcp_port) (fs : option tcp_socket) (om : tcp_open_mode)
+  (c : tcp_connection)
+| OpenFailure_tcp (p : tcp_port) (fs : option tcp_socket) (om : tcp_open_mode)
+| CloseSuccess_tcp (c : tcp_connection)
+| CloseFailure_tcp (c : tcp_connection)
+| SendSuccess_tcp (c : tcp_connection) (p : tcp_payload)
+| SendFailure_tcp (c : tcp_connection) (p : tcp_payload)
+| ReceiveSuccess_tcp (c : tcp_connection) (s : tcp_segment)
+| ReceiveFailure_tcp (c : tcp_connection)
+| AbortSuccess_tcp (c : tcp_connection)
+| AbortFailure_tcp (c : tcp_connection).
 
 Section sub_interfaces.
 
@@ -150,31 +124,31 @@ Definition tcp :=
   let initialize n := TcpConnectionMap.empty tcb in
   let request n s ir :=
     match ir with
-    | Open_tcp n' p k m =>
+    | Open_tcp p fs om =>
       (* TODO *)
       let s' := s in
       let ors := [] in
       let ois := [] in
       (s', ors, ois)
-    | Close_tcp n' c =>
+    | Close_tcp c =>
       (* TODO *)
       let s' := s in
       let ors := [] in
       let ois := [] in
       (s', ors, ois)
-    | Send_tcp n' c m =>
+    | Send_tcp c p =>
       (* TODO *)
       let s' := s in
       let ors := [] in
       let ois := [] in
       (s', ors, ois)
-    | Receive_tcp n' c =>
+    | Receive_tcp c =>
       (* TODO *)
       let s' := s in
       let ors := [] in
       let ois := [] in
       (s', ors, ois)
-    | Abort_tcp n' c =>
+    | Abort_tcp c =>
       (* TODO *)
       let s' := s in
       let ors := [] in
