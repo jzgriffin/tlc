@@ -7,8 +7,12 @@ Require Import Coq.Vectors.Vector.
 Require Import TLC.Byte.
 Require Import TLC.Component.
 Require Import TLC.FairLossLink.
+Require Import TLC.ProgramLogic.
 Require Import TLC.Queue.
+Require Import TLC.SequentLogic.
 Require Import TLC.Stack.
+Require Import TLC.TemporalLogic.
+Require Import TLC.Term.
 Require Import TLC.TupleMap.
 Require Import TLC.Variant.
 Require Import TLC.Word.
@@ -179,3 +183,22 @@ Definition ip_stack : stack ip_node ip_message (ir_event ip) (oi_event ip).
 Proof.
   apply ComponentStack, TupleMapCons; [apply FairLossLink | apply TupleMapNil].
 Defined.
+
+Lemma ip_ir_term (x : term ip ip_request) : term ip (ir_event ip).
+Proof. assumption. Qed.
+Lemma ip_oi_term (x : term ip ip_indication) : term ip (oi_event ip).
+Proof. assumption. Qed.
+
+Theorem IP_1 (n n' : term ip ip_node) (d : term ip ip_datagram) : [] |- ip, (
+  let h := (^ip_datagram_header <- d)%tlc in
+  let fl := (^ip_header_flow_label <- h)%tlc in
+  let nh := (^ip_header_next_header <- h)%tlc in
+  let sa := (^ip_header_src_address <- h)%tlc in
+  let p := (^ip_datagram_payload <- d)%tlc in
+  (on: n, when[]<-: ip_oi_term (^Receive_ip <- d)) <~
+  (exists: tc, exists: hl,
+    on: n', when[]->: ip_ir_term
+      (^Send_ip <- ^tc <- fl <- nh <- ^hl <- sa <- n <- p))
+).
+Proof.
+Admitted. (* TODO *)
