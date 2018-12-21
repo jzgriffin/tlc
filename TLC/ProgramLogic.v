@@ -1,6 +1,7 @@
 Require Import Coq.Lists.List.
 Require Import TLC.Component.
 Require Import TLC.Event.
+Require Import TLC.FairLossLink.
 Require Import TLC.Flexible.
 Require Import TLC.Orientation.
 Require Import TLC.StaticTerm.
@@ -10,6 +11,22 @@ Require Import TLC.Variant.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
+
+Lemma request_fl_or_events {C} i
+  (H : Vector.nth (or_events C) i = request_fl (node C) (message C))
+  (e : term C (request_fl (node C) (message C))) :
+  term C (Vector.nth (or_events C) i).
+Proof.
+  rewrite <- H in e; exact e.
+Qed.
+
+Lemma indication_fl_ii_events {C} i
+  (H : Vector.nth (ii_events C) i = indication_fl (node C) (message C))
+  (e : term C (indication_fl (node C) (message C))) :
+  term C (Vector.nth (ii_events C) i).
+Proof.
+  rewrite <- H in e; exact e.
+Qed.
 
 (* Basic axioms of the program logic *)
 Section program_basic.
@@ -76,9 +93,33 @@ Section program_basic.
     Correct <- ^n -> always: eventually: on: ^n,
       when[]~>
 
-  (* TODO: FLoss *)
-  (* TODO: FDup *)
-  (* TODO: NForge *)
+  | ProgramFLoss i
+    (Hor : Vector.nth (or_events C) i = request_fl (node C) (message C))
+    (Hii : Vector.nth (ii_events C) i = indication_fl (node C) (message C)) :
+    |- forall: n, forall: n', forall: m,
+    let or := (^(@Send_fl (node C) (message C)) <- ^n' <- ^m)%tlc in
+    let ii := (^(@Deliver_fl (node C) (message C)) <- ^n <- ^m)%tlc in
+    Correct <- ^n' ->
+      always: eventually: on: ^n, when->: request_fl_or_events Hor or ->
+      always: eventually: on: ^n', when<-: indication_fl_ii_events Hii ii
+
+  | ProgramFDup i
+    (Hor : Vector.nth (or_events C) i = request_fl (node C) (message C))
+    (Hii : Vector.nth (ii_events C) i = indication_fl (node C) (message C)) :
+    |- forall: n, forall: n', forall: m,
+    let or := (^(@Send_fl (node C) (message C)) <- ^n' <- ^m)%tlc in
+    let ii := (^(@Deliver_fl (node C) (message C)) <- ^n <- ^m)%tlc in
+    always: eventually: on: ^n', when<-: indication_fl_ii_events Hii ii ->
+    always: eventually: on: ^n, when->: request_fl_or_events Hor or
+
+  | ProgramNForge i
+    (Hor : Vector.nth (or_events C) i = request_fl (node C) (message C))
+    (Hii : Vector.nth (ii_events C) i = indication_fl (node C) (message C)) :
+    |- forall: n, forall: n', forall: m,
+    let or := (^(@Send_fl (node C) (message C)) <- ^n' <- ^m)%tlc in
+    let ii := (^(@Deliver_fl (node C) (message C)) <- ^n <- ^m)%tlc in
+    (on: ^n', when<-: indication_fl_ii_events Hii ii) =>>
+    eventuallyp: on: ^n, when->: request_fl_or_events Hor or
 
   where "|- A" := (forall X, program_logic X A).
 
