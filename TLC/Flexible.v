@@ -1,3 +1,4 @@
+Require Import Coq.Program.Equality.
 Require Import TLC.Component.
 Require Import TLC.Event.
 Require Import TLC.Location.
@@ -19,7 +20,7 @@ Inductive flexible {C} : Type -> Type :=
 
 Arguments flexible : clear implicits.
 
-Definition flexible_eq {C} T (x y : flexible C T) : bool :=
+Definition flexible_eqb {C} T (x y : flexible C T) : bool :=
   match x, y with
   | Fn, Fn => true
   | Fd, Fd => true
@@ -31,6 +32,12 @@ Definition flexible_eq {C} T (x y : flexible C T) : bool :=
   | Fs', Fs' => true
   | _, _ => false
   end.
+
+Lemma flexible_eq_dec {C} T (x y : flexible C T) : {x = y} + {x <> y}.
+Proof.
+  dependent induction x; dependent destruction y;
+  try now left; try now right.
+Admitted. (* TODO *)
 
 Definition flexible_denotation C : Type :=
   forall T, flexible C T -> T.
