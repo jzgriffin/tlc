@@ -1,4 +1,7 @@
 Require Import Coq.Lists.List.
+Require Import Coq.Logic.FinFun.
+Require Import Coq.Logic.JMeq.
+Require Import Coq.Program.Equality.
 Require Import Coq.Vectors.Vector.
 Require Import TLC.Component.
 Require Import TLC.Event.
@@ -38,6 +41,134 @@ Inductive term {C} : Type -> Type :=
 Arguments term : clear implicits.
 
 Coercion Flexible : flexible >-> term.
+
+Lemma term_flexible_inj {C} T : Injective (@Flexible C T).
+Proof.
+  unfold Injective; intros x y H; injection H; intros E.
+Admitted. (* TODO *)
+
+Lemma term_eq_dec {C} T (x y : term C T) : {x = y} + {x <> y}.
+Proof.
+  dependent induction x; dependent destruction y; try now right.
+  - destruct (flexible_eq_dec x x0); [subst x0; now left | right].
+    intros H. apply term_flexible_inj in H; apply (n H).
+  - admit.
+  - admit.
+  - destruct (IHx y); [subst y; now left | right].
+    intros H; injection H; apply n.
+  - admit.
+  - admit.
+  - admit.
+  - destruct (IHx1 y1).
+    + subst y1. destruct (IHx2 y2); [subst y2; now left | right].
+      intros H. injection H; apply n.
+    + right; intros H; injection H; intros _; apply n.
+  - admit.
+  - admit.
+  - admit.
+  - destruct (IHx1 y1).
+    + subst y1. destruct (IHx2 y2); [subst y2; now left | right].
+      intros H. injection H; apply n.
+    + right; intros H; injection H; intros _; apply n.
+  - admit.
+  - admit.
+  - admit.
+  - destruct (IHx1 y1).
+    + subst y1. destruct (IHx2 y2); [subst y2; now left | right].
+      intros H. injection H; apply n.
+    + right; intros H; injection H; intros _; apply n.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - destruct (IHx y); [subst y; now left | right].
+    intros H; injection H; apply n.
+  - admit.
+  - admit.
+  - admit.
+  - destruct (IHx y); [subst y; now left | right].
+    intros H; injection H; apply n.
+  - admit.
+  - admit.
+  - admit.
+  - destruct (IHx y); [subst y; now left | right].
+    intros H; injection H; apply n.
+  - admit.
+  - admit.
+  - admit.
+  - destruct (IHx y); [subst y; now left | right].
+    intros H; injection H; apply n.
+  - admit.
+  - admit.
+  - admit.
+  - destruct (IHx y); [subst y; now left | right].
+    intros H; injection H; apply n.
+  - admit.
+  - admit.
+  - admit.
+  - destruct (IHx y); [subst y; now left | right].
+    intros H; injection H; apply n.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - now left.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - now left.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - now left.
+Admitted. (* TODO *)
 
 Delimit Scope tlc_core_scope with tlc.
 Bind Scope tlc_core_scope with term.
