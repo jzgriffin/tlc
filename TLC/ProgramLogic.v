@@ -4,6 +4,7 @@ Require Import TLC.Event.
 Require Import TLC.FairLossLink.
 Require Import TLC.Flexible.
 Require Import TLC.Orientation.
+Require Import TLC.Restrict.
 Require Import TLC.StaticTerm.
 Require Import TLC.Term.
 Require Import TLC.Variant.
@@ -84,7 +85,8 @@ Section program_basic.
   | ProgramASelf : |-
     self: always: self
 
-  (* TODO: SInv *)
+  | ProgramSInv : |- forall: I,
+    (self: ^I) <-> restrict WhenSelf ^I
 
   | ProgramCSet : |- forall: n,
     Correct <- ^n <-> ^(@List.In _) <- ^n <- CorrectSet
