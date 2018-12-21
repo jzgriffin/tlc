@@ -16,6 +16,7 @@ Location.v
 Flexible.v
 StaticTerm.v
 Term.v
+Restrict.v
 TemporalLogic.v
 ProgramLogic.v
 SequentLogic.v
