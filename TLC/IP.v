@@ -8,7 +8,6 @@ Require Import TLC.Byte.
 Require Import TLC.Component.
 Require Import TLC.FairLossLink.
 Require Import TLC.ProgramLogic.
-Require Import TLC.Queue.
 Require Import TLC.SequentLogic.
 Require Import TLC.Stack.
 Require Import TLC.TemporalLogic.
