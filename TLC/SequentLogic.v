@@ -3,14 +3,14 @@ Require Import TLC.ProgramLogic.
 Require Import TLC.TemporalLogic.
 Require Import TLC.Term.
 
+Import ListNotations.
+
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 (* Rules of sequent logic *)
 Section sequent.
-
-  Import ListNotations.
 
   Reserved Notation "X |- A"
     (at level 80, no associativity).
@@ -109,3 +109,95 @@ Coercion SequentProgram : program_logic >-> sequent_logic.
 
 Notation "X |- C , A" := (sequent_logic C X A)
   (at level 80, no associativity).
+
+Fixpoint rewrite_entails {C} T (t t' : term C Prop)
+  (H : [] |- C, (t =>> t')) (s : term C T) : term C T.
+Proof.
+  destruct s eqn:eqns.
+  - exact s.
+  - exact s.
+  - apply (Application
+      (rewrite_entails _ _ t t' H t0_1)
+      (rewrite_entails _ _ t t' H t0_2)).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (Not (rewrite_entails _ _ t t' H t0)).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (And
+      (rewrite_entails _ _ t t' H t0_1)
+      (rewrite_entails _ _ t t' H t0_2)).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (Or
+      (rewrite_entails _ _ t t' H t0_1)
+      (rewrite_entails _ _ t t' H t0_2)).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (If
+      (rewrite_entails _ _ t t' H t0_1)
+      (rewrite_entails _ _ t t' H t0_2)).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (ForAll (fun x => rewrite_entails _ _ t t' H (A x))).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (Exists (fun x => rewrite_entails _ _ t t' H (A x))).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (Always' (rewrite_entails _ _ t t' H t0)).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (AlwaysPast' (rewrite_entails _ _ t t' H t0)).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (Eventually' (rewrite_entails _ _ t t' H t0)).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (EventuallyPast' (rewrite_entails _ _ t t' H t0)).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (Next (rewrite_entails _ _ t t' H t0)).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (Self (rewrite_entails _ _ t t' H t0)).
+  - destruct (term_eq_dec s t); [apply t' | ].
+    apply (Equals
+      (rewrite_entails _ _ t t' H t0_1)
+      (rewrite_entails _ _ t t' H t0_2)).
+  - exact s.
+  - exact s.
+  - exact s.
+Defined.
+
+Lemma rewrite_entails_correct {C} (t t' : term C Prop)
+  (H : [] |- C, (t =>> t')) (s : term C Prop) :
+  [] |- C, rewrite_entails H s <-> [] |- C, s.
+Proof.
+Admitted. (* TODO *)
+
+Ltac rewrite_entails H :=
+  apply (rewrite_entails_correct H); simpl.
+
+Definition cong_left {C} (t t' : term C Prop)
+  (H : [] |- C, (t <=> t')) : [] |- C, (t =>> t') :=
+  let H' : [ ] |- C, (t =>> t') :=
+  SequentCut H
+    (SequentAndL
+      (SequentExchange
+        (SequentThin (t' =>> t) (SequentAxiom (t =>> t'))))) in H'.
+
+Lemma rewrite_cong_left_correct {C} (t t' : term C Prop)
+  (H : [] |- C, (t <=> t')) (s : term C Prop) :
+  [] |- C, rewrite_entails (cong_left H) s <-> [] |- C, s.
+Proof.
+  apply rewrite_entails_correct.
+Qed.
+
+Ltac rewrite_cong_left H :=
+  apply (rewrite_cong_left_correct H); simpl.
+
+Definition cong_right {C} (t t' : term C Prop)
+  (H : [] |- C, (t <=> t')) : [] |- C, (t' =>> t) :=
+  let H' : [ ] |- C, (t' =>> t) :=
+  SequentCut H
+    (SequentAndL
+      (SequentThin (t =>> t') (SequentAxiom (t' =>> t)))) in H'.
+
+Lemma rewrite_cong_right_correct {C} (t t' : term C Prop)
+  (H : [] |- C, (t <=> t')) (s : term C Prop) :
+  [] |- C, rewrite_entails (cong_right H) s <-> [] |- C, s.
+Proof.
+  apply rewrite_entails_correct.
+Qed.
+
+Ltac rewrite_cong_right H :=
+  apply (rewrite_cong_right_correct H); simpl.
