@@ -14,9 +14,9 @@ install: $(COQ_MAKEFILE)
 
 clean: $(COQ_MAKEFILE)
 	$(MAKE) -f $(COQ_MAKEFILE) cleanall
-	rm -f $(COQ_MAKEFILE) $(COQ_MAKEFILE).conf
+	$(RM) $(COQ_MAKEFILE) $(COQ_MAKEFILE).conf
 
-$(COQ_MAKEFILE): _CoqProject
+$(COQ_MAKEFILE): $(COQ_PROJECT)
 	coq_makefile -f $(COQ_PROJECT) -o $(COQ_MAKEFILE)
 
 .PHONY: all default quick install clean

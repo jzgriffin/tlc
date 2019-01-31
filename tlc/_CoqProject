@@ -1,0 +1,18 @@
+-arg -w
+-arg -notation-overridden
+-R . tlc
+
+utility/functor.v
+utility/applicative.v
+utility/monad.v
+utility/seq.v
+utility/option.v
+utility/result.v
+utility/ascii.v
+utility/string.v
+utility/partial_map.v
+utility/set.v
+compute/constructor.v
+compute/function.v
+compute/variable.v
+compute/expression.v
