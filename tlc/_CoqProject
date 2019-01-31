@@ -18,3 +18,4 @@ compute/variable.v
 compute/expression.v
 assert/predicate.v
 assert/assertion.v
+logic/derives.v
