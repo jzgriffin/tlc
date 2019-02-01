@@ -15,6 +15,7 @@ utility/set.v
 compute/constructor.v
 compute/function.v
 compute/variable.v
+compute/pattern.v
 compute/expression.v
 assert/predicate.v
 assert/assertion.v

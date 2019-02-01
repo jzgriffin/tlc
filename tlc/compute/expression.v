@@ -1,4 +1,3 @@
-Require Import Coq.funind.Recdef.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -6,6 +5,7 @@ Require Import mathcomp.ssreflect.ssreflect.
 Require Import mathcomp.ssreflect.ssrnat.
 Require Import tlc.compute.constructor.
 Require Import tlc.compute.function.
+Require Import tlc.compute.pattern.
 Require Import tlc.compute.variable.
 Require Import tlc.utility.monad.
 Require Import tlc.utility.option.
@@ -24,17 +24,29 @@ Inductive expression : Type :=
 | EVariable : variable -> expression
 | EApplication : expression -> expression -> expression
 | EAbstraction : variable -> expression -> expression
-| ELet : variable -> expression -> expression -> expression.
+| ELet : pattern -> expression -> expression -> expression
+| EMatch : expression -> matchings -> expression
+with matchings : Type :=
+| MSNil : matchings
+| MSCons : matching -> matchings -> matchings
+with matching : Type :=
+| M : pattern -> expression -> matching.
 
-(* Constructor coercions *)
+(* Expression constructor coercions *)
 Coercion EConstructor : constructor >-> expression.
 Coercion EFunction : function >-> expression.
 Coercion EVariable : variable >-> expression.
 
-(* Notation scope *)
+(* Expression notation scope *)
 Delimit Scope expression_scope with e.
 Bind Scope expression_scope with expression.
 Notation "{e: e }" := (e%e) (at level 0, e at level 99, no associativity,
+  only parsing).
+
+(* Matching notation scope *)
+Delimit Scope matching_scope with m.
+Bind Scope matching_scope with matching.
+Notation "{m: m }" := (m%m) (at level 0, m at level 99, no associativity,
   only parsing).
 
 (* Expression constructor notations *)
@@ -52,8 +64,12 @@ Notation "ef $ ea" := (EApplication ef ea)
 Notation "\ v , eb" := (EAbstraction v eb)
   (at level 20, right associativity, eb at level 99, format "'\' v ','  eb")
   : expression_scope.
-Notation "'let:' v := ev 'in' eb" := (ELet v ev eb)
-  (at level 20, right associativity, ev at level 99, eb at level 99)
+Notation "'let:' p := ep 'in' eb" := (ELet p ep eb)
+  (at level 20, right associativity, ep at level 99, eb at level 99)
+  : expression_scope.
+Notation "'match:' ec 'with' m1 | .. | mn 'end'" :=
+  (EMatch ec (MSCons m1%m (.. (MSCons mn%m MSNil) ..)))
+  (at level 20, no associativity, ec at level 99, m1, mn at level 99)
   : expression_scope.
 
 (* Constructor expression notations *)
@@ -71,6 +87,10 @@ Notation "e \in es" := {e: FMember $ e $ es} : expression_scope.
 Notation "el + er" := {e: FAdd $ el $ er} : expression_scope.
 Notation "esl \union esr" := {e: FUnion $ esl $ esr}
   (at level 50, left associativity) : expression_scope.
+
+(* Matching constructor notations *)
+Notation "p :=> e" := (M p%p e%e)
+  (at level 0, e at level 0, no associativity) : matching_scope.
 
 (* Boolean conversion *)
 Definition EBoolean b :=
@@ -113,46 +133,94 @@ Section eq.
     | EAbstraction vl ebl, EAbstraction vr ebr =>
       (vl == vr) && expression_eq ebl ebr
     | EAbstraction _ _, _ => false
-    | ELet vl evl ebl, ELet vr evr ebr =>
-      (vl == vr) && expression_eq evl evr && expression_eq ebl ebr
+    | ELet pl epl ebl, ELet pr epr ebr =>
+      (pl == pr) && expression_eq epl epr && expression_eq ebl ebr
     | ELet _ _ _, _ => false
+    | EMatch ecl msl, EMatch ecr msr =>
+      expression_eq ecl ecr && matchings_eq msl msr
+    | EMatch _ _, _ => false
+    end
+  with matchings_eq msl msr :=
+    match msl, msr with
+    | MSNil, MSNil => true
+    | MSCons ml msl, MSCons mr msr =>
+      matching_eq ml mr && matchings_eq msl msr
+    | _, _ => false
+    end
+  with matching_eq ml mr :=
+    match ml, mr with
+    | M pl el, M pr er => (pl == pr) && expression_eq el er
     end.
 
   (* Boolean equality reflection *)
-  Lemma expression_eqP : Equality.axiom expression_eq.
+  Fixpoint expression_eqP el er : reflect (el = er) (expression_eq el er)
+  with matchings_eqP msl msr : reflect (msl = msr) (matchings_eq msl msr)
+  with matching_eqP ml mr : reflect (ml = mr) (matching_eq ml mr).
   Proof.
-    elim=>
-      [cl | fl | vl | efl IHef eal IHea | vl ebl IHeb | vl evl IHev ebl IHeb]
-      [cr | fr | vr | efr ear | vr ebr | vr evr ebr] //=; try by constructor.
+    (* Expression *)
+    elim: el er =>
+      [cl | fl | vl | efl IHef eal IHea | vl ebl IHeb | pl epl IHep ebl IHeb
+        | ecl IHec msl]
+      [cr | fr | vr | efr ear | vr ebr | pr epr ebr | ecr msr] //=;
+      try by constructor.
     - case H: (cl == cr); move/eqP: H => H; constructor; first by rewrite H.
       by move=> [].
     - case H: (fl == fr); move/eqP: H => H; constructor; first by rewrite H.
       by move=> [].
     - case H: (vl == vr); move/eqP: H => H; constructor; first by rewrite H.
       by move=> [].
-    - case Hef: (expression_eq efl efr); move/IHef: Hef => Hef //=; subst;
+    - case H: (expression_eq efl efr); move/IHef: H => H //=; subst;
         last by constructor; move=> [].
-      case Hea: (expression_eq eal ear); move/IHea: Hea => Hea //=; subst;
-        last by constructor; move=> [].
-      by constructor.
-    - case Hv: (vl == vr); move/eqP: Hv => Hv //=; subst;
-        last by constructor; move=> [].
-      case Heb: (expression_eq ebl ebr); move/IHeb: Heb => Heb //=; subst;
+      case H: (expression_eq eal ear); move/IHea: H => H //=; subst;
         last by constructor; move=> [].
       by constructor.
-    - case Hv: (vl == vr); move/eqP: Hv => Hv //=; subst;
+    - case H: (vl == vr); move/eqP: H => H //=; subst;
         last by constructor; move=> [].
-      case Hev: (expression_eq evl evr); move/IHev: Hev => Hev //=; subst;
-        last by constructor; move=> [].
-      case Heb: (expression_eq ebl ebr); move/IHeb: Heb => Heb //=; subst;
+      case H: (expression_eq ebl ebr); move/IHeb: H => H //=; subst;
         last by constructor; move=> [].
       by constructor.
+    - case H: (pl == pr); move/eqP: H => H //=; subst;
+        last by constructor; move=> [].
+      case H: (expression_eq epl epr); move/IHep: H => H //=; subst;
+        last by constructor; move=> [].
+      case H: (expression_eq ebl ebr); move/IHeb: H => H //=; subst;
+        last by constructor; move=> [].
+      by constructor.
+    - case H: (expression_eq ecl ecr); move/IHec: H => H //=; subst;
+        last by constructor; move=> [].
+      case H: (matchings_eq msl msr); move/matchings_eqP: H => H //=;
+        subst; last by constructor; move=> [].
+      by constructor.
+    (* Matchings *)
+    elim: msl msr => [| ml msl IHms] [| mr msr] //=; try by constructor.
+    - case H: (matching_eq ml mr); move/matching_eqP: H => H //=; subst;
+        last by constructor; move=> [].
+      case H: (matchings_eq msl msr); move/IHms: H => H //=; subst;
+        last by constructor; move=> [].
+      by constructor.
+    (* Matching *)
+    case: ml mr => [pl el] [pr er] //=; try by constructor.
+    case H: (pl == pr); move/eqP: H => H //=; subst;
+      last by constructor; move=> [].
+    case H: (expression_eq el er); move/expression_eqP: H => H //=; subst;
+      last by constructor; move=> [].
+    by constructor.
   Qed.
 
-  (* EqType canonical structures *)
+  (* EqType canonical structures for expression *)
   Canonical Structure expression_eqMixin := EqMixin expression_eqP.
   Canonical Structure expression_eqType :=
     Eval hnf in EqType expression expression_eqMixin.
+
+  (* EqType canonical structures for matchings *)
+  Canonical Structure matchings_eqMixin := EqMixin matchings_eqP.
+  Canonical Structure matchings_eqType :=
+    Eval hnf in EqType matchings matchings_eqMixin.
+
+  (* EqType canonical structures for matching *)
+  Canonical Structure matching_eqMixin := EqMixin matching_eqP.
+  Canonical Structure matching_eqType :=
+    Eval hnf in EqType matching matching_eqMixin.
 
 End eq.
 
@@ -165,10 +233,20 @@ Fixpoint height e :=
   | EAbstraction _ e => height e
   | EApplication e1 e2
   | ELet _ e1 e2 => maxn (height e1) (height e2)
-  end.+1.
+  | EMatch ec ms => maxn (height ec) (msheight ms)
+  end.+1
+with msheight ms :=
+  match ms with
+  | MSNil => 0
+  | MSCons m ms => maxn (mheight m) (msheight ms)
+  end
+with mheight m :=
+  match m with
+  | M p e => height e
+  end.
 
 (* Free variables within an expression *)
-Local Fixpoint fv e : set [eqType of variable] :=
+Fixpoint fv e : set [eqType of variable] :=
   match e with
   | EConstructor _
   | EFunction _ => [::]
@@ -176,67 +254,23 @@ Local Fixpoint fv e : set [eqType of variable] :=
   | EApplication e1 e2
   | ELet _ e1 e2 => fv e1 {+} fv e2
   | EAbstraction x e => rem x (fv e)
+  | EMatch e ms => fv e {+} msfv ms
+  end
+with msfv ms : set [eqType of variable] :=
+  match ms with
+  | MSNil => [::]
+  | MSCons m ms => mfv m {+} msfv ms
+  end
+with mfv m : set [eqType of variable] :=
+  match m with
+  | M p e => fv e {-} pv p
   end.
 
-(* Changes the name of a variable within an expression *)
-Fixpoint change_variable x x' e :=
-  match e with
-  | EConstructor _
-  | EFunction _ => e
-  | EVariable y => if x == y then x' else y
-  | EApplication ef ea =>
-    EApplication (change_variable x x' ef) (change_variable x x' ea)
-  | EAbstraction y eb =>
-    if x == y then e else EAbstraction y (change_variable x x' eb)
-  | ELet y ex eb =>
-    if x == y then ELet y (change_variable x x' ex) eb
-    else ELet y (change_variable x x' ex) (change_variable x x' eb)
-  end.
+(* Decision of closed form *)
+Definition is_closed e := nilp (fv e).
 
-Lemma height_change_variable x x' e :
-  height (change_variable x x' e) = height e.
-Proof.
-  elim: e =>
-    [c | f | v | e1 IHe1 e2 IHe2 | v e1 IHe1 | v e1 IHe1 e2 IHe2] //=;
-    (try by rewrite IHe1 IHe2); case (x == v) => //=;
-    (try by rewrite IHe1); (try by rewrite IHe1 IHe2).
-Qed.
-
-(* Capture-avoiding variable-to-expression substitution *)
-Function substitute x e' e {measure height e} :=
-  match e with
-  | EConstructor _
-  | EFunction _ => e
-  | EVariable y => if x == y then e' else e
-  | EApplication ef ea =>
-    EApplication (substitute x e' ef) (substitute x e' ea)
-  | EAbstraction y eb =>
-    if x == y then e
-    else
-      if y \notin fv e' then EAbstraction y (substitute x e' eb)
-      else
-        let y' := fresh_variable y (fv e ++ fv e') in
-        EAbstraction y' (substitute x e' (change_variable y y' eb))
-  | ELet y ey eb => ELet y (substitute x e' ey) (substitute x e' eb)
-  end.
-Proof.
-  all: move=> *; apply/ltP=> //=; rewrite ltnS;
-    try apply leq_maxr; try apply leq_maxl.
-  by rewrite height_change_variable //=.
-Defined.
-
-(* Decision of normal form *)
-Fixpoint is_normal e :=
-  match e with
-  | EConstructor _ => true
-  | EFunction _ => true
-  | EVariable _ => false
-  | EApplication ef ea =>
-    if ef is EAbstraction _ _ then false
-    else is_normal ef && is_normal ea
-  | EAbstraction _ eb => true
-  | ELet _ _ _ => false
-  end.
+(* Transformation to closed form *)
+Definition close e := foldr (fun v e => {e: \v, e}) e (fv e).
 
 (* Expression evaluation environment *)
 Definition environment := partial_map [eqType of variable] expression.
@@ -247,7 +281,8 @@ Inductive evaluation_error : Type :=
 | EEBoolean : evaluation_error
 | EENatural : evaluation_error
 | EEList : evaluation_error
-| EEMap : evaluation_error.
+| EEMap : evaluation_error
+| EEMatch : evaluation_error.
 
 (* Evaluation result *)
 Definition evaluation_result := result evaluation_error.
@@ -276,6 +311,28 @@ Fixpoint lift_list xs :=
   | _ => Error EEList
   end.
 
+(* Matchings lifting *)
+Fixpoint lift_matchings ms :=
+  match ms with
+  | MSNil => [::]
+  | MSCons m ms => m :: lift_matchings ms
+  end.
+
+(* Pattern matching *)
+Fixpoint match_pattern e p : evaluation_result environment :=
+  match p with
+  | PConstructor c =>
+    if e is EConstructor c then pure [::]
+    else Error EEMatch
+  | PVariable v => pure [::] {= v := e}
+  | PApplication pl pr =>
+    if e is EApplication el er then
+      El <- match_pattern el pl;
+      Er <- match_pattern er pr;
+      pure (pm_union El Er)
+    else Error EEMatch
+  end.
+
 (* Expression evaluation *)
 Fixpoint evaluate' fuel (E : environment) e :=
   if fuel is S fuel then
@@ -289,7 +346,7 @@ Fixpoint evaluate' fuel (E : environment) e :=
       if ef is EAbstraction v eb then evaluate' fuel E{= v := ea} eb
       else
         let e := EApplication ef ea in
-        if is_normal e then
+        if is_closed e then
           (* External function evaluation *)
           match e with
           (* Any *)
@@ -320,9 +377,17 @@ Fixpoint evaluate' fuel (E : environment) e :=
     | EAbstraction v eb =>
       eb <- evaluate' fuel E{-v} eb;
       pure (EAbstraction v eb)
-    | ELet v ev eb =>
-      ev <- evaluate' fuel E ev;
-      evaluate' fuel E{= v := ev} eb
+    | ELet p ep eb =>
+      ep <- evaluate' fuel E ep;
+      Em <- match_pattern ep p;
+      evaluate' fuel (pm_union Em E) eb
+    | EMatch ec ms =>
+      ec <- evaluate' fuel E ec;
+      foldr (fun '(M p e) r =>
+        if r is Error _ then
+          Em <- match_pattern ec p;
+          evaluate' fuel (pm_union Em E) e
+        else r) (Error EEMatch) (lift_matchings ms)
     end
   else Error EEFuel.
 
