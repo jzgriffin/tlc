@@ -21,6 +21,7 @@ compute/expression.v
 compute/all_compute.v
 assert/assertion.v
 assert/all_assert.v
+logic/context.v
 logic/derives.v
 logic/all_logic.v
 all.v
