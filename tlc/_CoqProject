@@ -12,11 +12,16 @@ utility/ascii.v
 utility/string.v
 utility/partial_map.v
 utility/set.v
+utility/all_utility.v
 compute/constructor.v
 compute/function.v
 compute/variable.v
 compute/pattern.v
 compute/expression.v
+compute/all_compute.v
 assert/predicate.v
 assert/assertion.v
+assert/all_assert.v
 logic/derives.v
+logic/all_logic.v
+all.v
