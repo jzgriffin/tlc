@@ -19,7 +19,6 @@ compute/variable.v
 compute/pattern.v
 compute/expression.v
 compute/all_compute.v
-assert/predicate.v
 assert/assertion.v
 assert/all_assert.v
 logic/derives.v
