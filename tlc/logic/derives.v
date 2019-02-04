@@ -84,3 +84,5 @@ Inductive derives : context -> assertion -> Prop :=
   C |- A[A/ [:: (v, t)] ] ->
   C |- {A: exists: v, A}
 where "C |- A" := (derives C A).
+
+Hint Constructors derives.
