@@ -1,7 +1,9 @@
+Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
+Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
-Require Import tlc.assert.all_assert.
-Require Import tlc.compute.all_compute.
+Require Import tlc.semantics.all_semantics.
+Require Import tlc.syntax.all_syntax.
 Require Import tlc.logic.context.
 Require Import tlc.utility.result.
 
@@ -9,21 +11,20 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Reserved Notation "C |- A" (at level 70, no associativity).
-
 (* Basic syntactic rules and axioms *)
+Reserved Notation "C |- A" (at level 70, no associativity).
 Inductive derives : context -> assertion -> Prop :=
 (* Assertion logic *)
 | DATrue C :
   C |- CTrue
-| DAGoal C e e' :
-  evaluate (context_environment C) e = Value e' ->
-  C |- e' ->
-  C |- e
-| DAHypothesis C e e' A :
-  evaluate (context_environment C) e = Value e' ->
-  {A: #e'} :: C |- A ->
-  {A: #e} :: C |- A
+| DAHypothesis C t t' A :
+  [[ t[t/context_environment C] ]] = Success t' ->
+  {A: #t'} :: C |- A ->
+  {A: #t} :: C |- A
+| DAConclusion C t t' :
+  [[ t[t/context_environment C] ]] = Success t' ->
+  C |- t' ->
+  C |- t
 (* Sequent logic *)
 | DSAxiom C A :
   A :: C |- A
@@ -70,4 +71,16 @@ Inductive derives : context -> assertion -> Prop :=
 | DSIfR C A1 A2 :
   A1 :: C |- A2 ->
   C |- {A: A1 -> A2}
+| DSForAllL C v t A1 A2 :
+  A1[A/ [:: (v, t)] ] :: C |- A2 ->
+  {A: forall: v, A1} :: C |- A2
+| DSForAllR C v t A :
+  C |- A[A/ [:: (v, t)] ] ->
+  C |- {A: forall: v, A}
+| DSExistsL C v t A1 A2 :
+  A1[A/ [:: (v, t)] ] :: C |- A2 ->
+  {A: exists: v, A1} :: C |- A2
+| DSExistsR C v t A :
+  C |- A[A/ [:: (v, t)] ] ->
+  C |- {A: exists: v, A}
 where "C |- A" := (derives C A).

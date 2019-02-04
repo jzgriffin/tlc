@@ -6,17 +6,19 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Function type *)
-Inductive function : Type :=
-(* Any *)
-| FEqual : function
+(* Externally implemented function terms *)
+Inductive function :=
+(* Generic *)
+| FEqual (* equal x y *)
+(* Boolean *)
+| FNot (* not x *)
+| FOr (* or x y *)
 (* Natural *)
-| FAdd : function
+| FAdd (* add x y *)
 (* List *)
-| FMember : function
-| FCount : function
-| FUnion : function
-| FMap : function.
+| FCount (* count x xs *)
+| FUnion (* union xs ys *)
+| FMap (* map f xs *).
 
 (* Equality *)
 Section eq.
@@ -24,12 +26,18 @@ Section eq.
   (* Boolean equality *)
   Definition function_eq fl fr :=
     match fl, fr with
+    (* Generic *)
     | FEqual, FEqual => true
     | FEqual, _ => false
+    (* Boolean *)
+    | FNot, FNot => true
+    | FNot, _ => false
+    | FOr, FOr => true
+    | FOr, _ => false
+    (* Natural *)
     | FAdd, FAdd => true
     | FAdd, _ => false
-    | FMember, FMember => true
-    | FMember, _ => false
+    (* List *)
     | FCount, FCount => true
     | FCount, _ => false
     | FUnion, FUnion => true

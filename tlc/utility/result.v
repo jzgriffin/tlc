@@ -13,15 +13,14 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 (* Result type for computations that may fail *)
-Inductive result error value : Type :=
-| Error : error -> result error value
-| Value : value -> result error value.
+Inductive result {error value} :=
+| Failure (e : error)
+| Success (x : value).
 
-Arguments Error {error value}.
-Arguments Value {error value}.
+Arguments result : clear implicits.
 
 (* Equality *)
-Section eq.
+Section result_eq.
 
   Variable error : eqType.
   Variable value : eqType.
@@ -29,16 +28,16 @@ Section eq.
   (* Boolean equality *)
   Definition result_eq (rl rr : result error value) :=
     match rl, rr with
-    | Error el, Error er => el == er
-    | Error _, _ => false
-    | Value vl, Value vr => vl == vr
-    | Value _, _ => false
+    | Failure el, Failure er => el == er
+    | Failure _, _ => false
+    | Success xl, Success xr => xl == xr
+    | Success _, _ => false
     end.
 
   (* Boolean equality reflection *)
   Lemma result_eqP : Equality.axiom result_eq.
   Proof.
-    case=> [el | vl] [er | vr] /=; (try by constructor);
+    case=> [el | xl] [er | xr] /=; (try by constructor);
       try by apply/(iffP idP); [by move/eqP <- | by move=> [] => H; apply/eqP].
   Qed.
 
@@ -47,14 +46,14 @@ Section eq.
   Canonical Structure result_eqType :=
     Eval hnf in EqType (result error value) result_eqMixin.
 
-End eq.
+End result_eq.
 
 (* Functor instance for result *)
 Instance result_functor error : Functor (result error) := {
   map _ _ f r :=
     match r with
-    | Error e => Error e
-    | Value v => Value (f v)
+    | Failure e => Failure e
+    | Success x => Success (f x)
     end;
 }.
 Proof.
@@ -64,26 +63,26 @@ Defined.
 
 (* Applicative instance for result *)
 Instance result_applicative error : Applicative (result error) := {
-  pure := fun _ v => Value v;
+  pure := fun _ x => Success x;
   apply _ _ f x :=
     match f with
-    | Error e => Error e
-    | Value v => v <$> x
+    | Failure e => Failure e
+    | Success f => f <$> x
     end;
 }.
 Proof.
   - by move=> a; rewrite /left_id; case=> //=.
   - by [].
   - by [].
-  - by move=> a b c; case=> [u | su] [v | sv] [w | sw] //=.
+  - by move=> a b c; case=> [eu | fu] [ev | fv] [ew | fw] //=.
 Defined.
 
 (* Monad instance for result *)
 Instance result_monad error : Monad (result error) _ := {
   bind _ _ x f :=
     match x with
-    | Error e => Error e
-    | Value v => f v
+    | Failure e => Failure e
+    | Success x => f x
     end;
 }.
 Proof.
@@ -96,6 +95,6 @@ Defined.
 Fixpoint flatten_results error value (rs : seq (result error value)) :=
   match rs with
   | [::] => pure [::]
-  | Value v :: rs => rs <- flatten_results rs; pure (v :: rs)
-  | Error e :: _ => Error e
+  | Failure e :: _ => Failure e
+  | Success x :: rs => rs <- flatten_results rs; pure (x :: rs)
   end.

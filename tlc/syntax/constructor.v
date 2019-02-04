@@ -6,21 +6,24 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Constructor type *)
-Inductive constructor : Type :=
+(* Constructors for value terms *)
+Inductive constructor :=
 (* Unit *)
-| CUnit : constructor
-(* Pair *)
-| CPair : constructor
+| CUnit
+(* Product *)
+| CPair
+(* Sum *)
+| CLeft
+| CRight
 (* Boolean *)
-| CTrue : constructor
-| CFalse : constructor
+| CTrue
+| CFalse
 (* Natural *)
-| CZero : constructor
-| CSucc : constructor
+| CZero
+| CSucc
 (* List *)
-| CNil : constructor
-| CCons : constructor.
+| CNil
+| CCons.
 
 (* Equality *)
 Section eq.
@@ -28,18 +31,28 @@ Section eq.
   (* Boolean equality *)
   Definition constructor_eq cl cr :=
     match cl, cr with
+    (* Unit *)
     | CUnit, CUnit => true
     | CUnit, _ => false
+    (* Product *)
     | CPair, CPair => true
     | CPair, _ => false
+    (* Sum *)
+    | CLeft, CLeft => true
+    | CLeft, _ => false
+    | CRight, CRight => true
+    | CRight, _ => false
+    (* Boolean *)
     | CTrue, CTrue => true
     | CTrue, _ => false
     | CFalse, CFalse => true
     | CFalse, _ => false
+    (* Natural *)
     | CZero, CZero => true
     | CZero, _ => false
     | CSucc, CSucc => true
     | CSucc, _ => false
+    (* List *)
     | CNil, CNil => true
     | CNil, _ => false
     | CCons, CCons => true
