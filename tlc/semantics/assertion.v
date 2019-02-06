@@ -26,6 +26,9 @@ Fixpoint substitute_assertion (E : environment) A :=
   | ANot A => ANot A[A/E]
   | AOr Al Ar => AOr Al[A/E] Ar[A/E]
   | AForAll v A => A[A/E{-v}]
+  | AUntil' Al Ar => AUntil' Al[A/E] Ar[A/E]
+  | ASince' Al Ar => ASince' Al[A/E] Ar[A/E]
+  | ASelf A => ASelf A[A/E]
   end
 where "A [A/ E ]" := (substitute_assertion E A).
 
@@ -36,4 +39,7 @@ Fixpoint assertion_free A :=
   | ANot A => assertion_free A
   | AOr Al Ar => assertion_free Al \union assertion_free Ar
   | AForAll v A => rem v (assertion_free A)
+  | AUntil' Al Ar => assertion_free Al \union assertion_free Ar
+  | ASince' Al Ar => assertion_free Al \union assertion_free Ar
+  | ASelf A => assertion_free A
   end.
