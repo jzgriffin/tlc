@@ -18,6 +18,6 @@ Fixpoint context_environment (C : context) : environment :=
   match C with
   | [::] => [::]
   | A :: C =>
-    if A is {t: TVariable v = t} then (context_environment C){= v := t}
+    if A is {A: TVariable v = t} then (context_environment C){= v := t}
     else context_environment C
   end.

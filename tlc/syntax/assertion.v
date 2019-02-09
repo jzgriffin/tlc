@@ -1,7 +1,9 @@
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
+Require Import tlc.syntax.constructor.
 Require Import tlc.syntax.parameter.
+Require Import tlc.syntax.predicate.
 Require Import tlc.syntax.term.
 Require Import tlc.syntax.variable.
 
@@ -11,7 +13,7 @@ Unset Printing Implicit Defensive.
 
 (* Forms of logical assertions *)
 Inductive assertion :=
-| APredicate (t : term)
+| APredicate (p : predicate)
 | ANot (A : assertion)
 | AOr (Al Ar : assertion)
 | AForAll (v : variable) (A : assertion)
@@ -25,7 +27,7 @@ Section eq.
   (* Boolean equality *)
   Fixpoint assertion_eq Al Ar :=
     match Al, Ar with
-    | APredicate tl, APredicate tr => tl == tr
+    | APredicate pl, APredicate pr => pl == pr
     | APredicate _, _ => false
     | ANot Al, ANot Ar => assertion_eq Al Ar
     | ANot _, _ => false
@@ -48,10 +50,10 @@ Section eq.
   (* Boolean equality reflection *)
   Lemma assertion_eqP : Equality.axiom assertion_eq.
   Proof.
-    elim=> [tl | Al IHA | All IHAl Arl IHAr | vl Al IHA | All IHAl Arl IHAr
-      | All IHAl Arl IHAr | Al IHA] [tr | Ar | Alr Arr | vr Ar | Alr Arr
+    elim=> [pl | Al IHA | All IHAl Arl IHAr | vl Al IHA | All IHAl Arl IHAr
+      | All IHAl Arl IHAr | Al IHA] [pr | Ar | Alr Arr | vr Ar | Alr Arr
       | Alr Arr | Ar] //=; try by constructor.
-    - case H: (tl == tr); move/eqP: H => H //=; subst;
+    - case H: (pl == pr); move/eqP: H => H //=; subst;
         last by constructor; move=> [].
       by constructor.
     - case H: (assertion_eq Al Ar); move/IHA: H => H //=; subst;
@@ -89,9 +91,6 @@ Section eq.
 
 End eq.
 
-(* Constructor coercions *)
-Coercion APredicate : term >-> assertion.
-
 (* Notation scope *)
 Bind Scope assertion_scope with assertion.
 Delimit Scope assertion_scope with assertion.
@@ -99,8 +98,7 @@ Notation "{A: A }" := (A%assertion)
   (at level 0, A at level 100, no associativity, only parsing).
 
 (* Constructor notations *)
-Notation "# t" := (APredicate t)
-  (at level 0, no associativity, format "'#' t") : assertion_scope.
+Notation "# p" := (APredicate p) : assertion_scope.
 Notation "~ A" := (ANot A) : assertion_scope.
 Notation "Al \/ Ar" := (AOr Al Ar) : assertion_scope.
 Notation "forall: v , A" := (AForAll v A)
@@ -113,87 +111,141 @@ Notation "Al since^ Ar" := (ASince' Al Ar)
 Notation "'self' A" := (ASelf A)
   (at level 60, right associativity) : assertion_scope.
 
+(* Predicate notations *)
+Notation AFalse := (APredicate PFalse).
+Notation AEqual tl tr := (APredicate (PEqual tl tr)).
+Notation "tl = tr" := (AEqual tl tr) : assertion_scope.
+Notation AIn t ts := (APredicate (PIn t ts)).
+Notation "t \in ts" := (AIn t ts) : assertion_scope.
+Notation ACorrect tn := (APredicate (PCorrect tn)).
+Notation "'correct' tn" := (ACorrect tn)
+  (at level 0, no associativity) : assertion_scope.
+
+(* Derived predicate notations *)
+Notation ATrue := (ANot AFalse).
+Notation ANotEqual tl tr := (ANot (AEqual tl tr)).
+Notation "tl <> tr" := (ANotEqual tl tr) : assertion_scope.
+Notation ANotIn t ts := (ANot (AIn t ts)).
+Notation "t \notin ts" := (ANotIn t ts) : assertion_scope.
+
 (* Derived propositional operators *)
-Definition AAnd Al Ar := {A: ~(~Al \/ ~Ar)}.
+Notation AAnd Al Ar := (ANot (AOr (ANot Al) (ANot Ar))).
 Notation "Al /\ Ar" := (AAnd Al Ar) : assertion_scope.
-Definition AIf Al Ar := {A: ~Al \/ Ar}.
+Notation AIf Al Ar := (AOr (ANot Al) Ar).
 Notation "Al -> Ar" := (AIf Al Ar) : assertion_scope.
-Definition AIff Al Ar := {A: (Al -> Ar) /\ (Ar -> Al)}.
+Notation AIff Al Ar := (AAnd (AIf Al Ar) (AIf Ar Al)).
 Notation "Al <-> Ar" := (AIff Al Ar) : assertion_scope.
-Definition AExists v A := {A: ~forall: v, ~A}.
+Notation AExists v A := (ANot (AForAll v (ANot A))).
 Notation "exists: v , A" := (AExists v A)
   (at level 65, v at level 99, A at level 200, right associativity)
   : assertion_scope.
 
 (* Derived strict and immediate future temporal operators *)
-Definition AEventually' A := {A: true until^ A}.
+Notation AEventually' A := (AUntil' ATrue A).
 Notation "eventually^ A" := (AEventually' A)
   (at level 60, right associativity) : assertion_scope.
-Definition AAlways' A := {A: ~eventually^ ~A}.
+Notation AAlways' A := (ANot (AEventually' (ANot A))).
 Notation "always^ A" := (AAlways' A)
   (at level 60, right associativity) : assertion_scope.
-Definition AUnless' Al Ar := {A: always^ Al \/ (Al until^ Ar)}.
+Notation AUnless' Al Ar := (AOr (AAlways' Al) (AUntil' Al Ar)).
 Notation "Al unless^ Ar" := (AUnless' Al Ar)
   (at level 60, right associativity) : assertion_scope.
-Definition ANext A := {A: false until^ A}.
+Notation ANext A := (AUntil' AFalse A).
 Notation "'next' A" := (ANext A)
   (at level 60, right associativity) : assertion_scope.
 
 (* Derived strict and immediate past temporal operators *)
-Definition AEventuallyP' A := {A: true since^ A}.
+Notation AEventuallyP' A := (ASince' ATrue A).
 Notation "eventuallyp^ A" := (AEventuallyP' A)
   (at level 60, right associativity) : assertion_scope.
-Definition AAlwaysP' A := {A: ~eventuallyp^ ~A}.
+Notation AAlwaysP' A := (ANot (AEventuallyP' (ANot A))).
 Notation "alwaysp^ A" := (AAlwaysP' A)
   (at level 60, right associativity) : assertion_scope.
-Definition ABackTo' Al Ar := {A: alwaysp^ Al \/ (Al since^ Ar)}.
+Notation ABackTo' Al Ar := (AOr (AAlwaysP' Al) (ASince' Al Ar)).
 Notation "Al backto^ Ar" := (ABackTo' Al Ar)
   (at level 60, right associativity) : assertion_scope.
-Definition APrevious A := {A: false since^ A}.
+Notation APrevious A := (ASince' AFalse A).
 Notation "'previous' A" := (APrevious A)
   (at level 60, right associativity) : assertion_scope.
-Definition APrevious' A := {A: ~previous ~A}.
+Notation APrevious' A := (ANot (APrevious (ANot A))).
 Notation "previous^ A" := (APrevious' A)
   (at level 60, right associativity) : assertion_scope.
 
 (* Derived reflexive future temporal operators *)
-Definition AEventually A := {A: A \/ eventually^ A}.
+Notation AEventually A := (AOr A (AEventually' A)).
 Notation "'eventually' A" := (AEventually A)
   (at level 60, right associativity) : assertion_scope.
-Definition AAlways A := {A: A /\ always^ A}.
+Notation AAlways A := (AAnd A (AAlways' A)).
 Notation "'always' A" := (AAlways A)
   (at level 60, right associativity) : assertion_scope.
-Definition AUntil Al Ar := {A: Ar \/ (Al /\ (Al until^ Ar))}.
+Notation AUntil Al Ar := (AOr Ar (AAnd Al (AUntil' Al Ar))).
 Notation "Al 'until' Ar" := (AUntil Al Ar)
   (at level 60, right associativity) : assertion_scope.
-Definition AUnless Al Ar := {A: Ar \/ (Al /\ (Al unless^ Ar))}.
+Notation AUnless Al Ar := (AOr Ar (AAnd Al (AUnless' Al Ar))).
 Notation "Al 'unless' Ar" := (AUnless Al Ar)
   (at level 60, right associativity) : assertion_scope.
 
 (* Derived reflexive past temporal operators *)
-Definition AEventuallyP A := {A: A \/ eventuallyp^ A}.
+Notation AEventuallyP A := (AOr A (AEventuallyP' A)).
 Notation "'eventuallyp' A" := (AEventuallyP A)
   (at level 60, right associativity) : assertion_scope.
-Definition AAlwaysP A := {A: A /\ alwaysp^ A}.
+Notation AAlwaysP A := (AAnd A (AAlwaysP' A)).
 Notation "'alwaysp' A" := (AAlwaysP A)
   (at level 60, right associativity) : assertion_scope.
-Definition ASince Al Ar := {A: Ar \/ (Al /\ (Al since^ Ar))}.
+Notation ASince Al Ar := (AOr Ar (AAnd Al (ASince' Al Ar))).
 Notation "Al 'since' Ar" := (ASince Al Ar)
   (at level 60, right associativity) : assertion_scope.
-Definition ABackTo Al Ar := {A: Ar \/ (Al /\ (Al backto^ Ar))}.
+Notation ABackTo Al Ar := (AOr Ar (AAnd Al (ABackTo' Al Ar))).
 Notation "Al 'backto' Ar" := (ABackTo Al Ar)
   (at level 60, right associativity) : assertion_scope.
 
 (* Additional temporal operators *)
-Definition AEntails Al Ar := {A: always (Al -> Ar)}.
+Notation AEntails Al Ar := (AAlways (AIf Al Ar)).
 Notation "Al =>> Ar" := (AEntails Al Ar)
   (at level 99, right associativity) : assertion_scope.
-Definition ACongruent Al Ar := {A: (Al =>> Ar) /\ (Ar =>> Al)}.
+Notation ACongruent Al Ar := (AAnd (AEntails Al Ar) (AEntails Ar Al)).
 Notation "Al <=> Ar" := (ACongruent Al Ar)
   (at level 95, no associativity) : assertion_scope.
-Definition ALeadsTo Al Ar := {A: Al =>> eventually Ar}.
-Notation "Al ~> Ar" := (ALeadsTo Al Ar)
+Notation AFollowedBy Al Ar := (AEntails Al (AEventually Ar)).
+Notation "Al ~> Ar" := (AFollowedBy Al Ar)
   (at level 90, right associativity) : assertion_scope.
-Definition APrecededBy Al Ar := {A: Al =>> eventuallyp Ar}.
+Notation APrecededBy Al Ar := (AEntails Al (AEventuallyP Ar)).
 Notation "Al <~ Ar" := (APrecededBy Al Ar)
   (at level 90, right associativity) : assertion_scope.
+
+(* Component syntactic sugar *)
+Notation AWhenOn tn A := (AAnd (AEqual "Fn" tn) A).
+Notation "when-on[ tn ] A" := (AWhenOn tn A)
+  (at level 60, right associativity) : assertion_scope.
+Notation AWhenTopRequest te :=
+  (AAnd (AEqual "Fd" []) (AAnd (AEqual "Fo" CRequest) (AEqual "Fe" te))).
+Notation "when[]-> te" := (AWhenTopRequest te)
+  (at level 60, no associativity) : assertion_scope.
+Notation AWhenTopIndication te :=
+  (AAnd (AEqual "Fd" []) (AAnd (AEqual "Fo" CIndication) (AEqual "Fe" te))).
+Notation "when[]<- te" := (AWhenTopIndication te)
+  (at level 60, no associativity) : assertion_scope.
+Notation AWhenTopPeriodic te :=
+  (AAnd (AEqual "Fd" []) (AAnd (AEqual "Fo" CPeriodic) (AEqual "Fe" te))).
+Notation "when[]~> te" := (AWhenTopPeriodic te)
+  (at level 60, no associativity) : assertion_scope.
+Notation AWhenSubRequest ti te :=
+  (AAnd (AEqual "Fd" [ti]) (AAnd (AEqual "Fo" CRequest) (AEqual "Fe" te))).
+Notation "when[ ti ]-> te" := (AWhenSubRequest ti te)
+  (at level 60, no associativity) : assertion_scope.
+Notation AWhenSubIndication ti te :=
+  (AAnd (AEqual "Fd" [ti]) (AAnd (AEqual "Fo" CIndication) (AEqual "Fe" te))).
+Notation "when[ ti ]<- te" := (AWhenSubIndication ti te)
+  (at level 60, no associativity) : assertion_scope.
+Notation AWhenSubPeriodic ti te :=
+  (AAnd (AEqual "Fd" [ti]) (AAnd (AEqual "Fo" CPeriodic) (AEqual "Fe" te))).
+Notation "when[ ti ]~> te" := (AWhenSubPeriodic ti te)
+  (at level 60, no associativity) : assertion_scope.
+Notation AWhenSelf :=
+  (AOr
+    (AExists "i" (AAnd (AEqual "Fd" ["i"]) (AEqual "Fo" CIndication)))
+    (AOr
+      (AAnd (AEqual "Fd" []) (AEqual "Fo" CRequest))
+      (AAnd (AEqual "Fd" []) (AEqual "Fo" CPeriodic)))).
+Notation "when-self" := (AWhenSelf)
+  (at level 60, no associativity) : assertion_scope.

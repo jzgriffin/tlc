@@ -23,7 +23,21 @@ Inductive constructor :=
 | CSucc
 (* List *)
 | CNil
-| CCons.
+| CCons
+(* Orientation *)
+| CRequest
+| CIndication
+| CPeriodic
+(* Periodic *)
+| CPer
+(* FLRequest *)
+| CFLSend
+(* FLIndication *)
+| CFLDeliver
+(* SLRequest *)
+| CSLSend
+(* SLIndication *)
+| CSLDeliver.
 
 (* Equality *)
 Section eq.
@@ -57,6 +71,28 @@ Section eq.
     | CNil, _ => false
     | CCons, CCons => true
     | CCons, _ => false
+    (* Orientation *)
+    | CRequest, CRequest => true
+    | CRequest, _ => false
+    | CIndication, CIndication => true
+    | CIndication, _ => false
+    | CPeriodic, CPeriodic => true
+    | CPeriodic, _ => false
+    (* Periodic *)
+    | CPer, CPer => true
+    | CPer, _ => false
+    (* FLRequest *)
+    | CFLSend, CFLSend => true
+    | CFLSend, _ => false
+    (* FLIndication *)
+    | CFLDeliver, CFLDeliver => true
+    | CFLDeliver, _ => false
+    (* SLRequest *)
+    | CSLSend, CSLSend => true
+    | CSLSend, _ => false
+    (* SLIndication *)
+    | CSLDeliver, CSLDeliver => true
+    | CSLDeliver, _ => false
     end.
 
   (* Boolean equality reflection *)

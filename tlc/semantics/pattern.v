@@ -39,6 +39,32 @@ Fixpoint match_pattern (p : pattern) (t : term) :=
     tsx <- match_pattern px tx;
     tsxs <- match_pattern pxs txs;
     pure (app tsx tsxs)
+  (* Orientation *)
+  | {p: CRequest}, {t: CRequest} => pure [::]
+  | {p: CIndication}, {t: CIndication} => pure [::]
+  | {p: CPeriodic}, {t: CPeriodic} => pure [::]
+  (* Periodic *)
+  | {p: CPer}, {t: CPer} => pure [::]
+  (* FLRequest *)
+  | {p: CFLSend $ pn $ pm}, {t: CFLSend $ tn $ tm} =>
+    tsn <- match_pattern pn tn;
+    tsm <- match_pattern pm tm;
+    pure (app tsn tsm)
+  (* FLIndication *)
+  | {p: CFLDeliver $ pn $ pm}, {t: CFLDeliver $ tn $ tm} =>
+    tsn <- match_pattern pn tn;
+    tsm <- match_pattern pm tm;
+    pure (app tsn tsm)
+  (* SLRequest *)
+  | {p: CSLSend $ pn $ pm}, {t: CSLSend $ tn $ tm} =>
+    tsn <- match_pattern pn tn;
+    tsm <- match_pattern pm tm;
+    pure (app tsn tsm)
+  (* SLIndication *)
+  | {p: CSLDeliver $ pn $ pm}, {t: CSLDeliver $ tn $ tm} =>
+    tsn <- match_pattern pn tn;
+    tsm <- match_pattern pm tm;
+    pure (app tsn tsm)
   (* Failure *)
   | _, _ => Failure (EMatch p t)
   end.

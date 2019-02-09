@@ -1,3 +1,4 @@
+Require Export tlc.component.all_component.
 Require Export tlc.logic.all_logic.
 Require Export tlc.semantics.all_semantics.
 Require Export tlc.syntax.all_syntax.

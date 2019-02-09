@@ -125,11 +125,11 @@ Notation "match: ta with: p then: tm else: tf" := (TMatch p ta tm tf)
     tf at level 100) : term_scope.
 
 (* Derived constructor notations *)
-Definition TLet p ta tm := {t: match: ta with: p then: tm else: TFailure}.
+Notation TLet p ta tm := {t: match: ta with: p then: tm else: TFailure}.
 Notation "let: p := ta in: tm" := (TLet p ta tm)
   (at level 20, right associativity, ta at level 100, tm at level 100)
   : term_scope.
-Definition TIf ta ti te := {t:
+Notation TIf ta ti te := {t:
   match: ta with: true then: ti else:
   match: ta with: false then: te else: TFailure}.
 Notation "if: ta then: ti else: te" := (TIf ta ti te)
@@ -197,17 +197,20 @@ Fixpoint TList ts :=
   end.
 
 (* Derived generic functions *)
-Definition FNotEqual := {t: fun: fun: ~(#(1, 0) = #0)}.
+Notation FNotEqual := {t: fun: fun: ~(#(1, 0) = #0)}.
 Notation "tl <> tr" := {t: FNotEqual $ tl $ tr} : term_scope.
 
 (* Derived Boolean functions *)
-Definition FAnd := {t: fun: fun: ~(~#(1, 0) \/ ~#0)}.
+Notation FAnd := {t: fun: fun: ~(~#(1, 0) \/ ~#0)}.
 Notation "tl /\ tr" := {t: FAnd $ tl $ tr} : term_scope.
-Definition FIf := {t: fun: fun: ~#(1, 0) \/ #0}.
+Notation FIf := {t: fun: fun: ~#(1, 0) \/ #0}.
 Notation "tl -> tr" := {t: FIf $ tl $ tr} : term_scope.
-Definition FIff := {t: fun: fun: (#(1, 0) -> #0) /\ (#0 -> #(1, 0))}.
+Notation FIff := {t: fun: fun: (#(1, 0) -> #0) /\ (#0 -> #(1, 0))}.
 Notation "tl <-> tr" := {t: FIff $ tl $ tr} : term_scope.
 
 (* Derived list functions *)
-Definition FMember := {t: fun: fun: (FCount $ #(1, 0) $ #0) <> 0}.
+Notation FMember := {t: fun: fun: (FCount $ #(1, 0) $ #0) <> 0}.
 Notation "t \in ts" := {t: FMember $ t $ ts} : term_scope.
+
+(* Derived predicates *)
+Notation FCorrect := {t: fun: #0 \in "Correct"}.
