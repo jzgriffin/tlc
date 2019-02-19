@@ -13,8 +13,12 @@ utility/string.v
 utility/partial_map.v
 utility/set.v
 utility/all_utility.v
+operation/orientation.v
+operation/periodic_event.v
+operation/all_operation.v
 syntax/parameter.v
 syntax/variable.v
+syntax/literal.v
 syntax/constructor.v
 syntax/function.v
 syntax/pattern.v
@@ -23,6 +27,7 @@ syntax/predicate.v
 syntax/assertion.v
 syntax/all_syntax.v
 semantics/error.v
+semantics/equivalents.v
 semantics/environment.v
 semantics/pattern.v
 semantics/term.v
@@ -32,6 +37,10 @@ semantics/all_semantics.v
 component/component.v
 logic/context.v
 logic/derives.v
+logic/sequent.v
+logic/temporal.v
+logic/program.v
+logic/predicate.v
 logic/all_logic.v
 component/stubborn_link.v
 component/all_component.v

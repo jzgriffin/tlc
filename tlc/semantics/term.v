@@ -4,6 +4,7 @@ Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import mathcomp.ssreflect.ssrnat.
 Require Import tlc.semantics.environment.
+Require Import tlc.semantics.equivalents.
 Require Import tlc.semantics.error.
 Require Import tlc.semantics.pattern.
 Require Import tlc.syntax.all_syntax.
@@ -17,20 +18,26 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Substitutes free variables in term t with terms from environment E *)
-Reserved Notation "t [t/ E ]" (at level 1, left associativity).
-Fixpoint substitute_term (E : environment) t :=
+(* Substitutes terms in term t with terms from equivalence map e *)
+Reserved Notation "t /t/ e" (at level 40, left associativity).
+Fixpoint substitute_term (e : equivalents) t :=
+  if e{@t} is Some t' then t' else
   match t with
   | TFailure => t
   | TParameter _ => t
-  | TVariable v => if E{@v} is Some t' then t' else t
+  | TVariable _ => t
   | TConstructor _ => t
+  | TLiteral _ => t
   | TFunction _ => t
-  | TApplication tf ta => TApplication tf[t/E] ta[t/E]
-  | TAbstraction tb => TAbstraction tb[t/E]
-  | TMatch p ta tm tf => TMatch p ta[t/E] tm[t/E] tf[t/E]
+  | TApplication tf ta => TApplication (tf /t/ e) (ta /t/ e)
+  | TAbstraction tb => TAbstraction (tb /t/ e)
+  | TMatch p ta tm tf => TMatch p (ta /t/ e) (tm /t/ e) (tf /t/ e)
   end
-where "t [t/ E ]" := (substitute_term E t).
+where "t /t/ e" := (substitute_term e t).
+
+(* Substitutes free variables in a term t with terms from environment e *)
+Definition instantiate_term (e : environment) t :=
+  t /t/ environment_equivalents e.
 
 (* Computes the set of free variables in a term *)
 Fixpoint term_free t :=
@@ -39,6 +46,7 @@ Fixpoint term_free t :=
   | TParameter _ => [::]
   | TVariable v => [:: v]
   | TConstructor _ => [::]
+  | TLiteral _ => [::]
   | TFunction _ => [::]
   | TApplication tf ta => term_free tf \union term_free ta
   | TAbstraction tb => term_free tb
@@ -63,6 +71,7 @@ Fixpoint open_term_at k us t :=
     else pure t
   | TVariable _ => pure t
   | TConstructor _ => pure t
+  | TLiteral _ => pure t
   | TFunction _ => pure t
   | TApplication tf ta =>
     tf <- {k :-> us} tf;
@@ -83,27 +92,46 @@ where "{ k :-> us } t" := (open_term_at k us t).
 Definition open_term := open_term_at 0.
 Notation "t ^ us" := (open_term us t).
 
-(* Converts a Boolean term to a bool *)
-Definition lift_boolean (t : term) :=
+(* Converts a unit literal term to a unit *)
+Definition lift_unit (t : term) :=
   match t with
-  | {t: CTrue} => pure true
-  | {t: CFalse} => pure false
+  | LUnit u => pure u
   | _ => Failure (EBoolean t)
   end.
 
-(* Converts a natural term to a nat *)
-Fixpoint lift_natural (t : term) :=
+(* Converts a Boolean literal term to a bool *)
+Definition lift_boolean (t : term) :=
   match t with
-  | {t: CZero} => pure 0
-  | {t: CSucc $ x} => n <- lift_natural x; pure n.+1
+  | LBoolean b => pure b
+  | _ => Failure (EBoolean t)
+  end.
+
+(* Converts a natural literal term to a nat *)
+Definition lift_natural (t : term) :=
+  match t with
+  | LNatural n => pure n
+  | _ => Failure (ENatural t)
+  end.
+
+(* Converts an orientation literal term to an orientation *)
+Definition lift_orientation (t : term) :=
+  match t with
+  | LOrientation o => pure o
+  | _ => Failure (ENatural t)
+  end.
+
+(* Converts a periodic literal term to a periodic *)
+Definition lift_periodic (t : term) :=
+  match t with
+  | LPeriodic p => pure p
   | _ => Failure (ENatural t)
   end.
 
 (* Converts a list term to a seq *)
 Fixpoint lift_list (ts : term) :=
   match ts with
-  | {t: []} => pure [::]
-  | {t: t :: ts} => ts <- lift_list ts; pure (t :: ts)
+  | CNil => pure [::]
+  | {t: CCons $ t $ ts} => ts <- lift_list ts; pure (t :: ts)
   | _ => Failure (EList ts)
   end.
 
@@ -115,6 +143,7 @@ Fixpoint evaluate_term' fuel t :=
     | TParameter p => Failure (EParameter p)
     | TVariable _ => pure t
     | TConstructor _ => pure t
+    | TLiteral _ => pure t
     | TFunction _ => pure t
     | TApplication tf ta =>
       tf <- evaluate_term' fuel tf;
@@ -128,29 +157,33 @@ Fixpoint evaluate_term' fuel t :=
           (* External function evaluation *)
           match t with
           (* Generic *)
-          | {t: tl = tr} => pure (TBoolean (tl == tr))
+          | {t: FEqual $ tl $ tr} =>
+            pure (TLiteral (LBoolean (tl == tr)))
           (* Boolean *)
-          | {t: ~t} =>
+          | {t: FNot $ t} =>
             t <- lift_boolean t;
-            pure (TBoolean (negb t))
-          | {t: tl \/ tr} =>
+            pure (TLiteral (LBoolean (negb t)))
+          | {t: FOr $ tl $ tr} =>
             tl <- lift_boolean tl;
             tr <- lift_boolean tr;
-            pure (TBoolean (tl || tr))
+            pure (TLiteral (LBoolean (tl || tr)))
           (* Natural *)
-          | {t: tl + tr} =>
+          | {t: FSucc $ t} =>
+            t <- lift_natural t;
+            pure (TLiteral (LNatural (t.+1)))
+          | {t: FAdd $ tl $ tr} =>
             tl <- lift_natural tl;
             tr <- lift_natural tr;
-            pure (TNatural (tl + tr))
+            pure (TLiteral (LNatural (tl + tr)))
           (* List *)
           | {t: FCount $ t $ ts} =>
             ts <- lift_list ts;
-            pure (TNatural (count_mem t ts))
-          | {t: tsl \union tsr} =>
+            pure (TLiteral (LNatural (count_mem t ts)))
+          | {t: FUnion $ tsl $ tsr} =>
             tsl <- lift_list tsl;
             tsr <- lift_list tsr;
             pure (TList (tsl \union tsr))
-          | {t: tf <$> ts} =>
+          | {t: FMap $ tf $ ts} =>
             ts <- lift_list ts;
             evaluate_term' fuel (TList [seq {t: tf $ t} | t <- ts])
           (* Default *)
@@ -170,7 +203,7 @@ Fixpoint evaluate_term' fuel t :=
 (* Evaluates a term with a default amount of recursion fuel *)
 Definition evaluate_term_fuel := 4999.
 Definition evaluate_term := evaluate_term' evaluate_term_fuel.
-Notation "[[ t ]]" := (evaluate_term t) (at level 0, no associativity).
+Notation "[[t t ]]" := (evaluate_term t) (at level 0, no associativity).
 
 (* Tactic for evaluation *)
 Ltac evaluate_term := rewrite /evaluate_term /=.

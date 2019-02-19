@@ -1,5 +1,6 @@
 Require Export tlc.semantics.assertion.
 Require Export tlc.semantics.environment.
+Require Export tlc.semantics.equivalents.
 Require Export tlc.semantics.error.
 Require Export tlc.semantics.pattern.
 Require Export tlc.semantics.predicate.

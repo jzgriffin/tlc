@@ -11,13 +11,13 @@ Unset Printing Implicit Defensive.
 (* Logical context of assertions *)
 Definition context := seq assertion.
 
-(* Produces an evaluation environment from a context
- * All term hypotheses of the form "v = t" appear in the environment
+(* Produces a term equivalence map from a context
+ * All premises of the form "tl = tr" appear in the equivalence map
  *)
-Fixpoint context_environment (C : context) : environment :=
-  match C with
+Fixpoint context_equivalences (Gamma : context) : equivalents :=
+  match Gamma with
   | [::] => [::]
-  | A :: C =>
-    if A is {A: TVariable v = t} then (context_environment C){= v := t}
-    else context_environment C
+  | A :: Gamma =>
+    let e := context_equivalences Gamma in
+    if A is APredicate (PEqual tl tr) then e{= tl := tr} else e
   end.

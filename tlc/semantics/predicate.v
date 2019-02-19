@@ -3,6 +3,7 @@ Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import tlc.semantics.environment.
+Require Import tlc.semantics.equivalents.
 Require Import tlc.semantics.term.
 Require Import tlc.syntax.all_syntax.
 Require Import tlc.utility.monad.
@@ -13,16 +14,20 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Substitutes free variables in predicate p with terms from environment E *)
-Reserved Notation "p [p/ E ]" (at level 1, left associativity).
-Fixpoint substitute_predicate (E : environment) p :=
+(* Substitutes terms in predicate p with terms from a equivalence map e *)
+Definition substitute_predicate (e : equivalents) p :=
   match p with
-  | PFalse => PFalse
-  | PEqual tl tr => PEqual tl[t/E] tr[t/E]
-  | PIn t ts => PIn t[t/E] ts[t/E]
-  | PCorrect tn => PCorrect tn[t/E]
-  end
-where "p [p/ E ]" := (substitute_predicate E p).
+  | PFalse => p
+  | PEqual tl tr => PEqual (tl /t/ e) (tr /t/ e)
+  | PIn t ts => PIn (t /t/ e) (ts /t/ e)
+  | PCorrect tn => PCorrect (tn /t/ e)
+  end.
+Notation "p /p/ e" := (substitute_predicate e p)
+  (at level 40, left associativity).
+
+(* Substitutes free variables in a predicate p with terms from environment e *)
+Definition instantiate_predicate (e : environment) p :=
+  p /p/ environment_equivalents e.
 
 (* Computes the set of free variables in a predicate *)
 Fixpoint predicate_free p :=
@@ -33,25 +38,24 @@ Fixpoint predicate_free p :=
   | PCorrect tn => term_free tn
   end.
 
-(* Evaluates a predicate as far as possible
- * This process produces an assertion instead of a predicate *)
+(* Evaluates the subterms of predicate p *)
+Reserved Notation "[[p p ]]" (at level 0, no associativity).
 Fixpoint evaluate_predicate p :=
   match p with
-  | PFalse => pure AFalse
+  | PFalse => pure PFalse
   | PEqual tl tr =>
-    tl <- evaluate_term tl;
-    tr <- evaluate_term tr;
-    if tl == tr then pure ATrue else pure AFalse
+    tl <- [[t tl]];
+    tr <- [[t tr]];
+    pure (PEqual tl tr)
   | PIn t ts =>
-    t <- evaluate_term t;
-    ts <- evaluate_term ts;
-    ts <- lift_list ts;
-    if t \in ts then pure ATrue else pure AFalse
+    t <- [[t t]];
+    ts <- [[t ts]];
+    pure (PIn t ts)
   | PCorrect tn =>
-    tn <- evaluate_term tn;
-    pure (AIn tn "Correct")
-  end.
-Notation "[[p p ]]" := (evaluate_predicate p) (at level 0, no associativity).
+    tn <- [[t tn]];
+    pure (PCorrect tn)
+  end
+where "[[p p ]]" := (evaluate_predicate p).
 
 (* Tactic for evaluation *)
-Ltac evaluate_predicate := rewrite /evaluate_predicate /=.
+Ltac evaluate_predicate := rewrite /evaluate_predicate /=; evaluate_term.

@@ -6,30 +6,16 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Constructors for value terms *)
+(* Constructors for inductive value terms *)
 Inductive constructor :=
-(* Unit *)
-| CUnit
 (* Product *)
 | CPair
 (* Sum *)
 | CLeft
 | CRight
-(* Boolean *)
-| CTrue
-| CFalse
-(* Natural *)
-| CZero
-| CSucc
 (* List *)
 | CNil
 | CCons
-(* Orientation *)
-| CRequest
-| CIndication
-| CPeriodic
-(* Periodic *)
-| CPer
 (* FLRequest *)
 | CFLSend
 (* FLIndication *)
@@ -45,9 +31,6 @@ Section eq.
   (* Boolean equality *)
   Definition constructor_eq cl cr :=
     match cl, cr with
-    (* Unit *)
-    | CUnit, CUnit => true
-    | CUnit, _ => false
     (* Product *)
     | CPair, CPair => true
     | CPair, _ => false
@@ -56,31 +39,11 @@ Section eq.
     | CLeft, _ => false
     | CRight, CRight => true
     | CRight, _ => false
-    (* Boolean *)
-    | CTrue, CTrue => true
-    | CTrue, _ => false
-    | CFalse, CFalse => true
-    | CFalse, _ => false
-    (* Natural *)
-    | CZero, CZero => true
-    | CZero, _ => false
-    | CSucc, CSucc => true
-    | CSucc, _ => false
     (* List *)
     | CNil, CNil => true
     | CNil, _ => false
     | CCons, CCons => true
     | CCons, _ => false
-    (* Orientation *)
-    | CRequest, CRequest => true
-    | CRequest, _ => false
-    | CIndication, CIndication => true
-    | CIndication, _ => false
-    | CPeriodic, CPeriodic => true
-    | CPeriodic, _ => false
-    (* Periodic *)
-    | CPer, CPer => true
-    | CPer, _ => false
     (* FLRequest *)
     | CFLSend, CFLSend => true
     | CFLSend, _ => false

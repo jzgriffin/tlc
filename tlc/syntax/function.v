@@ -14,6 +14,7 @@ Inductive function :=
 | FNot (* not x *)
 | FOr (* or x y *)
 (* Natural *)
+| FSucc (* succ x *)
 | FAdd (* add x y *)
 (* List *)
 | FCount (* count x xs *)
@@ -35,6 +36,8 @@ Section eq.
     | FOr, FOr => true
     | FOr, _ => false
     (* Natural *)
+    | FSucc, FSucc => true
+    | FSucc, _ => false
     | FAdd, FAdd => true
     | FAdd, _ => false
     (* List *)

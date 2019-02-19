@@ -5,6 +5,7 @@ Require Import mathcomp.ssreflect.ssreflect.
 Require Import mathcomp.ssreflect.ssrnat.
 Require Import tlc.syntax.constructor.
 Require Import tlc.syntax.function.
+Require Import tlc.syntax.literal.
 Require Import tlc.syntax.parameter.
 Require Import tlc.syntax.pattern.
 Require Import tlc.syntax.variable.
@@ -21,6 +22,7 @@ Inductive term :=
 | TParameter (p : parameter)
 | TVariable (v : variable)
 | TConstructor (c : constructor)
+| TLiteral (l : literal)
 | TFunction (f : function)
 | TApplication (tf ta : term)
 | TAbstraction (tb : term)
@@ -42,6 +44,8 @@ Section eq.
     | TVariable _, _ => false
     | TConstructor cl, TConstructor cr => cl == cr
     | TConstructor _, _ => false
+    | TLiteral ll, TLiteral lr => ll == lr
+    | TLiteral _, _ => false
     | TFunction fl, TFunction fr => fl == fr
     | TFunction _, _ => false
     | TApplication tfl tal, TApplication tfr tar =>
@@ -57,9 +61,9 @@ Section eq.
   (* Boolean equality reflection *)
   Lemma term_eqP : Equality.axiom term_eq.
   Proof.
-    elim=> [| pl | vl | cl | fl | tfl IHtf tal IHta | tbl IHtb |
-      pl tal IHta tml IHtm tfl IHtf]
-      [| pr | vr | cr | fr | tfr tar | tbr | pr tar tmr tfr]
+    elim=> [| pl | vl | cl | ll | fl | tfl IHtf tal IHta | tbl IHtb |
+      pl tal IHta tml IHtm tfl IHtf] [| pr | vr | cr | lr | fr | tfr tar |
+      tbr | pr tar tmr tfr]
       //=; try by constructor.
     - case H: (pl == pr); move/eqP: H => H //=; subst;
         last by constructor; move=> [].
@@ -68,6 +72,9 @@ Section eq.
         last by constructor; move=> [].
       by constructor.
     - case H: (cl == cr); move/eqP: H => H //=; subst;
+        last by constructor; move=> [].
+      by constructor.
+    - case H: (ll == lr); move/eqP: H => H //=; subst;
         last by constructor; move=> [].
       by constructor.
     - case H: (fl == fr); move/eqP: H => H //=; subst;
@@ -103,6 +110,7 @@ End eq.
 Coercion TParameter : parameter >-> term.
 Coercion TVariable : variable >-> term.
 Coercion TConstructor : constructor >-> term.
+Coercion TLiteral : literal >-> term.
 Coercion TFunction : function >-> term.
 
 (* Notation scope *)
@@ -125,11 +133,11 @@ Notation "match: ta with: p then: tm else: tf" := (TMatch p ta tm tf)
     tf at level 100) : term_scope.
 
 (* Derived constructor notations *)
-Notation TLet p ta tm := {t: match: ta with: p then: tm else: TFailure}.
+Definition TLet p ta tm := {t: match: ta with: p then: tm else: TFailure}.
 Notation "let: p := ta in: tm" := (TLet p ta tm)
   (at level 20, right associativity, ta at level 100, tm at level 100)
   : term_scope.
-Notation TIf ta ti te := {t:
+Definition TIf ta ti te := {t:
   match: ta with: true then: ti else:
   match: ta with: false then: te else: TFailure}.
 Notation "if: ta then: ti else: te" := (TIf ta ti te)
@@ -137,57 +145,37 @@ Notation "if: ta then: ti else: te" := (TIf ta ti te)
     te at level 100) : term_scope.
 
 (* Pair constructor notations *)
+Definition TPair tl tr := {t: CPair $ tl $ tr}.
 Notation "( t1 , t2 , .. , tn )" :=
-  {t: CPair $ (.. (CPair $ t1 $ t2) ..) $ tn} : term_scope.
-
-(* Natural constructor notations *)
-Notation "0" := (TConstructor CZero) : term_scope.
-Notation "t .+1" := {t: CSucc $ t} : term_scope.
+  {t: TPair (.. (TPair t1 t2) ..) tn} : term_scope.
 
 (* List constructor notations *)
-Notation "[ ]" := (TConstructor CNil) : term_scope.
-Notation "t :: ts" := {t: CCons $ t $ ts} : term_scope.
-Notation "[ t ]" := {t: t :: []} : term_scope.
-Notation "[ t1 , .. , tn ]" := {t: t1 :: (.. (CCons $ tn $ []) ..)}
+Definition TNil := TConstructor CNil.
+Notation "[ ]" := TNil : term_scope.
+Definition TCons t ts := {t: CCons $ t $ ts}.
+Notation "t :: ts" := (TCons t ts) : term_scope.
+Notation "[ t1 , .. , tn ]" := {t: t1 :: (.. (tn :: []) ..)}
   : term_scope.
 
 (* Function notations *)
 (* Generic *)
-Notation "tl = tr" := {t: FEqual $ tl $ tr} : term_scope.
+Definition TEqual tl tr := {t: FEqual $ tl $ tr}.
+Notation "tl = tr" := (TEqual tl tr) : term_scope.
 (* Boolean *)
-Notation "~ t" := {t: FNot $ t} : term_scope.
-Notation "tl \/ tr" := {t: FOr $ tl $ tr} : term_scope.
+Definition TNot t := {t: FNot $ t}.
+Notation "~ t" := (TNot t) : term_scope.
+Definition TOr tl tr := {t: FOr $ tl $ tr}.
+Notation "tl \/ tr" := (TOr tl tr) : term_scope.
 (* Natural *)
-Notation "tl + tr" := {t: FAdd $ tl $ tr} : term_scope.
+Definition TSucc t := {t: FSucc $ t}.
+Notation "t .+1" := (TSucc t) : term_scope.
+Definition TAdd tl tr := {t: FAdd $ tl $ tr}.
+Notation "tl + tr" := (TAdd tl tr) : term_scope.
 (* List *)
-Notation "tsl \union tsr" := {t: FUnion $ tsl $ tsr} : term_scope.
-Notation "tf <$> ts" := {t: FMap $ tf $ ts} : term_scope.
-
-(* Unit coercion *)
-Definition TUnit u : term :=
-  match u with
-  | tt => CUnit
-  end.
-
-Coercion TUnit : unit >-> term.
-
-(* Boolean coercion *)
-Definition TBoolean b : term :=
-  match b with
-  | true => CTrue
-  | false => CFalse
-  end.
-
-Coercion TBoolean : bool >-> term.
-
-(* Natural coercion *)
-Fixpoint TNatural n : term :=
-  match n with
-  | 0 => CZero
-  | n.+1 => (TNatural n).+1
-  end.
-
-Coercion TNatural : nat >-> term.
+Definition TUnion tsl tsr := {t: FUnion $ tsl $ tsr}.
+Notation "tsl \union tsr" := (TUnion tsl tsr) : term_scope.
+Definition TMap tf ts := {t: FMap $ tf $ ts}.
+Notation "tf <$> ts" := (TMap tf ts) : term_scope.
 
 (* List conversion *)
 Fixpoint TList ts :=
@@ -197,20 +185,20 @@ Fixpoint TList ts :=
   end.
 
 (* Derived generic functions *)
-Notation FNotEqual := {t: fun: fun: ~(#(1, 0) = #0)}.
-Notation "tl <> tr" := {t: FNotEqual $ tl $ tr} : term_scope.
+Definition FNotEqual := {t: fun: fun: ~(#(1, 0) = #0)}.
+Definition TNotEqual tl tr := {t: FNotEqual $ tl $ tr}.
+Notation "tl <> tr" := (TNotEqual tl tr) : term_scope.
 
 (* Derived Boolean functions *)
-Notation FAnd := {t: fun: fun: ~(~#(1, 0) \/ ~#0)}.
-Notation "tl /\ tr" := {t: FAnd $ tl $ tr} : term_scope.
-Notation FIf := {t: fun: fun: ~#(1, 0) \/ #0}.
-Notation "tl -> tr" := {t: FIf $ tl $ tr} : term_scope.
-Notation FIff := {t: fun: fun: (#(1, 0) -> #0) /\ (#0 -> #(1, 0))}.
-Notation "tl <-> tr" := {t: FIff $ tl $ tr} : term_scope.
+Definition FAnd := {t: fun: fun: ~(~#(1, 0) \/ ~#0)}.
+Definition TAnd tl tr := {t: FAnd $ tl $ tr}.
+Notation "tl /\ tr" := (TAnd tl tr) : term_scope.
 
 (* Derived list functions *)
-Notation FMember := {t: fun: fun: (FCount $ #(1, 0) $ #0) <> 0}.
-Notation "t \in ts" := {t: FMember $ t $ ts} : term_scope.
+Definition FMember := {t: fun: fun: (FCount $ #(1, 0) $ #0) <> 0}.
+Definition TMember t ts := {t: FMember $ t $ ts}.
+Notation "t \in ts" := (TMember t ts) : term_scope.
 
 (* Derived predicates *)
-Notation FCorrect := {t: fun: #0 \in "Correct"}.
+Definition FCorrect := {t: fun: #0 \in "Correct"}.
+Definition TCorrect tn := {t: FCorrect $ tn}.
