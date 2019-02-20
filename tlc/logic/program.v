@@ -9,27 +9,25 @@ Unset Printing Implicit Defensive.
 
 (* Derived program rules and lemmas *)
 
-Lemma DPIROI C Gamma (S : term -> predicate) tn te te' :
+Lemma DPIROI C Gamma (S : term -> assertion) tn te te' :
   Gamma |- C, {A:
-    # (S "s") /\
-      te' = {t: let: (%, #, %) := request C $ tn $ "s" $ te in: #0} ->
-    te' \in "Fois"} ->
+    S "s" /\
+      te' \in {t: let: (%, %, #) := request C $ tn $ "s" $ te in: #0}
+  } ->
   Gamma |- C, {A:
-    when-on[tn] when[]-> te /\ # (S {t: "Fs" $ tn}) =>>
+    when-on[tn] when[]-> te /\ S {t: "Fs" $ tn} =>>
     eventually when-on[tn] when[]<- te'
   }.
 Proof.
 Admitted. (* TODO *)
 
-Lemma DPIIOI C Gamma (S : term -> predicate) tn ti te te' :
+Lemma DPIIOI C Gamma (S : term -> assertion) tn ti te te' :
   Gamma |- C, {A:
-    # (S "s") /\
-      te' = {t:
-        let: (%, #, %) := indication C $ tn $ "s" $ (ti, te) in: #0} ->
-        te' \in "Fois"
-      } ->
+    S "s" /\
+      te' \in {t: let: (%, %, #) := indication C $ tn $ "s" $ (ti, te) in: #0}
+  } ->
   Gamma |- C, {A:
-    when-on[tn] when[ti]<- te /\ # (S {t: "Fs" $ tn}) =>>
+    when-on[tn] when[ti]<- te /\ S {t: "Fs" $ tn} =>>
     eventually^ when-on[tn] when[]<- te'
   }.
 Proof.
