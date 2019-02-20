@@ -60,6 +60,25 @@ Proof.
   by apply DSIfP.
 Qed.
 
+(* Elimination of And with True *)
+Lemma DAndElimination C Gamma A :
+  Gamma |- C, {A: A /\ ATrue <-> A}.
+Proof.
+  apply DSAndC.
+  - by apply DSIfC, DSAndP.
+  - apply DSIfC, DSAndC; first by [].
+    by apply DSNotC.
+Qed.
+
+(* Elimination of Or with False *)
+Lemma DOrElimination C Gamma A :
+  Gamma |- C, {A: A \/ AFalse <-> A}.
+Proof.
+  apply DSAndC.
+  - by apply DSIfC, DSOrP.
+  - by apply DSIfC, DSOrCL.
+Qed.
+
 (* Commutativity of Or *)
 Lemma DOrCommutative C Gamma Acl Acr :
   Gamma |- C, {A: Acl \/ Acr} ->
@@ -92,6 +111,7 @@ Proof.
   by apply DAndCommutative.
 Qed.
 
+(* Commutativity of Congruent *)
 Lemma DCongruentCommutative C Gamma Acl Acr :
   Gamma |- C, {A: Acl <=> Acr} ->
   Gamma |- C, {A: Acr <=> Acl}.
