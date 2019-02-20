@@ -198,7 +198,21 @@ Proof.
     eventually^ when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"
   }.
   {
-    admit.
+    have HIIOI := @DPIIOI C Gamma (fun _ => ATrue)
+      "n'" 0 {t: CFLDeliver $ "n" $ "m"} {t: CSLDeliver $ "n" $ "m"}.
+    have H' : Gamma |- C, {A:
+      ATrue /\
+      CSLDeliver $ "n" $ "m" \in
+        {t: let: (%, %, #) :=
+          indication C $ "n'" $ "s" $ (0, CFLDeliver $ "n" $ "m")
+        in: P 0 0}}.
+    apply DSAndC; first by apply DSNotC.
+    eapply DAEvaluateC; first by []; last by eapply DAPIn.
+    specialize (HIIOI H'); clear H'.
+
+    eapply DARewriteIffCR; first by eapply DAndElimination.
+    by instantiate
+      (1 := {A: when-on[ "n'"] when[ 0 ]<- CFLDeliver $ "n" $ "m"}).
   }
 
   (* From (10) and (11) *)
