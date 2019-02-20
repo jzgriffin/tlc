@@ -130,6 +130,8 @@ Section derives.
     Gamma |- {A: trl = trr} ->
     Gamma |- {A: {t: (tll, trl)} = {t: (tlr, trr)}}
   (* Sequent logic *)
+  | DSFalse Gamma A :
+    AFalse :: Gamma |- A
   | DSAxiom Gamma A :
     A :: Gamma |- A
   | DSThin Gamma Ap Ac :
