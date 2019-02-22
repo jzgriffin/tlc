@@ -116,3 +116,18 @@ where "[[A A ]]" := (evaluate_assertion A).
 
 (* Tactic for evaluation *)
 Ltac evaluate_assertion := rewrite /evaluate_assertion /=; evaluate_predicate.
+
+(* Proposition for non-temporal assertions *)
+Inductive non_temporal_assertion : assertion -> Prop :=
+| NTAPredicate p :
+  non_temporal_assertion {A: #p}
+| NTANot A :
+  non_temporal_assertion A ->
+  non_temporal_assertion {A: ~A}
+| NTAOr Al Ar :
+  non_temporal_assertion Al ->
+  non_temporal_assertion Ar ->
+  non_temporal_assertion {A: Al \/ Ar}
+| NTAForAll v A :
+  non_temporal_assertion A ->
+  non_temporal_assertion {A: forall: v, A}.

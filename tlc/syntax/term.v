@@ -172,6 +172,8 @@ Notation "t .+1" := (TSucc t) : term_scope.
 Definition TAdd tl tr := {t: FAdd $ tl $ tr}.
 Notation "tl + tr" := (TAdd tl tr) : term_scope.
 (* List *)
+Definition TConcat tsl tsr := {t: FConcat $ tsl $ tsr}.
+Notation "tsl ++ tsr" := (TConcat tsl tsr) : term_scope.
 Definition TUnion tsl tsr := {t: FUnion $ tsl $ tsr}.
 Notation "tsl \union tsr" := (TUnion tsl tsr) : term_scope.
 Definition TMap tf ts := {t: FMap $ tf $ ts}.

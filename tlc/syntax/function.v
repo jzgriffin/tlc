@@ -17,6 +17,7 @@ Inductive function :=
 | FSucc (* succ x *)
 | FAdd (* add x y *)
 (* List *)
+| FConcat (* concat xs ys *)
 | FCount (* count x xs *)
 | FUnion (* union xs ys *)
 | FMap (* map f xs *).
@@ -41,6 +42,8 @@ Section eq.
     | FAdd, FAdd => true
     | FAdd, _ => false
     (* List *)
+    | FConcat, FConcat => true
+    | FConcat, _ => false
     | FCount, FCount => true
     | FCount, _ => false
     | FUnion, FUnion => true

@@ -176,6 +176,10 @@ Fixpoint evaluate_term' fuel t :=
             tr <- lift_natural tr;
             pure (TLiteral (LNatural (tl + tr)))
           (* List *)
+          | {t: FConcat $ tsl $ tsr} =>
+            tsl <- lift_list tsl;
+            tsr <- lift_list tsr;
+            pure (TList (app tsl tsr))
           | {t: FCount $ t $ ts} =>
             ts <- lift_list ts;
             pure (TLiteral (LNatural (count_mem t ts)))

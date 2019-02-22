@@ -109,17 +109,66 @@ Proof.
   (* By InvS'' *)
   have H3 : Gamma |- C, {A:
     when-self /\ ("n'", "m") \in ("Fs'" $ "n") =>>
-    always^ (when-self -> ("n'", "m") \in ("Fs'" $ "n"))
+    always^ (when-self -> ("n'", "m") \in ("Fs" $ "n"))
   }.
   {
-    (*apply InvS'' with (S := {t: fun: (tn', tm) \in (#0 $ tn)}).*)
-    admit. (* TODO *)
+    set S := fun ts => {A: ("n'", "m") \in ts}.
+    have HInvS'' := @DPInvS'' C Gamma S "n".
+
+    have HSr : Gamma |- C, {A:
+      forall: "s", forall: "e",
+      S "s" ->
+      S {t: let: (#, %, %) := request C $ "n" $ "s" $ "e" in: #0}
+    }.
+    eapply DSForAllC; instantiate (1 := "s");
+    eapply DSForAllC; instantiate (1 := {t: CSLSend $ "en" $ "em"});
+      rewrite /instantiate_assertion /=.
+    repeat rewrite -/(TPair "n'" "m");
+    repeat rewrite -/(AIn {t: ("n'", "m")} _);
+    repeat rewrite -/(AIf (("n'", "m") \in _) _).
+    apply DSIfC.
+    apply (DARewriteIffPL (DConcatIn _ _ {t: ("n'", "m")} "s"));
+      rewrite /rewrite_assertion_any /=.
+    eapply DSExistsP; instantiate (1 := "sl");
+    eapply DSExistsP; instantiate (1 := "sr");
+      rewrite /instantiate_assertion /=.
+    apply DASubstituteC; eapply DAEvaluateC; first by [].
+    by apply DInUnion, DSOrCL, DInConcat, DSOrCR, DInConcat, DSOrCL;
+      eapply DAPIn.
+
+    have HSi : Gamma |- C, {A:
+      forall: "s", forall: "i", forall: "e",
+      S "s" ->
+      S {t: let: (#, %, %) := indication C $ "n" $ "s" $ ("i", "e") in: #0}
+    }.
+    eapply DSForAllC; instantiate (1 := "s");
+    eapply DSForAllC; instantiate (1 := 0);
+    eapply DSForAllC; instantiate (1 := {t: CFLDeliver $ "en" $ "em"});
+      rewrite /instantiate_assertion /=.
+    repeat rewrite -/(TPair "n'" "m");
+    repeat rewrite -/(AIn {t: ("n'", "m")} _);
+    repeat rewrite -/(AIf (("n'", "m") \in _) _).
+    by apply DSIfC; eapply DAEvaluateC.
+
+    have HSp : Gamma |- C, {A:
+      forall: "s",
+      S "s" ->
+      S {t: let: (#, %, %) := periodic C $ "n" $ "s" in: #0}
+    }.
+    eapply DSForAllC; instantiate (1 := "s");
+      rewrite /instantiate_assertion /=.
+    repeat rewrite -/(TPair "n'" "m");
+    repeat rewrite -/(AIn {t: ("n'", "m")} _);
+    repeat rewrite -/(AIf (("n'", "m") \in _) _).
+    by apply DSIfC; eapply DAEvaluateC.
+
+    by specialize (HInvS'' HSr HSi HSp).
   }
 
   (* From H2 and H3 *)
   have H4 : Gamma |- C, {A:
     when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>>
-    always^ (when-self -> ("n'", "m") \in ("Fs'" $ "n"))
+    always^ (when-self -> ("n'", "m") \in ("Fs" $ "n"))
   }.
   {
     by eapply DARewriteEntailsC' in H2; last (by apply H3).
@@ -127,12 +176,38 @@ Proof.
 
   (* By rule APerSA *)
   have H5 : Gamma |- C, {A:
-    correct "n" -> (when-self -> ("n'", "m") \in ("Fs'" $ "n")) =>>
+    correct "n" -> (when-self -> ("n'", "m") \in ("Fs" $ "n")) =>>
     always eventually when-on["n"]
       (when-self /\ (0, CFLSend $ "n'" $ "m") \in "Fors")
   }.
   {
-    admit. (* TODO *)
+    apply DSIfC, DSThin.
+
+    set S := fun ts => {A: ("n'", "m") \in ts}.
+    set A := {A: when-on["n"]
+      (when-self /\ (0, CFLSend $ "n'" $ "m") \in "Fors")}.
+    have HAPerSA := @DPAPerSA C Gamma S "n" A.
+    have HNTA : non_temporal_assertion A by repeat constructor.
+    specialize (HAPerSA HNTA); clear HNTA.
+
+    have H : Gamma |- C, {A:
+      S {t: "Fs" $ "n"} /\
+      ("Fs'" $ "n", "Fors", "Fois") = periodic C $ "n" $ ("Fs" $ "n") ->
+      A
+    }.
+    rewrite /S /A.
+    apply DSIfC, DSAndP, DSExchange.
+    eapply DAEvaluateP; first by [].
+    do 2 apply DAInjectivePairP.
+    apply DSAndC; [| apply DSAndC].
+    - admit. (* TODO *)
+    - admit. (* TODO *)
+    - by apply DASubstituteC; eapply DInMap; first by do 3 apply DSThin.
+
+    rewrite /S in HAPerSA.
+    apply DModusPonensC in HAPerSA; last by []; last by apply DAnyAxiom.
+    by eapply DARewriteIfC; first by apply DT1 with (A :=
+      {A: (when-self -> ("n'", "m") \in "Fs" $ "n") -> always eventually A}).
   }
 
   (* From H4 and H5 *)
