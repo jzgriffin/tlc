@@ -205,9 +205,7 @@ Proof.
     - by apply DASubstituteC; eapply DInMap; first by do 3 apply DSThin.
 
     rewrite /S in HAPerSA.
-    apply DModusPonensC in HAPerSA; last by []; last by apply DAnyAxiom.
-    by eapply DARewriteIfC; first by apply DT1 with (A :=
-      {A: (when-self -> ("n'", "m") \in "Fs" $ "n") -> always eventually A}).
+    by apply DModusPonensC in HAPerSA; last by []; last by apply DAnyAxiom.
   }
 
   (* From H4 and H5 *)

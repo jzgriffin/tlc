@@ -66,7 +66,7 @@ Lemma DPAPerSA C Gamma (S : term -> assertion) tn A :
   } ->
   Gamma |- C, {A:
     correct tn ->
-    (when-self -> S {t: "Fs" $ tn}) ->
+    (when-self -> S {t: "Fs" $ tn}) =>>
     always eventually A
   }.
 Proof.
