@@ -267,13 +267,13 @@ Section derives.
     }
   | DPOR' Gamma tn ti te :
     Gamma |- {A:
-      eventuallyp^ when-on[tn] when[ti]-> te =>>
-      when-on[tn] ((ti, te) \in "Fors" /\ when-self)
+      when-on[tn] when[ti]-> te =>>
+      eventuallyp^ when-on[tn] ((ti, te) \in "Fors" /\ when-self)
     }
   | DPOI' Gamma tn te :
     Gamma |- {A:
-      eventuallyp^ when-on[tn] when[]<- te =>>
-      when-on[tn] (te \in "Fois" /\ when-self)
+      when-on[tn] when[]<- te =>>
+      eventuallyp^ when-on[tn] (te \in "Fois" /\ when-self)
     }
   | DPInit Gamma :
     Gamma |- {A: self ("Fs" = fun: initialize C $ #0)}
