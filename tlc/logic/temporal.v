@@ -331,3 +331,14 @@ Lemma DTL120_4 C Gamma A :
   Gamma |- C, {A: eventually^ eventually A =>> eventually^ A}.
 Proof.
 Admitted. (* TODO *)
+
+Lemma DTL121 C Gamma A :
+  Gamma |- C, {A: eventually^ A -> eventually A}.
+Proof.
+  by apply DSIfC, DSOrCR.
+Qed.
+
+Lemma DTL122 C Gamma A :
+  Gamma |- C, {A: always^ eventually A -> always eventually A}.
+Proof.
+Admitted. (* TODO *)

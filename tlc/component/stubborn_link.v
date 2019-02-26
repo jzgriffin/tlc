@@ -67,7 +67,7 @@ Definition stubborn_link :=
 Theorem SL_1 : [::] |- stubborn_link, {A:
   correct "n" /\ correct "n'" ->
   when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>>
-  always^ eventually^ when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"
+  always eventually when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"
 }.
 Proof.
   (* Introduce assumptions *)
@@ -191,17 +191,20 @@ Proof.
     specialize (HAPerSA HNTA); clear HNTA.
 
     have H : Gamma |- C, {A:
+      "Fn" = "n" /\
+      when-self /\
       S {t: "Fs" $ "n"} /\
       ("Fs'" $ "n", "Fors", "Fois") = periodic C $ "n" $ ("Fs" $ "n") ->
       A
     }.
     rewrite /S /A.
-    apply DSIfC, DSAndP, DSExchange.
+    apply DSIfC.
+    do 3 apply DSAndP, DSExchange.
     eapply DAEvaluateP; first by [].
     do 2 apply DAInjectivePairP.
     apply DSAndC; [| apply DSAndC].
-    - admit. (* TODO *)
-    - admit. (* TODO *)
+    - by apply DAnyAxiom.
+    - by apply DAnyAxiom.
     - by apply DASubstituteC; eapply DInMap; first by do 3 apply DSThin.
 
     rewrite /S in HAPerSA.
@@ -311,16 +314,22 @@ Proof.
         when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"}).
   }
 
+  eapply DARewriteIfC' in H13;
+    last by apply DTL121 with
+      (A := {A: when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"}).
+  eapply DARewriteIfC' in H13;
+    last by apply DTL122 with
+      (A := {A: when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"}).
+
   by [].
-Admitted. (* TODO *)
+Qed.
 
 (* No-forge
  * If a node n delivers a emssage m with sender n', then m was
  * previously sent to n by n' *)
 Theorem SL_2 : [::] |- stubborn_link, {A:
-  forall: "n", forall: "n'", forall: "m",
-  (when-on["n"] when[]<- {t: CSLDeliver $ "n'" $ "m"}) <~
-  (when-on["n'"] when[]-> {t: CSLSend $ "n" $ "m"})
+  when-on["n"] when[]<- {t: CSLDeliver $ "n'" $ "m"} <~
+  when-on["n'"] when[]-> {t: CSLSend $ "n" $ "m"}
 }.
 Proof.
 Admitted. (* TODO *)

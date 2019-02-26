@@ -1,6 +1,7 @@
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import tlc.component.component.
 Require Import tlc.logic.derives.
+Require Import tlc.operation.periodic_event.
 Require Import tlc.semantics.all_semantics.
 Require Import tlc.syntax.all_syntax.
 
@@ -34,6 +35,30 @@ Lemma DPIIOI C Gamma (S : term -> assertion) tn ti te te' :
 Proof.
 Admitted. (* TODO *)
 
+Lemma DPInvL C Gamma A :
+  non_temporal_assertion A ->
+  Gamma |- C, {A:
+    forall: "e",
+    when[]-> "e" /\
+    request C $ "Fn" $ ("Fs" $ "Fn") $ "e" = ("Fs'" $ "Fn", "Fors", "Fois") ->
+    A
+  } ->
+  Gamma |- C, {A:
+    forall: "i", forall: "e",
+    when["i"]<- "e" /\
+    indication C $ "Fn" $ ("Fs" $ "Fn") $ ("i", "e") =
+      ("Fs'" $ "Fn", "Fors", "Fois") ->
+    A
+  } ->
+  Gamma |- C, {A:
+    when[]~> PE /\
+    periodic C $ "Fn" $ ("Fs" $ "Fn") = ("Fs'" $ "Fn", "Fors", "Fois") ->
+    A
+  } ->
+  Gamma |- C, {A: when-self =>> A}.
+Proof.
+Admitted. (* TODO *)
+
 Lemma DPInvS'' C Gamma (S : term -> assertion) tn :
   Gamma |- C, {A:
     forall: "s", forall: "e",
@@ -60,6 +85,8 @@ Admitted. (* TODO *)
 Lemma DPAPerSA C Gamma (S : term -> assertion) tn A :
   non_temporal_assertion A ->
   Gamma |- C, {A:
+    "Fn" = tn /\
+    when-self /\
     S {t: "Fs" $ tn} /\
     ("Fs'" $ tn, "Fors", "Fois") = periodic C $ tn $ ("Fs" $ tn) ->
     A
