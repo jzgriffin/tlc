@@ -120,8 +120,8 @@ Proof.
       S "s" ->
       S {t: let: (#, %, %) := request C $ "n" $ "s" $ "e" in: #0}
     }.
-    eapply DSForAllC; instantiate (1 := "s");
-    eapply DSForAllC; instantiate (1 := {t: CSLSend $ "en" $ "em"});
+    apply DSForAllC with (t := "s"),
+      DSForAllC with (t := {t: CSLSend $ "en" $ "em"});
       rewrite /instantiate_assertion /=.
     repeat rewrite -/(TPair "n'" "m");
     repeat rewrite -/(AIn {t: ("n'", "m")} _);
@@ -129,8 +129,8 @@ Proof.
     apply DSIfC.
     apply (DARewriteIffPL (DConcatIn _ _ {t: ("n'", "m")} "s"));
       rewrite /rewrite_assertion_any /=.
-    eapply DSExistsP; instantiate (1 := "sl");
-    eapply DSExistsP; instantiate (1 := "sr");
+    apply DSExistsP with (t := "sl"),
+      DSExistsP with (t := "sr");
       rewrite /instantiate_assertion /=.
     apply DASubstituteC; eapply DAEvaluateC; first by [].
     by apply DInUnion, DSOrCL, DInConcat, DSOrCR, DInConcat, DSOrCL;
@@ -141,9 +141,9 @@ Proof.
       S "s" ->
       S {t: let: (#, %, %) := indication C $ "n" $ "s" $ ("i", "e") in: #0}
     }.
-    eapply DSForAllC; instantiate (1 := "s");
-    eapply DSForAllC; instantiate (1 := 0);
-    eapply DSForAllC; instantiate (1 := {t: CFLDeliver $ "en" $ "em"});
+    apply DSForAllC with (t := "s"),
+      DSForAllC with (t := 0),
+      DSForAllC with (t := {t: CFLDeliver $ "en" $ "em"});
       rewrite /instantiate_assertion /=.
     repeat rewrite -/(TPair "n'" "m");
     repeat rewrite -/(AIn {t: ("n'", "m")} _);
@@ -155,7 +155,7 @@ Proof.
       S "s" ->
       S {t: let: (#, %, %) := periodic C $ "n" $ "s" in: #0}
     }.
-    eapply DSForAllC; instantiate (1 := "s");
+    apply DSForAllC with (t := "s");
       rewrite /instantiate_assertion /=.
     repeat rewrite -/(TPair "n'" "m");
     repeat rewrite -/(AIn {t: ("n'", "m")} _);
