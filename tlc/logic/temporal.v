@@ -342,3 +342,9 @@ Lemma DTL122 C Gamma A :
   Gamma |- C, {A: always^ eventually A -> always eventually A}.
 Proof.
 Admitted. (* TODO *)
+
+Lemma DTL123 C Gamma A :
+  Gamma |- C, {A: eventuallyp^ A -> eventuallyp A}.
+Proof.
+  by apply DSIfC, DSOrCR.
+Qed.
