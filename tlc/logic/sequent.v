@@ -27,6 +27,22 @@ Proof.
   by move/IHC => H; apply DSThin.
 Qed.
 
+(* Rule for rotating the premise set *)
+Lemma DSRotate C Gamma n Ac :
+  rot n Gamma |- C, Ac ->
+  Gamma |- C, Ac.
+Proof.
+  (* Provable by DSExchange *)
+Admitted. (* TODO *)
+
+(* Rule for removing duplicate premises *)
+Lemma DSUnique C Gamma Ac :
+  undup Gamma |- C, Ac ->
+  Gamma |- C, Ac.
+Proof.
+  (* Provable by DSThin *)
+Admitted. (* TODO *)
+
 Lemma DModusPonensC C Gamma Ap Ac :
   Gamma |- C, Ap ->
   Gamma |- C, {A: Ap -> Ac} ->
