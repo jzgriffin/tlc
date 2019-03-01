@@ -26,10 +26,14 @@ Definition rewrite_assertion_pos Ap Ac A :=
     match A with
     | APredicate _ => A
     | ANot A => ANot (f A n.+1)
-    | AOr Al Ar => AOr (f Al n) (f Ar n)
+    | AAnd Al Ar => AAnd (f Al n) (f Ar n)
     | AForAll v A => AForAll v (f A n)
-    | AUntil' Al Ar => AUntil' (f Al n) (f Ar n)
-    | ASince' Al Ar => ASince' (f Al n) (f Ar n)
+    | AAlways' A => AAlways' (f A n)
+    | AAlwaysP' A => AAlwaysP' (f A n)
+    | AEventually' A => AEventually' (f A n)
+    | AEventuallyP' A => AEventuallyP' (f A n)
+    | ANext A => ANext (f A n)
+    | APrevious A => APrevious (f A n)
     | ASelf A => ASelf (f A n)
     end
   in
@@ -44,10 +48,14 @@ Definition rewrite_assertion_any Ap Ac A :=
     match A with
     | APredicate _ => A
     | ANot A => ANot (f A)
-    | AOr Al Ar => AOr (f Al) (f Ar)
+    | AAnd Al Ar => AAnd (f Al) (f Ar)
     | AForAll v A => AForAll v (f A)
-    | AUntil' Al Ar => AUntil' (f Al) (f Ar)
-    | ASince' Al Ar => ASince' (f Al) (f Ar)
+    | AAlways' A => AAlways' (f A)
+    | AAlwaysP' A => AAlwaysP' (f A)
+    | AEventually' A => AEventually' (f A)
+    | AEventuallyP' A => AEventuallyP' (f A)
+    | ANext A => ANext (f A)
+    | APrevious A => APrevious (f A)
     | ASelf A => ASelf (f A)
     end
   in
@@ -59,10 +67,14 @@ Fixpoint substitute_assertion (e : equivalents) A :=
   match A with
   | APredicate p => APredicate (p /p/ e)
   | ANot A => ANot (A /A/ e)
-  | AOr Al Ar => AOr (Al /A/ e) (Ar /A/ e)
+  | AAnd Al Ar => AAnd (Al /A/ e) (Ar /A/ e)
   | AForAll v A => AForAll v (A /A/ e{-(TVariable v)})
-  | AUntil' Al Ar => AUntil' (Al /A/ e) (Ar /A/ e)
-  | ASince' Al Ar => ASince' (Al /A/ e) (Ar /A/ e)
+  | AAlways' A => AAlways' (A /A/ e)
+  | AAlwaysP' A => AAlwaysP' (A /A/ e)
+  | AEventually' A => AEventually' (A /A/ e)
+  | AEventuallyP' A => AEventuallyP' (A /A/ e)
+  | ANext A => ANext (A /A/ e)
+  | APrevious A => APrevious (A /A/ e)
   | ASelf A => ASelf (A /A/ e)
   end
 where "A /A/ e" := (substitute_assertion e A).
@@ -76,10 +88,14 @@ Fixpoint assertion_free A :=
   match A with
   | APredicate p => predicate_free p
   | ANot A => assertion_free A
-  | AOr Al Ar => assertion_free Al \union assertion_free Ar
+  | AAnd Al Ar => assertion_free Al \union assertion_free Ar
   | AForAll v A => rem v (assertion_free A)
-  | AUntil' Al Ar => assertion_free Al \union assertion_free Ar
-  | ASince' Al Ar => assertion_free Al \union assertion_free Ar
+  | AAlways' A => assertion_free A
+  | AAlwaysP' A => assertion_free A
+  | AEventually' A => assertion_free A
+  | AEventuallyP' A => assertion_free A
+  | ANext A => assertion_free A
+  | APrevious A => assertion_free A
   | ASelf A => assertion_free A
   end.
 
@@ -93,21 +109,31 @@ Fixpoint evaluate_assertion A :=
   | ANot A =>
     A <- [[A A]];
     pure (ANot A)
-  | AOr Al Ar =>
+  | AAnd Al Ar =>
     Al <- [[A Al]];
     Ar <- [[A Ar]];
-    pure (AOr Al Ar)
+    pure (AAnd Al Ar)
   | AForAll v A =>
     A <- [[A A]];
     pure (AForAll v A)
-  | AUntil' Al Ar =>
-    Al <- [[A Al]];
-    Ar <- [[A Ar]];
-    pure (AUntil' Al Ar)
-  | ASince' Al Ar =>
-    Al <- [[A Al]];
-    Ar <- [[A Ar]];
-    pure (ASince' Al Ar)
+  | AAlways' A =>
+    A <- [[A A]];
+    pure (AAlways' A)
+  | AAlwaysP' A =>
+    A <- [[A A]];
+    pure (AAlwaysP' A)
+  | AEventually' A =>
+    A <- [[A A]];
+    pure (AEventually' A)
+  | AEventuallyP' A =>
+    A <- [[A A]];
+    pure (AEventuallyP' A)
+  | ANext A =>
+    A <- [[A A]];
+    pure (ANext A)
+  | APrevious A =>
+    A <- [[A A]];
+    pure (APrevious A)
   | ASelf A =>
     A <- [[A A]];
     pure (ASelf A)
@@ -116,18 +142,3 @@ where "[[A A ]]" := (evaluate_assertion A).
 
 (* Tactic for evaluation *)
 Ltac evaluate_assertion := rewrite /evaluate_assertion /=; evaluate_predicate.
-
-(* Proposition for non-temporal assertions *)
-Inductive non_temporal_assertion : assertion -> Prop :=
-| NTAPredicate p :
-  non_temporal_assertion {A: #p}
-| NTANot A :
-  non_temporal_assertion A ->
-  non_temporal_assertion {A: ~A}
-| NTAOr Al Ar :
-  non_temporal_assertion Al ->
-  non_temporal_assertion Ar ->
-  non_temporal_assertion {A: Al \/ Ar}
-| NTAForAll v A :
-  non_temporal_assertion A ->
-  non_temporal_assertion {A: forall: v, A}.

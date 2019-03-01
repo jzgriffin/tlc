@@ -202,10 +202,6 @@ Section derives.
     Gamma |- {A: (always A) -> always next A}
   | DT6 Gamma A :
     Gamma |- {A: (A =>> next A) -> (A =>> always A)}
-  | DT7 Gamma Al Ar :
-    Gamma |- {A: (Al unless Ar) <=> (Ar \/ (Al /\ next (Al unless Ar)))}
-  | DT8 Gamma Al Ar :
-    Gamma |- {A: (always Al) =>> Al unless Ar}
   (* Temporal logic past *)
   | DT9 Gamma A :
     Gamma |- {A: previous A =>> previous^ A}
@@ -217,10 +213,6 @@ Section derives.
     Gamma |- {A: always A -> always previous^ A}
   | DT13 Gamma A :
     Gamma |- {A: (A =>> previous^ A) -> (A =>> alwaysp A)}
-  | DT14 Gamma Al Ar :
-    Gamma |- {A:
-      (Al backto Ar) <=> (Ar \/ (Al /\ previous^ (Al backto Ar)))
-    }
   | DT15 Gamma :
     Gamma |- previous^ AFalse
   (* Temporal logic mixed *)

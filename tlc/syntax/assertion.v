@@ -17,10 +17,14 @@ Unset Printing Implicit Defensive.
 Inductive assertion :=
 | APredicate (p : predicate)
 | ANot (A : assertion)
-| AOr (Al Ar : assertion)
+| AAnd (Al Ar : assertion)
 | AForAll (v : variable) (A : assertion)
-| AUntil' (Al Ar : assertion)
-| ASince' (Al Ar : assertion)
+| AAlways' (A : assertion)
+| AAlwaysP' (A : assertion)
+| AEventually' (A : assertion)
+| AEventuallyP' (A : assertion)
+| ANext (A : assertion)
+| APrevious (A : assertion)
 | ASelf (A : assertion).
 
 (* Equality *)
@@ -33,18 +37,24 @@ Section eq.
     | APredicate _, _ => false
     | ANot Al, ANot Ar => assertion_eq Al Ar
     | ANot _, _ => false
-    | AOr All Arl, AOr Alr Arr =>
+    | AAnd All Arl, AAnd Alr Arr =>
       assertion_eq All Alr && assertion_eq Arl Arr
-    | AOr _ _, _ => false
+    | AAnd _ _, _ => false
     | AForAll vl Al, AForAll vr Ar =>
       (vl == vr) && assertion_eq Al Ar
     | AForAll _ _, _ => false
-    | AUntil' All Arl, AUntil' Alr Arr =>
-      assertion_eq All Alr && assertion_eq Arl Arr
-    | AUntil' _ _, _ => false
-    | ASince' All Arl, ASince' Alr Arr =>
-      assertion_eq All Alr && assertion_eq Arl Arr
-    | ASince' _ _, _ => false
+    | AAlways' Al, AAlways' Ar => assertion_eq Al Ar
+    | AAlways' _, _ => false
+    | AAlwaysP' Al, AAlwaysP' Ar => assertion_eq Al Ar
+    | AAlwaysP' _, _ => false
+    | AEventually' Al, AEventually' Ar => assertion_eq Al Ar
+    | AEventually' _, _ => false
+    | AEventuallyP' Al, AEventuallyP' Ar => assertion_eq Al Ar
+    | AEventuallyP' _, _ => false
+    | ANext Al, ANext Ar => assertion_eq Al Ar
+    | ANext _, _ => false
+    | APrevious Al, APrevious Ar => assertion_eq Al Ar
+    | APrevious _, _ => false
     | ASelf Al, ASelf Ar => assertion_eq Al Ar
     | ASelf _, _ => false
     end.
@@ -52,9 +62,10 @@ Section eq.
   (* Boolean equality reflection *)
   Lemma assertion_eqP : Equality.axiom assertion_eq.
   Proof.
-    elim=> [pl | Al IHA | All IHAl Arl IHAr | vl Al IHA | All IHAl Arl IHAr
-      | All IHAl Arl IHAr | Al IHA] [pr | Ar | Alr Arr | vr Ar | Alr Arr
-      | Alr Arr | Ar] //=; try by constructor.
+    elim=> [pl | Al IHA | All IHAl Arl IHAr | vl Al IHA | Al IHA | Al IHA
+      | Al IHA | Al IHA | Al IHA | Al IHA | Al IHA]
+      [pr | Ar | Alr Arr | vr Ar | Ar | Ar | Ar | Ar | Ar | Ar | Ar] //=;
+      try by constructor.
     - case H: (pl == pr); move/eqP: H => H //=; subst;
         last by constructor; move=> [].
       by constructor.
@@ -71,14 +82,22 @@ Section eq.
       case H: (assertion_eq Al Ar); move/IHA: H => H //=; subst;
         last by constructor; move=> [].
       by constructor.
-    - case H: (assertion_eq All Alr); move/IHAl: H => H //=; subst;
-        last by constructor; move=> [].
-      case H: (assertion_eq Arl Arr); move/IHAr: H => H //=; subst;
+    - case H: (assertion_eq Al Ar); move/IHA: H => H //=; subst;
         last by constructor; move=> [].
       by constructor.
-    - case H: (assertion_eq All Alr); move/IHAl: H => H //=; subst;
+    - case H: (assertion_eq Al Ar); move/IHA: H => H //=; subst;
         last by constructor; move=> [].
-      case H: (assertion_eq Arl Arr); move/IHAr: H => H //=; subst;
+      by constructor.
+    - case H: (assertion_eq Al Ar); move/IHA: H => H //=; subst;
+        last by constructor; move=> [].
+      by constructor.
+    - case H: (assertion_eq Al Ar); move/IHA: H => H //=; subst;
+        last by constructor; move=> [].
+      by constructor.
+    - case H: (assertion_eq Al Ar); move/IHA: H => H //=; subst;
+        last by constructor; move=> [].
+      by constructor.
+    - case H: (assertion_eq Al Ar); move/IHA: H => H //=; subst;
         last by constructor; move=> [].
       by constructor.
     - case H: (assertion_eq Al Ar); move/IHA: H => H //=; subst;
@@ -102,13 +121,21 @@ Notation "{A: A }" := (A%assertion)
 (* Constructor notations *)
 Notation "# p" := (APredicate p) : assertion_scope.
 Notation "~ A" := (ANot A) : assertion_scope.
-Notation "Al \/ Ar" := (AOr Al Ar) : assertion_scope.
+Notation "Al /\ Ar" := (AAnd Al Ar) : assertion_scope.
 Notation "forall: v , A" := (AForAll v A)
   (at level 65, v at level 99, A at level 200, right associativity)
   : assertion_scope.
-Notation "Al until^ Ar" := (AUntil' Al Ar)
+Notation "always^ A" := (AAlways' A)
   (at level 60, right associativity) : assertion_scope.
-Notation "Al since^ Ar" := (ASince' Al Ar)
+Notation "alwaysp^ A" := (AAlwaysP' A)
+  (at level 60, right associativity) : assertion_scope.
+Notation "eventually^ A" := (AEventually' A)
+  (at level 60, right associativity) : assertion_scope.
+Notation "eventuallyp^ A" := (AEventuallyP' A)
+  (at level 60, right associativity) : assertion_scope.
+Notation "'next' A" := (ANext A)
+  (at level 60, right associativity) : assertion_scope.
+Notation "'previous' A" := (APrevious A)
   (at level 60, right associativity) : assertion_scope.
 Notation "'self' A" := (ASelf A)
   (at level 60, right associativity) : assertion_scope.
@@ -124,8 +151,8 @@ Notation "'correct' tn" := (ACorrect tn)
   (at level 0, no associativity) : assertion_scope.
 
 (* Derived propositional operators *)
-Definition AAnd Al Ar := {A: ~(~Al \/ ~Ar)}.
-Notation "Al /\ Ar" := (AAnd Al Ar) : assertion_scope.
+Definition AOr Al Ar := {A: ~(~Al /\ ~Ar)}.
+Notation "Al \/ Ar" := (AOr Al Ar) : assertion_scope.
 Definition AIf Al Ar := {A: ~Al \/ Ar}.
 Notation "Al -> Ar" := (AIf Al Ar) : assertion_scope.
 Definition AIff Al Ar := {A: (Al -> Ar) /\ (Ar -> Al)}.
@@ -135,33 +162,7 @@ Notation "exists: v , A" := (AExists v A)
   (at level 65, v at level 99, A at level 200, right associativity)
   : assertion_scope.
 
-(* Derived strict and immediate future temporal operators *)
-Definition AEventually' A := {A: (~AFalse) until^ A}.
-Notation "eventually^ A" := (AEventually' A)
-  (at level 60, right associativity) : assertion_scope.
-Definition AAlways' A := {A: ~eventually^ ~A}.
-Notation "always^ A" := (AAlways' A)
-  (at level 60, right associativity) : assertion_scope.
-Definition AUnless' Al Ar := {A: always^ Al \/ Al until^ Ar}.
-Notation "Al unless^ Ar" := (AUnless' Al Ar)
-  (at level 60, right associativity) : assertion_scope.
-Definition ANext A := {A: AFalse until^ A}.
-Notation "'next' A" := (ANext A)
-  (at level 60, right associativity) : assertion_scope.
-
 (* Derived strict and immediate past temporal operators *)
-Definition AEventuallyP' A := {A: (~AFalse) since^ A}.
-Notation "eventuallyp^ A" := (AEventuallyP' A)
-  (at level 60, right associativity) : assertion_scope.
-Definition AAlwaysP' A := {A: ~eventuallyp^ ~A}.
-Notation "alwaysp^ A" := (AAlwaysP' A)
-  (at level 60, right associativity) : assertion_scope.
-Definition ABackTo' Al Ar := {A: alwaysp^ Al \/ Al since^ Ar}.
-Notation "Al backto^ Ar" := (ABackTo' Al Ar)
-  (at level 60, right associativity) : assertion_scope.
-Definition APrevious A := {A: AFalse since^ A}.
-Notation "'previous' A" := (APrevious A)
-  (at level 60, right associativity) : assertion_scope.
 Definition APrevious' A := {A: ~previous ~A}.
 Notation "previous^ A" := (APrevious' A)
   (at level 60, right associativity) : assertion_scope.
@@ -173,12 +174,6 @@ Notation "'eventually' A" := (AEventually A)
 Definition AAlways A := {A: A /\ always^ A}.
 Notation "'always' A" := (AAlways A)
   (at level 60, right associativity) : assertion_scope.
-Definition AUntil Al Ar := {A: Ar \/ Al /\ Al until^ Ar}.
-Notation "Al 'until' Ar" := (AUntil Al Ar)
-  (at level 60, right associativity) : assertion_scope.
-Definition AUnless Al Ar := {A: Ar \/ Al /\ Al unless^ Ar}.
-Notation "Al 'unless' Ar" := (AUnless Al Ar)
-  (at level 60, right associativity) : assertion_scope.
 
 (* Derived reflexive past temporal operators *)
 Definition AEventuallyP A := {A: A \/ eventuallyp^ A}.
@@ -186,12 +181,6 @@ Notation "'eventuallyp' A" := (AEventuallyP A)
   (at level 60, right associativity) : assertion_scope.
 Definition AAlwaysP A := {A: A /\ alwaysp^ A}.
 Notation "'alwaysp' A" := (AAlwaysP A)
-  (at level 60, right associativity) : assertion_scope.
-Definition ASince Al Ar := {A: Ar \/ Al /\ Al since^ Ar}.
-Notation "Al 'since' Ar" := (ASince Al Ar)
-  (at level 60, right associativity) : assertion_scope.
-Definition ABackTo Al Ar := {A: Ar \/ Al /\ Al backto^ Ar}.
-Notation "Al 'backto' Ar" := (ABackTo Al Ar)
   (at level 60, right associativity) : assertion_scope.
 
 (* Additional temporal operators *)
@@ -249,3 +238,21 @@ Definition ANotEqual tl tr := {A: ~(tl = tr)}.
 Notation "tl <> tr" := (ANotEqual tl tr) : assertion_scope.
 Definition ANotIn t ts := {A: ~(t \in ts)}.
 Notation "t \notin ts" := (ANotIn t ts) : assertion_scope.
+
+(* Proposition for non-temporal assertions *)
+Inductive non_temporal_assertion : assertion -> Type :=
+| NTAPredicate p :
+  non_temporal_assertion {A: #p}
+| NTANot A :
+  non_temporal_assertion A ->
+  non_temporal_assertion {A: ~A}
+| NTAAnd Al Ar :
+  non_temporal_assertion Al ->
+  non_temporal_assertion Ar ->
+  non_temporal_assertion {A: Al /\ Ar}
+| NTAForAll v A :
+  non_temporal_assertion A ->
+  non_temporal_assertion {A: forall: v, A}.
+
+Definition non_temporal_assertion_t :=
+  {A : assertion & non_temporal_assertion A}.
