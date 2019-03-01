@@ -332,4 +332,162 @@ Theorem SL_2 : [::] |- stubborn_link, {A:
   when-on["n'"] when[]-> {t: CSLSend $ "n" $ "m"}
 }.
 Proof.
+  pose Gamma : context := [::]; rewrite -/Gamma.
+  pose C := stubborn_link; rewrite -/C.
+
+  (* By rule OI' *)
+  have H1 : Gamma |- C, {A:
+    when-on["n"] when[]<- CSLDeliver $ "n'" $ "m" =>>
+    eventuallyp when-on["n"] (CSLDeliver $ "n'" $ "m" \in "Fois" /\ when-self)
+  }.
+  {
+    (* Instantiate OI' *)
+    have HOI' := DPOI' C Gamma "n" {t: CSLDeliver $ "n'" $ "m"}.
+    by eapply DARewriteIfC' in HOI';
+      last by apply DTL123 with
+        (A := {A: when-on["n"] (CSLDeliver $ "n'" $ "m" \in "Fois" /\
+          when-self)}).
+  }
+
+  (* By rule InvL *)
+  have H2 : Gamma |- C, {A:
+    when-on["n"] (CSLDeliver $ "n'" $ "m" \in "Fois" /\ when-self) =>>
+    when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m"
+  }.
+  {
+    (* Instantiate InvL *)
+    set A := {A:
+      when-on["n"] (CSLDeliver $ "n" $ "m" \in "Fois") ->
+      when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m"
+    }. (* TODO: Confirm that this is the right A *)
+    have HInvL := @DPInvL C Gamma A.
+
+    (* Prove that A is non-temporal *)
+    have HNTA : non_temporal_assertion A by repeat constructor.
+    specialize (HInvL HNTA); clear HNTA.
+
+    (* Prove that A holds for requests *)
+    have HInvLr : Gamma |- C, {A:
+      forall: "e",
+      when[]-> "e" /\
+      request C $ "Fn" $ ("Fs" $ "Fn") $ "e" =
+        ("Fs'" $ "Fn", "Fors", "Fois") ->
+      A
+    }.
+    {
+      admit. (* TODO *)
+    }
+    specialize (HInvL HInvLr); clear HInvLr.
+
+    (* Prove that A holds for indications *)
+    have HInvLi : Gamma |- C, {A:
+      forall: "i", forall: "e",
+      when["i"]<- "e" /\
+      indication C $ "Fn" $ ("Fs" $ "Fn") $ ("i", "e") =
+        ("Fs'" $ "Fn", "Fors", "Fois") ->
+      A
+    }.
+    {
+      admit. (* TODO *)
+    }
+    specialize (HInvL HInvLi); clear HInvLi.
+
+    (* Prove that A holds for periodics *)
+    have HInvLp : Gamma |- C, {A:
+      when[]~> PE /\
+      periodic C $ "Fn" $ ("Fs" $ "Fn") = ("Fs'" $ "Fn", "Fors", "Fois") ->
+      A
+    }.
+    {
+      admit. (* TODO *)
+    }
+    specialize (HInvL HInvLp); clear HInvLp.
+
+    (* Now what? *)
+    admit. (* TODO *)
+  }
+
+  (* From (1) and (2) *)
+  have H3 : Gamma |- C, {A:
+    when-on["n"] when[]<- CSLDeliver $ "n'" $ "m" <~
+    when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m"
+  }.
+  {
+    by eapply DARewriteEntailsC' in H1; last by apply H2.
+  }
+
+  (* By rule NForge *)
+  have H4 : Gamma |- C, {A:
+    when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m" <~
+    when-on["n'"] when[0]-> CFLSend $ "n" $ "m"
+  }.
+  {
+    (* Instantiate NForge *)
+    by apply (DPNForge C Gamma "n'" "n" "m" 0).
+  }
+
+  (* By lemma 85 on (3) and (4) *)
+  have H5 : Gamma |- C, {A:
+    when-on["n"] when[]<- CSLDeliver $ "n'" $ "m" <~
+    when-on["n'"] when[0]-> CFLSend $ "n" $ "m"
+  }.
+  {
+    by apply (DTL85 H3 H4).
+  }
+
+  (* By rule OR' *)
+  have H6 : Gamma |- C, {A:
+    when-on["n'"] when[0]-> CFLSend $ "n" $ "m" =>>
+    eventuallyp when-on["n'"]
+      ((0, CFLSend $ "n" $ "m") \in "Fors" /\ when-self)
+  }.
+  {
+    (* Instantiate OR' *)
+    have HOR' := DPOR' C Gamma "n'" 0 {t: CFLSend $ "n" $ "m"}.
+    by eapply DARewriteIfC' in HOR';
+      last by apply DTL123 with
+        (A := {A: when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors" /\
+          when-self)}).
+  }
+
+  (* By rule InvL *)
+  have H7 : Gamma |- C, {A:
+    when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors" /\ when-self) =>>
+    when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+  }.
+  {
+    admit. (* TODO *)
+  }
+
+  (* From (6) and (7) *)
+  have H8 : Gamma |- C, {A:
+    when-on["n'"] when[0]-> CFLSend $ "n" $ "m" <~
+    when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+  }.
+  {
+    by eapply DARewriteEntailsC' in H6; last by apply H7.
+  }
+
+  (* From (5) and (8) *)
+  have H9 : Gamma |- C, {A:
+    when-on["n"] when[]<- CSLDeliver $ "n'" $ "m" <~
+    eventuallyp when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+  }.
+  {
+    by eapply DARewriteEntailsC' in H5; last by apply H8.
+  }
+
+  (* Line missing from paper proof: *)
+  (* By lemma 83 on (9) *)
+  have H10 : Gamma |- C, {A:
+    when-on["n"] when[]<- CSLDeliver $ "n'" $ "m" <~
+    when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+  }.
+  {
+    by eapply DARewriteCongruentCL;
+      first by apply DTL83_1 with
+      (A := {A: when-on["n'"] when[]-> CSLSend $ "n" $ "m"}).
+  }
+
+  by [].
 Admitted. (* TODO *)
