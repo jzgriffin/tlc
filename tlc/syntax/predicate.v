@@ -12,6 +12,7 @@ Inductive predicate :=
 | PFalse
 | PEqual (tl tr : term)
 | PIn (t ts : term)
+| PExtension (ts' ts : term)
 | PCorrect (tn : term).
 
 (* Equality *)
@@ -26,6 +27,9 @@ Section eq.
     | PEqual _ _, _ => false
     | PIn tl tsl, PIn tr tsr => (tl == tr) && (tsl == tsr)
     | PIn _ _, _ => false
+    | PExtension ts'l tsl, PExtension ts'r tsr =>
+      (ts'l == ts'r) && (tsl == tsr)
+    | PExtension _ _, _ => false
     | PCorrect tnl, PCorrect tnr => tnl == tnr
     | PCorrect _, _ => false
     end.
@@ -33,7 +37,8 @@ Section eq.
   (* Boolean equality reflection *)
   Lemma predicate_eqP : Equality.axiom predicate_eq.
   Proof.
-    elim=> [| tll trl | tl tsl | tnl] [| tlr trr | tr tsr | tnr] //=;
+    elim=> [| tll trl | tl tsl | ts'l tsl | tnl]
+      [| tlr trr | tr tsr | ts'r tsr | tnr] //=;
       try by constructor.
     - case H: (tll == tlr); move/eqP: H => H //=; subst;
         last by constructor; move=> [].
@@ -41,6 +46,11 @@ Section eq.
         last by constructor; move=> [].
       by constructor.
     - case H: (tl == tr); move/eqP: H => H //=; subst;
+        last by constructor; move=> [].
+      case H: (tsl == tsr); move/eqP: H => H //=; subst;
+        last by constructor; move=> [].
+      by constructor.
+    - case H: (ts'l == ts'r); move/eqP: H => H //=; subst;
         last by constructor; move=> [].
       case H: (tsl == tsr); move/eqP: H => H //=; subst;
         last by constructor; move=> [].

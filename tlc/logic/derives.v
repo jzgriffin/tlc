@@ -9,6 +9,7 @@ Require Import tlc.operation.periodic_event.
 Require Import tlc.semantics.all_semantics.
 Require Import tlc.syntax.all_syntax.
 Require Import tlc.utility.result.
+Require Import tlc.utility.seq.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -121,6 +122,11 @@ Section derives.
     lift_list ts = Success ts' ->
     t \in ts' ->
     Gamma |- {A: t \in ts}
+  | DAPExtension Gamma ts' ts'_l ts ts_l :
+    lift_list ts' = Success ts'_l ->
+    lift_list ts = Success ts_l ->
+    extension ts'_l ts_l ->
+    Gamma |- {A: ts' <<< ts}
   (* Constructors *)
   | DAInjectivePairP Gamma tll trl tlr trr Ac :
     {A: tll = tlr} :: {A: trl = trr} :: Gamma |- Ac ->

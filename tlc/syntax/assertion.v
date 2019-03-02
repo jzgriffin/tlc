@@ -146,6 +146,9 @@ Definition AEqual tl tr := {A: # (PEqual tl tr)}.
 Notation "tl = tr" := (AEqual tl tr) : assertion_scope.
 Definition AIn t ts := {A: # (PIn t ts)}.
 Notation "t \in ts" := (AIn t ts) : assertion_scope.
+Definition AExtension ts' ts := {A: # (PExtension ts' ts)}.
+Notation "ts' <<< ts" := (AExtension ts' ts)
+  (at level 20, no associativity) : assertion_scope.
 Definition ACorrect tn := {A: # (PCorrect tn)}.
 Notation "'correct' tn" := (ACorrect tn)
   (at level 0, no associativity) : assertion_scope.
