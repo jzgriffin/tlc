@@ -71,5 +71,13 @@ Fixpoint evaluate_predicate p :=
   end
 where "[[p p ]]" := (evaluate_predicate p).
 
-(* Tactic for evaluation *)
-Ltac evaluate_predicate := rewrite /evaluate_predicate /=; evaluate_term.
+(* Tactics for semantic operations on predicates *)
+Ltac substitute_predicate :=
+  rewrite /substitute_predicate /=;
+  substitute_term.
+Ltac instantiate_predicate :=
+  rewrite /instantiate_predicate /=;
+  instantiate_term.
+Ltac evaluate_predicate :=
+  rewrite /evaluate_predicate /=;
+  evaluate_term.

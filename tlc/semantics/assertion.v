@@ -148,5 +148,17 @@ Fixpoint evaluate_assertion A :=
   end
 where "[[A A ]]" := (evaluate_assertion A).
 
-(* Tactic for evaluation *)
-Ltac evaluate_assertion := rewrite /evaluate_assertion /=; evaluate_predicate.
+(* Tactics for semantic operations on assertions *)
+Ltac rewrite_assertion_pos :=
+  rewrite /rewrite_assertion_pos /=.
+Ltac rewrite_assertion_any :=
+  rewrite /rewrite_assertion_any /=.
+Ltac substitute_assertion :=
+  rewrite /substitute_assertion /=;
+  substitute_predicate.
+Ltac instantiate_assertion :=
+  rewrite /instantiate_assertion /=;
+  instantiate_predicate.
+Ltac evaluate_assertion :=
+  rewrite /evaluate_assertion /=;
+  evaluate_predicate.

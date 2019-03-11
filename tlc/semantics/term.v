@@ -222,5 +222,10 @@ Definition evaluate_term_fuel := 4999.
 Definition evaluate_term := evaluate_term' evaluate_term_fuel.
 Notation "[[t t ]]" := (evaluate_term t) (at level 0, no associativity).
 
-(* Tactic for evaluation *)
-Ltac evaluate_term := rewrite /evaluate_term /=.
+(* Tactics for semantic operations on terms *)
+Ltac substitute_term :=
+  rewrite /substitute_term /=.
+Ltac instantiate_term :=
+  rewrite /instantiate_term /=.
+Ltac evaluate_term :=
+  rewrite /evaluate_term /=.
