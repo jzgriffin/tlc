@@ -1,3 +1,10 @@
+(* TLC in Coq
+ *
+ * Module: tlc.component.perfect_link
+ * Purpose: Contains the functional implementation and logical specification
+ * of the perfect link component.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -12,7 +19,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Stubborn link component *)
+(* Functional implementation *)
 Definition perfect_link :=
   let slc := 0 in
   Component
@@ -146,8 +153,8 @@ Definition perfect_link :=
 (* Specification *)
 
 (* Reliable delivery
- * If a correct node n sends a message m to a correct node n',
- * then n' will eventually deliver m
+ * If a correct node n sends a message m to a correct node n', then n' will
+ * eventually deliver m.
  *)
 Theorem PL_1 : Context [::] [::] |- perfect_link, {A:
   correct "n" /\ correct "n'" ->
@@ -158,7 +165,7 @@ Proof.
 Admitted. (* TODO *)
 
 (* No-duplication
- * If a message is sent at most once, it will be delivered at most once
+ * If a message is sent at most once, it will be delivered at most once.
  *)
 Theorem PL_2 : Context [::] [::] |- perfect_link, {A:
   (when-on["n'"] when[]-> CPLSend $ "n" $ "m" =>>
@@ -170,8 +177,8 @@ Proof.
 Admitted. (* TODO *)
 
 (* No-forge
- * If a node n delivers a message m with sender n', then m was previously
- * sent to n by node n'
+ * If a node n delivers a message m with sender n', then m was previously sent
+ * to n by node n'.
  *)
 Theorem PL_3 : Context [::] [::] |- perfect_link, {A:
   when-on["n"] when[]<- CPLDeliver $ "n'" $ "m" <~

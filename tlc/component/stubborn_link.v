@@ -1,3 +1,10 @@
+(* TLC in Coq
+ *
+ * Module: tlc.component.stubborn_link
+ * Purpose: Contains the functional implementation and logical specification
+ * of the stubborn link component.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -16,55 +23,69 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Stubborn link component *)
+(* Functional implementation *)
 Definition stubborn_link :=
   let flc := 0 in
   Component
   (* initialize *)
   {t: fun:
-    (* #0 = n *)
+    (* Begin scoped parameters *)
+    let n := {t: #(0, 0)} in
+    (* End scoped parameters *)
     []
   }
   (* request *)
   {t: fun: fun: fun:
-    (* #(0, 0) = ir *)
-    (* #(1, 0) = s *)
-    (* #(2, 0) = n *)
-    match: #0 with: CSLSend $ # $ #
+    (* Begin scoped parameters *)
+    let n := {t: #(2, 0)} in
+    let s := {t: #(1, 0)} in
+    let ir := {t: #(0, 0)} in
+    (* End scoped parameters *)
+    match: ir with: CSLSend $ # $ # (* n', m *)
     then:
-      (* #(0, 0) = n' *)
-      (* #(0, 1) = m *)
-      (#(2, 0) \union [(#0, #1)],
-        [(flc, CFLSend $ #0 $ #1)],
-        [])
+      (* Begin scoped parameters *)
+      let n := {t: #(3, 0)} in
+      let s := {t: #(2, 0)} in
+      let ir := {t: #(1, 0)} in
+      let n' := {t: #(0, 0)} in
+      let m := {t: #(0, 1)} in
+      (* End scoped parameters *)
+      (s \union [(n', m)], [(flc, CFLSend $ n' $ m)], [])
     else: TFailure
   }
   (* indication *)
   {t: fun: fun: fun:
-    (* #(0, 0) = ii *)
-    (* #(1, 0) = s *)
-    (* #(2, 0) = n' *)
-    match: #0 with: (flc, CFLDeliver $ # $ #)
+    (* Begin scoped parameters *)
+    let n' := {t: #(2, 0)} in
+    let s := {t: #(1, 0)} in
+    let ii := {t: #(0, 0)} in
+    (* End scoped parameters *)
+    match: ii with: (flc, CFLDeliver $ # $ #) (* n, m *)
     then:
-      (* #(0, 0) = n *)
-      (* #(0, 1) = m *)
-      (#(2, 0), [], [CSLDeliver $ #0 $ #1])
+      (* Begin scoped parameters *)
+      let n' := {t: #(3, 0)} in
+      let s := {t: #(2, 0)} in
+      let ii := {t: #(1, 0)} in
+      let n := {t: #(0, 0)} in
+      let m := {t: #(0, 1)} in
+      (* End scoped parameters *)
+      (s, [], [CSLDeliver $ n $ m])
     else: TFailure
   }
   (* periodic *)
   {t: fun: fun:
-    (* #(0, 0) = s *)
-    (* #(1, 0) = n *)
-    let: # := (fun: let: (#, #) := #0 in:
-      (flc, CFLSend $ #0 $ #1)) <$> #(0, 0) in:
-    (#(1, 0), #0, [])
+    (* Begin scoped parameters *)
+    let n' := {t: #(1, 0)} in
+    let s := {t: #(0, 0)} in
+    (* End scoped parameters *)
+    (s, (fun: let: (#, #) := #0 in: (flc, CFLSend $ #0 $ #1)) <$> s, [])
   }.
 
 (* Specification *)
 
 (* Stubborn delivery
- * If a correct node n sends a message m to a correct node n',
- * then n' delivers m infinitely often *)
+ * If a correct node n sends a message m to a correct node n', then n'
+ * delivers m infinitely often *)
 Theorem SL_1 : Context [::] [::] |- stubborn_link, {A:
   forall: "n", "n'", "m":
   correct "n" /\ correct "n'" ->
@@ -283,8 +304,8 @@ Proof.
 Admitted. (* TODO *)
 
 (* No-forge
- * If a node n delivers a message m with sender n', then m was
- * previously sent to n by n' *)
+ * If a node n delivers a message m with sender n', then m was previously sent
+ * to n by n' *)
 Theorem SL_2 : Context [::] [::] |- stubborn_link, {A:
   when-on["n"] when[]<- {t: CSLDeliver $ "n'" $ "m"} <~
   when-on["n'"] when[]-> {t: CSLSend $ "n" $ "m"}
