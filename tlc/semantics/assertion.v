@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.semantics.assertion
+ * Purpose: Contains the semantics for assertion forms.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -18,7 +24,7 @@ Unset Printing Implicit Defensive.
 
 (* Replaces positive occurrences of assertion Ap with assertion Ac in
  * assertion A.  An occurrence is positive if it appears inside an even
- * number of negations
+ * number of negations.
  *)
 Definition rewrite_assertion_pos Ap Ac A :=
   let fix f A n :=
@@ -40,7 +46,7 @@ Definition rewrite_assertion_pos Ap Ac A :=
   f A 0.
 
 (* Replaces all occurrences of assertion Ap with assertion Ac in
- * assertion A
+ * assertion A.
  *)
 Definition rewrite_assertion_any Ap Ac A :=
   let fix f A :=
@@ -79,7 +85,9 @@ Fixpoint substitute_assertion (e : equivalents) A :=
   end
 where "A /A/ e" := (substitute_assertion e A).
 
-(* Substitutes free variables in an assertion A with terms from environment e *)
+(* Substitutes free variables in an assertion A with terms from environment e
+ * NOTE: This process is not capture-avoiding.
+ *)
 Definition instantiate_assertion (e : environment) A :=
   A /A/ environment_equivalents e.
 

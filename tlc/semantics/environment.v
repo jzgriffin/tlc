@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.semantics.environment
+ * Purpose: Contains the environment type.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -11,7 +17,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Partial mapping of terms corresponding to variables *)
+(* Partial mapping from variables to terms *)
 Definition environment := partial_map [eqType of variable] term.
 
 (* Produces an equivalents map for an environment *)

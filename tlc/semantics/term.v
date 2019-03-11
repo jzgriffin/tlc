@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.semantics.term
+ * Purpose: Contains the semantics for term forms.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -35,7 +41,9 @@ Fixpoint substitute_term (e : equivalents) t :=
   end
 where "t /t/ e" := (substitute_term e t).
 
-(* Substitutes free variables in a term t with terms from environment e *)
+(* Substitutes free variables in a term t with terms from environment e
+ * NOTE: This process is not capture-avoiding.
+ *)
 Definition instantiate_term (e : environment) t :=
   t /t/ environment_equivalents e.
 
@@ -54,12 +62,13 @@ Fixpoint term_free t :=
   end.
 
 (* Determines whether a term is globally closed
- * A term is globally closed if it contains no free variables *)
+ * A term is globally closed if it contains no free variables.
+ *)
 Definition is_term_closed t := nilp (term_free t).
 
-(* Opens a term t at a particular depth k, replacing all bound variables at
- * that depth with terms from the replacement terms us
- * See "The Locally Nameless Representation" by Arthur Chargueraud
+(* Opens a term t at a particular depth k
+ * Opening a term replaces all bound variables at depth k with terms from the
+ * replacement term list us.
  *)
 Reserved Notation "{ k :-> us } t" (at level 0, no associativity).
 Fixpoint open_term_at k us t :=
@@ -135,7 +144,11 @@ Fixpoint lift_list (ts : term) :=
   | _ => Failure (EList ts)
   end.
 
-(* Evaluates a term as far as possible given some amount of recursion fuel *)
+(* Evaluates a term as far as possible given some amount of recursion fuel
+ * This algorithm uses the fuel pattern to prove termination.
+ *
+ * NOTE: Whenever an external function is added, it must be implemented here.
+ *)
 Fixpoint evaluate_term' fuel t :=
   if fuel is fuel.+1 then
     match t with

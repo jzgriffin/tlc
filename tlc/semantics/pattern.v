@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.semantics.pattern
+ * Purpose: Contains the pattern matching algorithm.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -16,12 +22,16 @@ Unset Printing Implicit Defensive.
 
 (* Pattern matching algorithm
  * Matches a term t against a pattern p and returns the list of terms bound by
- * bindings in p. Operates in the result monad *)
+ * bindings in p.  Operates in the result monad.
+ *
+ * NOTE: Whenever a new data constructor or literal constructor is added, it
+ * must be added to the algorithm in order to be used for pattern matching.
+ *)
 Fixpoint match_pattern (p : pattern) (t : term) :=
   match p, t with
   (* Generic *)
-  | {p: %}, _ => pure [::]
-  | {p: #}, _ => pure [:: t]
+  | {p: %}, _ => pure [::] (* Matches anything, binds nothing *)
+  | {p: #}, _ => pure [:: t] (* Matches and binds anything *)
   (* Product *)
   | {p: CPair $ pl $ pr}, {t: CPair $ tl $ tr} =>
     tsl <- match_pattern pl tl;

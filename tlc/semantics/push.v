@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.semantics.push
+ * Purpose: Contains the assertion pushing algorithm.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -10,8 +16,9 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Pushes an assertion from the top to a lower layer i *)
-(* TODO: Consider rewriting this in Gallina using the convoy pattern *)
+(* Pushes an assertion from the top to a lower layer i
+ * TODO: Consider rewriting this in Gallina using the convoy pattern.
+ *)
 Fixpoint push_assertion (i : nat) A (TA : top_assertion A) : top_assertion_t.
 Proof.
   inversion TA; subst.

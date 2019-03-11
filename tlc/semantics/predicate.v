@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.semantics.predicate
+ * Purpose: Contains the semantics for predicate forms.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -26,7 +32,9 @@ Definition substitute_predicate (e : equivalents) p :=
 Notation "p /p/ e" := (substitute_predicate e p)
   (at level 40, left associativity).
 
-(* Substitutes free variables in a predicate p with terms from environment e *)
+(* Substitutes free variables in a predicate p with terms from environment e
+ * NOTE: This process is not capture-avoiding.
+ *)
 Definition instantiate_predicate (e : environment) p :=
   p /p/ environment_equivalents e.
 
