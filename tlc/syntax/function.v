@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.syntax.function
+ * Purpose: Contains the syntax of functions.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -6,7 +12,12 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Externally implemented function terms *)
+(* Externally implemented function terms
+ * These are functions that either cannot be encoded directly within the term
+ * language or are inconvenient to do so.  For example, equality obviously
+ * cannot be represented within this limited term language.  Functions that
+ * must be implemented recursively also cannot be easily represented.
+ *)
 Inductive function :=
 (* Generic *)
 | FEqual (* equal x y *)
@@ -59,7 +70,8 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure function_eqMixin := EqMixin function_eqP.
+  Canonical Structure function_eqMixin :=
+    Eval hnf in EqMixin function_eqP.
   Canonical Structure function_eqType :=
     Eval hnf in EqType function function_eqMixin.
 

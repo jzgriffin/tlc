@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.syntax.predicate
+ * Purpose: Contains the syntax of predicates.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -10,10 +16,10 @@ Unset Printing Implicit Defensive.
 (* Forms of logical predicates *)
 Inductive predicate :=
 | PFalse
-| PEqual (tl tr : term)
-| PIn (t ts : term)
-| PExtension (ts' ts : term)
-| PCorrect (tn : term).
+| PEqual (tl tr : term) (* tl and tr are syntactically equal *)
+| PIn (t ts : term) (* t is a member of ts *)
+| PExtension (ts' ts : term) (* ts' is an extension of ts *)
+| PCorrect (tn : term). (* tn is a correct node *)
 
 (* Equality *)
 Section eq.
@@ -61,7 +67,8 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure predicate_eqMixin := EqMixin predicate_eqP.
+  Canonical Structure predicate_eqMixin :=
+    Eval hnf in EqMixin predicate_eqP.
   Canonical Structure predicate_eqType :=
     Eval hnf in EqType predicate predicate_eqMixin.
 

@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.syntax.term
+ * Purpose: Contains the syntax of terms.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -18,22 +24,23 @@ Unset Printing Implicit Defensive.
 
 (* Forms of computational terms *)
 Inductive term :=
-| TFailure
-| TParameter (p : parameter)
-| TVariable (v : variable)
-| TConstructor (c : constructor)
-| TLiteral (l : literal)
-| TFunction (f : function)
-| TApplication (tf ta : term)
-| TAbstraction (tb : term)
-| TMatch (p : pattern) (ta tm tf : term).
+| TFailure (* Computation error *)
+| TParameter (p : parameter) (* Nameless bound parameters *)
+| TVariable (v : variable) (* Named free variables *)
+| TConstructor (c : constructor) (* Value constructors *)
+| TLiteral (l : literal) (* Value literals *)
+| TFunction (f : function) (* External functions *)
+| TApplication (tf ta : term) (* Function application *)
+| TAbstraction (tb : term) (* Function abstraction *)
+| TMatch (p : pattern) (ta tm tf : term). (* Pattern matching *)
 
 (* Equality *)
 Section eq.
 
   (* Boolean equality
    * As a consequence of the locally nameless representation, syntactic
-   * equality is equivalent to equality under alpha-conversion *)
+   * equality is equivalent to equality under alpha-conversion.
+   *)
   Fixpoint term_eq tl tr :=
     match tl, tr with
     | TFailure, TFailure => true
@@ -100,7 +107,8 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure term_eqMixin := EqMixin term_eqP.
+  Canonical Structure term_eqMixin :=
+    Eval hnf in EqMixin term_eqP.
   Canonical Structure term_eqType :=
     Eval hnf in EqType term term_eqMixin.
 

@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.syntax.parameter
+ * Purpose: Contains the syntax of parameters.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -10,6 +16,7 @@ Unset Printing Implicit Defensive.
 (* Type of bound variables
  * i is the distance to the containing binder
  * j is the index of the binding within its binder
+ * This type comes from the locally nameless representation.
  *)
 Inductive parameter := P (i j : nat).
 
@@ -32,7 +39,8 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure parameter_eqMixin := EqMixin parameter_eqP.
+  Canonical Structure parameter_eqMixin :=
+    Eval hnf in EqMixin parameter_eqP.
   Canonical Structure parameter_eqType :=
     Eval hnf in EqType parameter parameter_eqMixin.
 

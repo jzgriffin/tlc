@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.syntax.variable
+ * Purpose: Contains the syntax of variables.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -9,7 +15,10 @@ Unset Printing Implicit Defensive.
 
 Open Scope string_scope.
 
-(* Type of free variables *)
+(* Type of free variables
+ * Free variables are represented by human-readable names encoded as ASCII
+ * strings.
+ *)
 Inductive variable := V : string -> variable.
 
 (* Equality *)
@@ -28,7 +37,8 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure variable_eqMixin := EqMixin variable_eqP.
+  Canonical Structure variable_eqMixin :=
+    Eval hnf in EqMixin variable_eqP.
   Canonical Structure variable_eqType :=
     Eval hnf in EqType variable variable_eqMixin.
 

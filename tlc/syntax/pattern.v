@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.syntax.pattern
+ * Purpose: Contains the syntax of patterns.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -10,7 +16,11 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Forms of patterns in let and match expressions *)
+(* Forms of patterns in let and match expressions
+ * Every literal constructor must have one or more corresponding constructors
+ * in this type.  It is not necessary to modify this type for new data
+ * constructors.
+ *)
 Inductive pattern :=
 | PWildcard (* Non-binding placeholder *)
 | PBinding (* Binding placeholder *)
@@ -88,7 +98,8 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure pattern_eqMixin := EqMixin pattern_eqP.
+  Canonical Structure pattern_eqMixin :=
+    Eval hnf in EqMixin pattern_eqP.
   Canonical Structure pattern_eqType :=
     Eval hnf in EqType pattern pattern_eqMixin.
 

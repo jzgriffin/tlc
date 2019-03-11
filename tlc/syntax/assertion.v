@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.syntax.assertion
+ * Purpose: Contains the syntax of assertions.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -18,17 +24,19 @@ Unset Printing Implicit Defensive.
 
 (* Forms of logical assertions *)
 Inductive assertion :=
-| APredicate (p : predicate)
-| ANot (A : assertion)
-| AAnd (Al Ar : assertion)
-| AForAll (v : variable) (A : assertion)
-| AAlways' (A : assertion)
-| AAlwaysP' (A : assertion)
-| AEventually' (A : assertion)
-| AEventuallyP' (A : assertion)
-| ANext (A : assertion)
-| APrevious (A : assertion)
-| ASelf (A : assertion).
+(* First-order logic *)
+| APredicate (p : predicate) (* Predicates *)
+| ANot (A : assertion) (* Negation *)
+| AAnd (Al Ar : assertion) (* Conjunction *)
+| AForAll (v : variable) (A : assertion) (* Universal quantification *)
+(* Temporal logic *)
+| AAlways' (A : assertion) (* Always strictly in the future *)
+| AAlwaysP' (A : assertion) (* Always strictly in the past *)
+| AEventually' (A : assertion) (* Eventually strictly in the future *)
+| AEventuallyP' (A : assertion) (* Eventually strictly in the past *)
+| ANext (A : assertion) (* In the next label *)
+| APrevious (A : assertion) (* In the previous label *)
+| ASelf (A : assertion). (* Subtrace of self events *)
 
 (* Equality *)
 Section eq.
@@ -109,7 +117,8 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure assertion_eqMixin := EqMixin assertion_eqP.
+  Canonical Structure assertion_eqMixin :=
+    Eval hnf in EqMixin assertion_eqP.
   Canonical Structure assertion_eqType :=
     Eval hnf in EqType assertion assertion_eqMixin.
 
@@ -156,7 +165,7 @@ Notation ACorrect tn := {A: # (PCorrect tn)}.
 Notation "'correct' tn" := (ACorrect tn)
   (at level 0, no associativity) : assertion_scope.
 
-(* Derived propositional operators *)
+(* Derived first-order operators *)
 Notation AOr Al Ar := {A: ~(~Al /\ ~Ar)}.
 Notation "Al \/ Ar" := (AOr Al Ar) : assertion_scope.
 Notation AIf Al Ar := {A: ~Al \/ Ar}.
@@ -245,7 +254,9 @@ Notation "tl <> tr" := (ANotEqual tl tr) : assertion_scope.
 Definition ANotIn t ts := {A: ~(t \in ts)}.
 Notation "t \notin ts" := (ANotIn t ts) : assertion_scope.
 
-(* Proposition for non-temporal assertions *)
+(* Forms of non-temporal assertions
+ * Non-temporal assertions do not contain any temporal operators.
+ *)
 Inductive non_temporal_assertion : assertion -> Type :=
 | NTAPredicate p :
   non_temporal_assertion {A: #p}
@@ -260,10 +271,18 @@ Inductive non_temporal_assertion : assertion -> Type :=
   non_temporal_assertion A ->
   non_temporal_assertion {A: forall: v: A}.
 
+(* Sigma type for non-temporal assertions *)
 Definition non_temporal_assertion_t :=
   {A : assertion & non_temporal_assertion A}.
 
-(* Proposition for assertions at a particular location *)
+(* Forms of assertions at a particular location
+ * Location assertions are restricted to specific forms of atomic assertions
+ * and any compositions of those assertions, excluding the next, previous, and
+ * self operators.
+ *
+ * The sequence of naturals represents the distinct location at which the
+ * assertion is made.
+ *)
 Inductive location_assertion : seq nat -> assertion -> Type :=
 | LAEventOn d tn d' to te :
   extension d' d ->
@@ -295,24 +314,34 @@ Inductive location_assertion : seq nat -> assertion -> Type :=
   location_assertion d A ->
   location_assertion d {A: eventuallyp^ A}.
 
-Definition local_assertion_t d :=
+(* Sigma type for location assertions *)
+Definition location_assertion_t d :=
   {A : assertion & location_assertion d A}.
 
-(* Proposition for assertions on the top component *)
+(* Forms of assertions on the top component
+ * Top assertions are simply location assertions specialized for the empty
+ * distinct location.
+ *)
 Definition top_assertion := location_assertion [::].
 
+(* Sigma type for top assertions *)
 Definition top_assertion_t :=
   {A : assertion & top_assertion A}.
 
-(* Proposition for assertions that are invariants at a particular location *)
+(* Forms of assertions that are invariants at a particular location
+ * Location invariants are location assertions in which the outermost operator
+ * is the always-in-the-future operator.
+ *)
 Inductive location_invariant : seq nat -> assertion -> Type :=
 | LIA d A:
   location_assertion d {A: always A} ->
   location_invariant d A.
 
+(* Sigma type for location invariants *)
 Definition location_invariant_t d :=
   {A : assertion & location_invariant d A}.
 
+(* Every location invariant is also a location assertion *)
 Lemma location_invariant_assertion d A :
   location_invariant d A ->
   location_assertion d {A: always A}.
@@ -321,13 +350,24 @@ Proof.
   by inversion LI; subst.
 Qed.
 
-(* Proposition for assertions that are invariants on the top component *)
+(* Forms of assertions that are invariants on the top component
+ * Top invariants are simply location invariants specialized for the empty
+ * distinct location.
+ *)
 Definition top_invariant := location_invariant [::].
 
+(* Sigma type for top invariants *)
 Definition top_invariant_t :=
   {A : assertion & top_invariant A}.
 
-(* Proposition for assertions that are self invariants *)
+(* Forms of assertions that are self invariants
+ * Self invariants are restricted to specific forms of atomic assertions and
+ * any compositions of those assertions, excluding the next, previous, and
+ * self operators.
+ *
+ * The sequence of naturals represents the distinct location at which the
+ * assertion is made.
+ *)
 Inductive self_invariant : assertion -> Type :=
 | SITopRequestOn tn te :
   self_invariant {A: when-on[tn] when[]-> te}
@@ -359,3 +399,7 @@ Inductive self_invariant : assertion -> Type :=
 | SIEventuallyP' A :
   self_invariant A ->
   self_invariant {A: eventuallyp^ A}.
+
+(* Sigma type for self invariants *)
+Definition self_invariant_t :=
+  {A : assertion & self_invariant A}.

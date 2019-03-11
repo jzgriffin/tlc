@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.syntax.constructor
+ * Purpose: Contains the syntax of constructors.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -6,7 +12,10 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Constructors for inductive value terms *)
+(* Constructors for value terms comprised of other terms
+ * Value terms comprised of non-term elements, such as the naturals, are
+ * represented as literals.
+ *)
 Inductive constructor :=
 (* Product *)
 | CPair
@@ -75,7 +84,8 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure constructor_eqMixin := EqMixin constructor_eqP.
+  Canonical Structure constructor_eqMixin :=
+    Eval hnf in EqMixin constructor_eqP.
   Canonical Structure constructor_eqType :=
     Eval hnf in EqType constructor constructor_eqMixin.
 

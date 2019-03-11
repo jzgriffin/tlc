@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.syntax.literal
+ * Purpose: Contains the syntax of literals.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -9,7 +15,17 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Literal (non-inductive) terms *)
+(* Literal value terms
+ * These terms are encoded directly using their Coq equivalents.  This is
+ * possible because these terms are not constructed from other embedded terms,
+ * but from Coq terms of particular types.  In the case of nat, this is
+ * particularly helpful because Coq is able to print nat literals using
+ * numeric notation; if the naturals were instead implemented through embedded
+ * constructors, their full Peano encodings would be printed.
+ *
+ * NOTE: When adding a new literal constructor, also add its corresponding
+ * pattern(s) to the pattern type.
+ *)
 Inductive literal :=
 | LUnit (u : unit)
 | LBoolean (b : bool)
