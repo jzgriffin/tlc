@@ -127,7 +127,7 @@ Proof.
       eapply DARewriteIffPL.
         eapply DSCut; first by apply DAPConcatIn.
         by d_forallp {t: ("n'", "m")}; d_forallp "s".
-      rewrite /rewrite_assertion_any /=.
+      rewrite_assertion_any.
 
       d_existsp "sl"; d_existsp "sr".
       (*
@@ -158,8 +158,8 @@ Proof.
     always^ (when-self -> ("n'", "m") \in ("Fs" $ "n"))
   }.
   {
-    d_rotate 1; eapply DARewriteEntailsP; first by d_rotate 2; apply DSAxiom.
-    by rewrite /rewrite_assertion_pos /=.
+    by d_rotate 1; eapply DARewriteEntailsP;
+      first by d_rotate 2; apply DSAxiom.
   }
 
   (* By APerSA *)
@@ -198,7 +198,7 @@ Proof.
   {
     d_ifp; first by d_assumption.
     d_rotate 1; eapply DARewriteEntailsP; first by d_rotate 4; apply DSAxiom.
-    rewrite /rewrite_assertion_pos /=.
+    rewrite_assertion_pos.
     by eapply DARewriteCongruentCR; first by eapply DTL119 with (A := {A:
       eventually when-on["n"]
         (when-self /\ (0, CFLSend $ "n'" $ "m") \in "Fors")
