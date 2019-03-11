@@ -35,6 +35,7 @@ semantics/predicate.v
 semantics/assertion.v
 semantics/restrict.v
 semantics/push.v
+semantics/lower.v
 semantics/all_semantics.v
 component/component.v
 logic/context.v
