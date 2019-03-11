@@ -23,7 +23,11 @@ Inductive constructor :=
 (* SLRequest *)
 | CSLSend
 (* SLIndication *)
-| CSLDeliver.
+| CSLDeliver
+(* PLRequest *)
+| CPLSend
+(* PLIndication *)
+| CPLDeliver.
 
 (* Equality *)
 Section eq.
@@ -56,6 +60,12 @@ Section eq.
     (* SLIndication *)
     | CSLDeliver, CSLDeliver => true
     | CSLDeliver, _ => false
+    (* PLRequest *)
+    | CPLSend, CPLSend => true
+    | CPLSend, _ => false
+    (* PLIndication *)
+    | CPLDeliver, CPLDeliver => true
+    | CPLDeliver, _ => false
     end.
 
   (* Boolean equality reflection *)

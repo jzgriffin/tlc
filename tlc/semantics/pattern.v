@@ -56,6 +56,16 @@ Fixpoint match_pattern (p : pattern) (t : term) :=
     tsn <- match_pattern pn tn;
     tsm <- match_pattern pm tm;
     pure (app tsn tsm)
+  (* PLRequest *)
+  | {p: CPLSend $ pn $ pm}, {t: CPLSend $ tn $ tm} =>
+    tsn <- match_pattern pn tn;
+    tsm <- match_pattern pm tm;
+    pure (app tsn tsm)
+  (* PLIndication *)
+  | {p: CPLDeliver $ pn $ pm}, {t: CPLDeliver $ tn $ tm} =>
+    tsn <- match_pattern pn tn;
+    tsm <- match_pattern pm tm;
+    pure (app tsn tsm)
   (* Unit *)
   | PLUnit pu, LUnit tu =>
     if pu == tu then pure [::]
