@@ -33,6 +33,7 @@ semantics/pattern.v
 semantics/term.v
 semantics/predicate.v
 semantics/assertion.v
+semantics/restrict.v
 semantics/all_semantics.v
 component/component.v
 logic/context.v

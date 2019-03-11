@@ -4,4 +4,5 @@ Require Export tlc.semantics.equivalents.
 Require Export tlc.semantics.error.
 Require Export tlc.semantics.pattern.
 Require Export tlc.semantics.predicate.
+Require Export tlc.semantics.restrict.
 Require Export tlc.semantics.term.
