@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.all
+ * Purpose: Exports the entire package by exporting all modules.
+ *)
+
 Require Export tlc.component.all_component.
 Require Export tlc.logic.all_logic.
 Require Export tlc.operation.all_operation.
