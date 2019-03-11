@@ -8,13 +8,26 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Logical context of assertions *)
-Definition context := seq assertion.
+(* Logical context of bound variables *)
+Definition context_variables := seq variable.
+
+(* Logical context of bound assertions *)
+Definition context_assertions := seq assertion.
+
+(* Logical proof context *)
+Record context :=
+  Context {
+    context_delta : context_variables;
+    context_gamma : context_assertions;
+  }.
+
+Coercion context_delta : context >-> context_variables.
+Coercion context_gamma : context >-> context_assertions.
 
 (* Produces a term equivalence map from a context
  * All premises of the form "tl = tr" appear in the equivalence map
  *)
-Fixpoint context_equivalences (Gamma : context) : equivalents :=
+Fixpoint context_equivalences (Gamma : context_assertions) : equivalents :=
   match Gamma with
   | [::] => [::]
   | A :: Gamma =>

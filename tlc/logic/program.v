@@ -11,90 +11,110 @@ Unset Printing Implicit Defensive.
 
 (* Derived program rules and lemmas *)
 
-Lemma DPIROI C Gamma (S : term -> assertion) tn te te' :
-  Gamma |- C, {A:
-    S "s" /\
-      te' \in {t: let: (%, %, #) := request C $ tn $ "s" $ te in: #0}
-  } ->
-  Gamma |- C, {A:
-    when-on[tn] when[]-> te /\ S {t: "Fs" $ tn} =>>
-    eventually when-on[tn] when[]<- te'
+Lemma DPIROI C ctx (S : term -> assertion) :
+  ctx |- C, {A:
+    forall: "n", "e", "e'":
+    (
+      forall: "s":
+      S "s" /\
+      "e'" \in let: (%, %, #) := request C $ "n" $ "s" $ "e" in: #0
+    ) ->
+    (
+      when-on["n"] when[]-> "e" /\ S {t: "Fs" $ "n"} =>>
+      eventually when-on["n"] when[]<- "e'"
+    )
   }.
 Proof.
 Admitted. (* TODO *)
 
-Lemma DPIIOI C Gamma (S : term -> assertion) tn ti te te' :
-  Gamma |- C, {A:
-    S "s" /\
-      te' \in {t: let: (%, %, #) := indication C $ tn $ "s" $ (ti, te) in: #0}
-  } ->
-  Gamma |- C, {A:
-    when-on[tn] when[ti]<- te /\ S {t: "Fs" $ tn} =>>
-    eventually^ when-on[tn] when[]<- te'
+Lemma DPIIOI C ctx (S : term -> assertion) :
+  ctx |- C, {A:
+    forall: "n", "i", "e", "e'":
+    (
+      forall: "s":
+      S "s" /\
+      "e'" \in let: (%, %, #) := indication C $ "n" $ "s" $ ("i", "e") in: #0
+    ) ->
+    (
+      when-on["n"] when["i"]<- "e" /\ S {t: "Fs" $ "n"} =>>
+      eventually^ when-on["n"] when[]<- "e'"
+    )
   }.
 Proof.
 Admitted. (* TODO *)
 
-Lemma DPInvL C Gamma A :
+Lemma DPInvL C ctx A :
   non_temporal_assertion A ->
-  Gamma |- C, {A:
-    forall: "e",
-    when[]-> "e" /\
-    request C $ "Fn" $ ("Fs" $ "Fn") $ "e" = ("Fs'" $ "Fn", "Fors", "Fois") ->
-    A
-  } ->
-  Gamma |- C, {A:
-    forall: "i", forall: "e",
-    when["i"]<- "e" /\
-    indication C $ "Fn" $ ("Fs" $ "Fn") $ ("i", "e") =
-      ("Fs'" $ "Fn", "Fors", "Fois") ->
-    A
-  } ->
-  Gamma |- C, {A:
-    when[]~> PE /\
-    periodic C $ "Fn" $ ("Fs" $ "Fn") = ("Fs'" $ "Fn", "Fors", "Fois") ->
-    A
-  } ->
-  Gamma |- C, {A: when-self =>> A}.
-Proof.
-Admitted. (* TODO *)
-
-Lemma DPInvS'' C Gamma (S : term -> assertion) tn :
-  Gamma |- C, {A:
-    forall: "s", forall: "e",
-    S "s" ->
-    S {t: let: (#, %, %) := request C $ tn $ "s" $ "e" in: #0}
-  } ->
-  Gamma |- C, {A:
-    forall: "s", forall: "i", forall: "e",
-    S "s" ->
-    S {t: let: (#, %, %) := indication C $ tn $ "s" $ ("i", "e") in: #0}
-  } ->
-  Gamma |- C, {A:
-    forall: "s",
-    S "s" ->
-    S {t: let: (#, %, %) := periodic C $ tn $ "s" in: #0}
-  } ->
-  Gamma |- C, {A:
-    (when-self /\ S {t: "Fs'" $ tn}) =>>
-    always^ (when-self -> S {t: "Fs" $ tn})
+  ctx |- C, {A:
+    (
+      forall: "e":
+      when[]-> "e" /\
+      request C $ "Fn" $ ("Fs" $ "Fn") $ "e" =
+        ("Fs'" $ "Fn", "Fors", "Fois") ->
+      A
+    ) ->
+    (
+      forall: "i", "e":
+      when["i"]<- "e" /\
+      indication C $ "Fn" $ ("Fs" $ "Fn") $ ("i", "e") =
+        ("Fs'" $ "Fn", "Fors", "Fois") ->
+      A
+    ) ->
+    (
+      when[]~> PE /\
+      periodic C $ "Fn" $ ("Fs" $ "Fn") =
+        ("Fs'" $ "Fn", "Fors", "Fois") ->
+      A
+    ) ->
+    (
+      when-self =>> A
+    )
   }.
 Proof.
 Admitted. (* TODO *)
 
-Lemma DPAPerSA C Gamma (S : term -> assertion) tn A :
+Lemma DPInvS'' C ctx (S : term -> assertion) :
+  ctx |- C, {A:
+    forall: "n":
+    (
+      forall: "s", "e":
+      S "s" ->
+      S {t: let: (#, %, %) := request C $ "n" $ "s" $ "e" in: #0}
+    ) ->
+    (
+      forall: "s", "i", "e":
+      S "s" ->
+      S {t: let: (#, %, %) := indication C $ "n" $ "s" $ ("i", "e") in: #0}
+    ) ->
+    (
+      forall: "s":
+      S "s" ->
+      S {t: let: (#, %, %) := periodic C $ "n" $ "s" in: #0}
+    ) ->
+    (
+      when-self /\ S {t: "Fs'" $ "n"} =>>
+      always^ (when-self -> S {t: "Fs" $ "n"})
+    )
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DPAPerSA C ctx (S : term -> assertion) A :
   non_temporal_assertion A ->
-  Gamma |- C, {A:
-    "Fn" = tn /\
-    when-self /\
-    S {t: "Fs" $ tn} /\
-    ("Fs'" $ tn, "Fors", "Fois") = periodic C $ tn $ ("Fs" $ tn) ->
-    A
-  } ->
-  Gamma |- C, {A:
-    correct tn ->
-    (when-self -> S {t: "Fs" $ tn}) =>>
-    always eventually A
+  ctx |- C, {A:
+    forall: "n":
+    (
+      "Fn" = "n" /\
+      when-self /\
+      S {t: "Fs" $ "n"} /\
+      ("Fs'" $ "n", "Fors", "Fois") = periodic C $ "n" $ ("Fs" $ "n") ->
+      A
+    ) ->
+    (
+      correct "n" ->
+      (when-self -> S {t: "Fs" $ "n"}) =>>
+      always eventually A
+    )
   }.
 Proof.
 Admitted. (* TODO *)
