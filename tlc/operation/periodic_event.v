@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.operation.periodic_event
+ * Purpose: Contains the event type for periodic events.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -6,7 +12,9 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Constant for periodic_event events *)
+(* Constant for periodic events
+ * Periodic events carry no data.
+ *)
 Inductive periodic_event :=
 | PE.
 

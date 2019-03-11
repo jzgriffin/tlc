@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.operation.orientation
+ * Purpose: Contains the orientation type for events.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -8,9 +14,9 @@ Unset Printing Implicit Defensive.
 
 (* Orientation of events *)
 Inductive orientation :=
-| ORequest
-| OIndication
-| OPeriodic.
+| ORequest (* Corresponds to the downward-pointing arrow *)
+| OIndication (* Corresponds to the upward-pointing arrow *)
+| OPeriodic. (* Corresponds to the downward-pointing wavy arrow *)
 
 (* Equality *)
 Section eq.
