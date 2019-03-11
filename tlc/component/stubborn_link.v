@@ -159,7 +159,7 @@ Proof.
   }.
   {
     by d_rotate 1; eapply DARewriteEntailsP;
-      first by d_rotate 2; apply DSAxiom.
+      first by d_rotate 2; d_head.
   }
 
   (* By APerSA *)
@@ -197,7 +197,7 @@ Proof.
   }.
   {
     d_ifp; first by d_assumption.
-    d_rotate 1; eapply DARewriteEntailsP; first by d_rotate 4; apply DSAxiom.
+    d_rotate 1; eapply DARewriteEntailsP; first by d_rotate 4; d_head.
     rewrite_assertion_pos.
     by eapply DARewriteCongruentCR; first by eapply DTL119 with (A := {A:
       eventually when-on["n"]
@@ -225,7 +225,7 @@ Proof.
   }.
   {
     by d_rotate 1; eapply DARewriteEntailsP;
-      first by d_rotate 6; apply DSAxiom.
+      first by d_rotate 6; d_head.
   }
 
   (* From lemma 120 on (8) *)
@@ -251,7 +251,7 @@ Proof.
     d_ifp; first by d_assumption.
 
     by d_rotate 1; eapply DARewriteIfP;
-      first by by d_rotate 9; apply DSAxiom.
+      first by by d_rotate 9; d_head.
   }
 
   (* From rule IIOI *)
@@ -280,7 +280,7 @@ Proof.
   }.
   {
     by d_rotate 1; eapply DARewriteEntailsP;
-      first by d_rotate 10; apply DSAxiom.
+      first by d_rotate 10; d_head.
   }
 
   (* From lemma 84 and (12) *)
@@ -372,7 +372,7 @@ Proof.
     when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m"
   }.
   {
-    by d_rotate 1; eapply DARewriteEntailsP; first by exact: DSAxiom.
+    by d_rotate 1; eapply DARewriteEntailsP; first by d_head.
   }
 
   (* By NForge *)
@@ -457,7 +457,7 @@ Proof.
   }.
   {
     by d_rotate 1; eapply DARewriteEntailsP;
-      first by d_rotate 5; exact: DSAxiom.
+      first by d_rotate 5; d_head.
   }
 
   (* From (5) and (8) *)
@@ -467,7 +467,7 @@ Proof.
   }.
   {
     by d_rotate 3; eapply DARewriteEntailsP;
-      first by d_rotate 4; exact: DSAxiom.
+      first by d_rotate 4; d_head.
   }
 
   (* By lemma 83 on (9) *)

@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.logic.temporal
+ * Purpose: Contains derived rules and lemmas regarding temporal logic.
+ *)
+
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import tlc.component.component.
 Require Import tlc.logic.derives.
@@ -7,7 +13,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Derived temporal rules and lemmas *)
+(* These rules and lemmas are taken directly from the appendix *)
 
 Lemma DTL76 C ctx A1 A2 :
   ctx |- C, {A: A1 =>> A2} ->
@@ -307,6 +313,8 @@ Lemma DTL118 C ctx A :
 Proof.
 Admitted. (* TODO *)
 
+(* These rules and lemmas are new and do not yet appear in the appendix *)
+
 Lemma DTL119 C ctx A :
   ctx |- C, {A: always^ always A <=> always^ A}.
 Proof.
@@ -348,5 +356,5 @@ Lemma DTL123 C ctx A :
   ctx |- C, {A: eventuallyp^ A -> eventuallyp A}.
 Proof.
   case: ctx => Delta Gamma.
-  by apply DSIfC, DSOrCR.
+  by d_ifc; d_right.
 Qed.

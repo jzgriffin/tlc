@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.logic.sequent
+ * Purpose: Contains derived rules and lemmas regarding sequents.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -16,10 +22,8 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Derived sequent rules and lemmas *)
-
-(* Extension for applying axioms in any position *)
-Lemma DSAnyAxiom C Delta Gamma A :
+(* Rule for applying axioms in any position *)
+Lemma DSAssumption C Delta Gamma A :
   A \in Gamma ->
   Context Delta Gamma |- C, A.
 Proof.
@@ -28,7 +32,7 @@ Proof.
   by move/IHC => H; d_clear.
 Qed.
 
-Tactic Notation "d_assumption" := eapply DSAnyAxiom.
+Tactic Notation "d_assumption" := eapply DSAssumption.
 
 (* Rule for rotating the set of assumptions *)
 Lemma DSRotate C Delta Gamma n Ac :
@@ -133,28 +137,9 @@ Proof.
   by apply DSAndCommutative.
 Qed.
 
-Lemma DSEntailsIf C ctx Acl Acr :
-  ctx |- C, {A: (Acl =>> Acr) -> (Acl -> Acr)}.
-Proof.
-  case: ctx => Delta Gamma.
-  d_ifc.
-  eapply DSCut; first by apply DT1 with (A := {A: Acl -> Acr}).
-  by d_ifp; first by [].
-Qed.
-
-Lemma DSCongruentIff C ctx Acl Acr :
-  ctx |- C, {A: (Acl <=> Acr) -> (Acl <-> Acr)}.
-Proof.
-  case: ctx => Delta Gamma.
-  d_ifc; d_splitc; d_splitp.
-  - eapply DSCut; first by apply DSEntailsIf with (Acl := Acl) (Acr := Acr).
-    by d_ifp; first by [].
-  - d_clear.
-    eapply DSCut; first by apply DSEntailsIf with (Acl := Acr) (Acr := Acl).
-    by d_ifp; first by [].
-Qed.
-
-(* Conjunction of premises *)
+(* The premises of nested implications can be merged into a single
+ * implication where the premise is the conjunction of the premises
+ *)
 Lemma DSMergeIf C Delta Gamma Ap1 Ap2 Ac :
   Context Delta Gamma |- C, {A:
     (Ap1 -> Ap2 -> Ac)
@@ -169,7 +154,7 @@ Proof.
     d_ifp; first by d_assumption; rewrite mem_cat; apply/orP; right;
       rewrite in_cons; apply/orP; right;
       rewrite mem_seq1.
-    by exact: DSAxiom.
+    by d_head.
   - d_ifc; d_ifc; d_ifc; d_rotate 2.
     d_ifp.
       d_splitc.
@@ -178,5 +163,5 @@ Proof.
           rewrite mem_seq1.
       - by d_assumption; rewrite mem_cat; apply/orP; right;
           rewrite in_cons; apply/orP; left.
-    by exact: DSAxiom.
+    by d_head.
 Qed.

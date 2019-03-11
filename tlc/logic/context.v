@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.logic.context
+ * Purpose: Contains the context type for syntactic proofs.
+ *)
+
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import tlc.semantics.all_semantics.
@@ -11,7 +17,7 @@ Unset Printing Implicit Defensive.
 (* Logical context of bound variables *)
 Definition context_variables := seq variable.
 
-(* Logical context of bound assertions *)
+(* Logical context of assumed assertions *)
 Definition context_assertions := seq assertion.
 
 (* Logical proof context *)
@@ -21,11 +27,12 @@ Record context :=
     context_gamma : context_assertions;
   }.
 
+(* Context coercions *)
 Coercion context_delta : context >-> context_variables.
 Coercion context_gamma : context >-> context_assertions.
 
-(* Produces a term equivalence map from a context
- * All premises of the form "tl = tr" appear in the equivalence map
+(* Produces a term equivalents map from a context
+ * All premises of the form "tl = tr" appear in the equivalents map.
  *)
 Fixpoint context_equivalences (Gamma : context_assertions) : equivalents :=
   match Gamma with

@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.logic.program
+ * Purpose: Contains derived rules and lemmas regarding the program logic.
+ *)
+
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import tlc.component.component.
 Require Import tlc.logic.derives.
@@ -9,7 +15,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Derived program rules and lemmas *)
+(* These rules and lemmas are taken directly from the appendix *)
 
 Lemma DPIROI C ctx (S : term -> assertion) :
   ctx |- C, {A:

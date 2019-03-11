@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.logic.derives
+ * Purpose: Contains the axioms for the syntactic proof system.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -20,101 +26,139 @@ Section derives.
 
   Variable C : component.
 
+  (* Meaning: Assuming ctx for component C, A is true. *)
   Reserved Notation "ctx |- A" (at level 70, no associativity).
+
+  (* These rules and axioms use the following naming convention:
+   * - Every constructor begins with D, followed by one of:
+   *    - A for rules/axioms specific to this implementation
+   *    - AP for rules/axioms specific to this implementation's predicates
+   *    - S for rules/axioms from sequent logic
+   *    - T for rules/axioms from temporal logic
+   *    - P for rules/axioms from the program logic
+   * - Constructors that end with P operate on the premises
+   * - Constructors that end with C operate on the conclusion
+   * - Sequent logic rules/axioms are named for the forms they operate on
+   * - Temporal logic rules/axioms are named sequentially as in the paper
+   * - Program logic rules/axioms are named as in the paper
+   *)
   Inductive derives : context -> assertion -> Prop :=
-  (* Evaluation *)
+  (* Evaluation rules *)
   | DAEvaluateP Delta Gamma Ap Ap' Ac :
+    (* Replaces the head premise with its evaluation *)
     [[A Ap]] = Success Ap' ->
     Context Delta (Ap' :: Gamma) |- Ac ->
     Context Delta (Ap :: Gamma) |- Ac
   | DAEvaluateC ctx Ac Ac' :
+    (* Replaces the conclusion with its evaluation *)
     [[A Ac]] = Success Ac' ->
     ctx |- Ac' ->
     ctx |- Ac
   (* Substitution *)
   | DASubstituteP Delta Gamma Ap Ac :
+    (* Substitutes equivalences from the tail premises within the head *)
     Context Delta (Ap /A/ context_equivalences Gamma :: Gamma) |- Ac ->
     Context Delta (Ap :: Gamma) |- Ac
   | DASubstituteC ctx Ac :
+    (* Substitutes equivalences from the premises within the conclusion *)
     ctx |- (Ac /A/ context_equivalences ctx) ->
     ctx |- Ac
   (* Implication rewriting *)
   | DARewriteIfP Delta Gamma Arp Arc Ap Ac :
+    (* Rewrites an implication within the head premise *)
     Context Delta Gamma |- {A: Arp -> Arc} ->
     Context Delta (rewrite_assertion_pos Arp Arc Ap :: Gamma) |- Ac ->
     Context Delta (Ap :: Gamma) |- Ac
   | DARewriteIfC ctx Arp Arc Ac :
+    (* Rewrites an implication within the conclusion *)
     ctx |- {A: Arp -> Arc} ->
     ctx |- rewrite_assertion_pos Arp Arc Ac ->
     ctx |- Ac
   (* Bicondition rewriting *)
   | DARewriteIffPL Delta Gamma Arp Arc Ap Ac :
+    (* Rewrites a biconditional within the head premise, from left to right *)
     Context Delta Gamma |- {A: Arp <-> Arc} ->
     Context Delta (rewrite_assertion_any Arp Arc Ap :: Gamma) |- Ac ->
     Context Delta (Ap :: Gamma) |- Ac
   | DARewriteIffCL ctx Arp Arc Ac :
+    (* Rewrites a binconditional within the conclusion, from left to right *)
     ctx |- {A: Arp <-> Arc} ->
     ctx |- rewrite_assertion_any Arp Arc Ac ->
     ctx |- Ac
   | DARewriteIffPR Delta Gamma Arp Arc Ap Ac :
+    (* Rewrites a biconditional within the head premise, from right to left *)
     Context Delta Gamma |- {A: Arp <-> Arc} ->
     Context Delta (rewrite_assertion_any Arc Arp Ap :: Gamma) |- Ac ->
     Context Delta (Ap :: Gamma) |- Ac
   | DARewriteIffCR ctx Arp Arc Ac :
+    (* Rewrites a binconditional within the conclusion, from right to left *)
     ctx |- {A: Arp <-> Arc} ->
     ctx |- rewrite_assertion_any Arc Arp Ac ->
     ctx |- Ac
   (* Implication rewriting *)
   | DARewriteEntailsP Delta Gamma Arp Arc Ap Ac :
+    (* Rewrites a strong implication within the head premise *)
     Context Delta Gamma |- {A: Arp =>> Arc} ->
     Context Delta (rewrite_assertion_pos Arp Arc Ap :: Gamma) |- Ac ->
     Context Delta (Ap :: Gamma) |- Ac
   | DARewriteEntailsC ctx Arp Arc Ac :
+    (* Rewrites a strong implication within the conclusion *)
     ctx |- {A: Arp =>> Arc} ->
     ctx |- rewrite_assertion_pos Arp Arc Ac ->
     ctx |- Ac
   (* Bicondition rewriting *)
   | DARewriteCongruentPL Delta Gamma Arp Arc Ap Ac :
+    (* Rewrites a congruence within the head premise, from left to right *)
     Context Delta Gamma |- {A: Arp <=> Arc} ->
     Context Delta (rewrite_assertion_any Arp Arc Ap :: Gamma) |- Ac ->
     Context Delta (Ap :: Gamma) |- Ac
   | DARewriteCongruentCL ctx Arp Arc Ac :
+    (* Rewrites a congruence within the conclusion, from left to right *)
     ctx |- {A: Arp <=> Arc} ->
     ctx |- rewrite_assertion_any Arp Arc Ac ->
     ctx |- Ac
   | DARewriteCongruentPR Delta Gamma Arp Arc Ap Ac :
+    (* Rewrites a congruence within the head premise, from right to left *)
     Context Delta Gamma |- {A: Arp <=> Arc} ->
     Context Delta (rewrite_assertion_any Arc Arp Ap :: Gamma) |- Ac ->
     Context Delta (Ap :: Gamma) |- Ac
   | DARewriteCongruentCR ctx Arp Arc Ac :
+    (* Rewrites a congruence within the conclusion, from right to left *)
     ctx |- {A: Arp <=> Arc} ->
     ctx |- rewrite_assertion_any Arc Arp Ac ->
     ctx |- Ac
   (* Predicates *)
   | DAPEqual ctx tl tr :
+    (* Proves the equality of two terms *)
     tl = tr ->
     ctx |- {A: tl = tr}
   | DAPIn ctx t ts ts' :
+    (* Proves that t is a member of list ts *)
     lift_list ts = Success ts' ->
     t \in ts' ->
     ctx |- {A: t \in ts}
   | DAPExtension ctx ts' ts'_l ts ts_l :
+    (* Proves that ts' is an extension of ts *)
     lift_list ts' = Success ts'_l ->
     lift_list ts = Success ts_l ->
     extension ts'_l ts_l ->
     ctx |- {A: ts' <<< ts}
   (* Constructors *)
   | DAInjectivePairP Delta Gamma tll trl tlr trr Ac :
+    (* Proves the injective equality of two pairs in the head premise *)
     Context Delta ({A: tll = tlr} :: {A: trl = trr} :: Gamma) |- Ac ->
     Context Delta ({A: (tll, trl) = (tlr, trr)} :: Gamma) |- Ac
   | DAInjectivePairC ctx tll trl tlr trr :
+    (* Proves the injective equality of two pairs in the conclusion *)
     ctx |- {A: tll = tlr} ->
     ctx |- {A: trl = trr} ->
     ctx |- {A: (tll, trl) = (tlr, trr)}
   (* Sequent logic *)
   | DSFalse Delta Gamma A :
+    (* Proves that any assertion is true when false is assumed *)
     Context Delta (AFalse :: Gamma) |- A
   | DSAxiom Delta Gamma A :
+    (* Proves that any assertion is true when it is assumed *)
     Context Delta (A :: Gamma) |- A
   | DSThin Delta Gamma Ap Ac :
     Context Delta Gamma |- Ac ->
@@ -302,13 +346,18 @@ Notation "ctx |- C , A" := (derives C ctx A)
 
 Hint Constructors derives.
 
-(* Extracts the context from a proof *)
+(* Extracts the context from a proof term *)
 Definition derives_context C ctx A (H : ctx |- C, A) := ctx.
 
-(* Extracts the assertion from a proof *)
+(* Extracts the assertion from a proof term *)
 Definition derives_assertion C ctx A (H : ctx |- C, A) := A.
 
-(* Tactics *)
+(* Tactics
+ * Some of these tactics are named for their Coq equivalents.  For example,
+ * d_clear uses the DSThin axiom but operates similarly to clear.
+ *)
+
+(* Implementation-specific *)
 Tactic Notation "d_evalp" :=
   eapply DAEvaluateP; first by [].
 Tactic Notation "d_evalc" :=
@@ -324,8 +373,7 @@ Tactic Notation "d_subst" :=
 
 (* Sequent logic tactics *)
 Tactic Notation "d_false" := apply DSFalse.
-Tactic Notation "d_assumption" constr(n) :=
-  do n apply DSThin; apply DSAxiom.
+Tactic Notation "d_head" := apply DSAxiom.
 Tactic Notation "d_clear" := apply DSThin.
 Tactic Notation "d_swap" := apply DSExchange.
 Ltac d_have Ap :=
