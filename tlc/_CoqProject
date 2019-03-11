@@ -46,5 +46,6 @@ logic/program.v
 logic/predicate.v
 logic/all_logic.v
 component/stubborn_link.v
+component/perfect_link.v
 component/all_component.v
 all.v
