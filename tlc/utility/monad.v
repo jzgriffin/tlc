@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.utility.monad
+ * Purpose: Contains the monad typeclass.
+ *)
+
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import mathcomp.ssreflect.ssrfun.
 Require Import tlc.utility.applicative.
@@ -8,7 +14,10 @@ Unset Printing Implicit Defensive.
 
 Export tlc.utility.applicative.
 
-(* Monad type class *)
+(* Monad typeclass
+ * A monad consists of an applicative functor, the bind operation, and proofs
+ * of the monad laws.
+ *)
 Class Monad m `{Applicative m} := {
   bind : forall a b, m a -> (a -> m b) -> m b;
   bind_left_id : forall a b (f : (a -> m b)) x, bind (pure x) f = f x;
@@ -22,4 +31,4 @@ Arguments Monad m {_}.
 (* Monad notations *)
 Notation "x >>= y" := (bind x y) (at level 40, left associativity).
 Notation "x <- y ; z" := (y >>= (fun x => z))
-  (at level 30, right associativity).
+  (at level 30, right associativity). (* Mimics the do-notation of Haskell *)

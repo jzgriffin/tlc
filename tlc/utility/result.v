@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.utility.result
+ * Purpose: Contains the result monad.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -12,7 +18,9 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Result type for computations that may fail *)
+(* Result type for computations that may fail
+ * Similar to option, but with a parameter for explaining the failure case.
+ *)
 Inductive result {error value} :=
 | Failure (e : error)
 | Success (x : value).
@@ -87,11 +95,13 @@ Instance result_monad error : Monad (result error) _ := {
 }.
 Proof.
   - by [].
-  - move=> a; case=> [x | ] //=.
-  - move=> a b c f g; case=> [x | ] //=.
+  - by move=> a; case=> [x | ] //=.
+  - by move=> a b c f g; case=> [x | ] //=.
 Defined.
 
-(* Flattens a list of results into a result of list *)
+(* Flattens a list of results into a result of list
+ * If any element of the list is a failure, the result is a failure.
+ *)
 Fixpoint flatten_results error value (rs : seq (result error value)) :=
   match rs with
   | [::] => pure [::]

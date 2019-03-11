@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.utility.partial_map
+ * Purpose: Implementation of an unordered partial map as a sequence of pairs.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.

@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.utility.set
+ * Purpose: Implementation of an unordered finite set as a sequence of eqType.
+ *)
+
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.

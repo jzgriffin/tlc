@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.utility.string
+ * Purpose: EqType of Coq's ASCII strings.
+ *)
+
 Require Import Coq.Strings.String.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -32,7 +38,8 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure string_eqMixin := EqMixin string_eqP.
+  Canonical Structure string_eqMixin :=
+    Eval hnf in EqMixin string_eqP.
   Canonical Structure string_eqType :=
     Eval hnf in EqType string string_eqMixin.
 

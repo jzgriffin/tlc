@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.utility.applicative
+ * Purpose: Contains the applicative functor typeclass.
+ *)
+
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import mathcomp.ssreflect.ssrfun.
 Require Import tlc.utility.functor.
@@ -8,7 +14,10 @@ Unset Printing Implicit Defensive.
 
 Export tlc.utility.functor.
 
-(* Applicative functor type class *)
+(* Applicative functor typeclass
+ * An applicative functor consists of a functor, the pure and apply
+ * operations, and proofs of the applicative functor laws.
+ *)
 Class Applicative f `{Functor f} := {
   pure : forall a, a -> f a;
   apply : forall a b, f (a -> b) -> f a -> f b;

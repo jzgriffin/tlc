@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.utility.option
+ * Purpose: Monad hierarchy typeclass instances for option.
+ *)
+
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import mathcomp.ssreflect.ssrfun.
 Require Import tlc.utility.applicative.
@@ -39,6 +45,6 @@ Instance option_monad : Monad option _ := {
 }.
 Proof.
   - by [].
-  - move=> a; case=> [x | ] //=.
-  - move=> a b c f g; case=> [x | ] //=.
+  - by move=> a; case=> [x | ] //=.
+  - by move=> a b c f g; case=> [x | ] //=.
 Defined.

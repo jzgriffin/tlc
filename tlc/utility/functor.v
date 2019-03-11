@@ -1,3 +1,9 @@
+(* TLC in Coq
+ *
+ * Module: tlc.utility.functor
+ * Purpose: Contains the functor typeclass.
+ *)
+
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import mathcomp.ssreflect.ssrfun.
 
@@ -5,7 +11,10 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Functor type class *)
+(* Functor typeclass
+ * A functor consists of both the map operation and proofs of the functor
+ * laws.
+ *)
 Class Functor (f : Type -> Type) := {
   map : forall a b, (a -> b) -> f a -> f b;
   map_id : forall a x, map (@id a) x = x;
