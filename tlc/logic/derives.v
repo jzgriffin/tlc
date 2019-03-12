@@ -143,6 +143,13 @@ Section derives.
     lift_list ts = Success ts_l ->
     extension ts'_l ts_l ->
     ctx |- {A: ts' <<< ts}
+  (* Destructing *)
+  | DADestructP Delta Gamma P ta cs Ac :
+    Context Delta (destruct_matchp P ta cs :: Gamma) |- Ac ->
+    Context Delta (P (TMatch ta cs) :: Gamma) |- Ac
+  | DADestructC ctx P ta cs :
+    ctx |- destruct_matchc P ta cs ->
+    ctx |- P (TMatch ta cs)
   (* Constructors *)
   | DAInjectivePairP Delta Gamma tll trl tlr trr Ac :
     (* Proves the injective equality of two pairs in the head premise *)
@@ -370,6 +377,12 @@ Tactic Notation "d_substc" :=
   apply DASubstituteC; rewrite /=.
 Tactic Notation "d_subst" :=
   d_substp; d_substc.
+Tactic Notation "d_destructp" constr(Pp) :=
+  eapply DADestructP with (P := Pp);
+  rewrite /destruct_match /=.
+Tactic Notation "d_destructc" constr(Pc) :=
+  eapply DADestructC with (P := Pc);
+  rewrite /destruct_match /=.
 
 (* Sequent logic tactics *)
 Tactic Notation "d_false" := apply DSFalse.

@@ -41,8 +41,8 @@ Definition stubborn_link :=
     let s := {t: #(1, 0)} in
     let ir := {t: #(0, 0)} in
     (* End scoped parameters *)
-    match: ir with: CSLSend $ # $ # (* n', m *)
-    then:
+    match: ir with:
+    {{ CSLSend $ # $ # (* n', m *) ->
       (* Begin scoped parameters *)
       let n := {t: #(3, 0)} in
       let s := {t: #(2, 0)} in
@@ -51,7 +51,7 @@ Definition stubborn_link :=
       let m := {t: #(0, 1)} in
       (* End scoped parameters *)
       (s \union [(n', m)], [(flc, CFLSend $ n' $ m)], [])
-    else: TFailure
+    }} endmatch
   }
   (* indication *)
   {t: fun: fun: fun:
@@ -60,8 +60,8 @@ Definition stubborn_link :=
     let s := {t: #(1, 0)} in
     let ii := {t: #(0, 0)} in
     (* End scoped parameters *)
-    match: ii with: (flc, CFLDeliver $ # $ #) (* n, m *)
-    then:
+    match: ii with:
+    {{ (flc, CFLDeliver $ # $ #) (* n, m *) ->
       (* Begin scoped parameters *)
       let n' := {t: #(3, 0)} in
       let s := {t: #(2, 0)} in
@@ -70,7 +70,7 @@ Definition stubborn_link :=
       let m := {t: #(0, 1)} in
       (* End scoped parameters *)
       (s, [], [CSLDeliver $ n $ m])
-    else: TFailure
+    }} endmatch
   }
   (* periodic *)
   {t: fun: fun:
@@ -129,21 +129,41 @@ Proof.
         by d_forallp {t: ("n'", "m")}; d_forallp "s".
       rewrite_assertion_any.
 
-      d_existsp "sl"; d_existsp "sr".
-      (*
-      apply DASubstituteC; eapply DAEvaluateC; first by [].
-      by apply DInUnion, DSOrCL, DInConcat, DSOrCR, DInConcat, DSOrCL;
-        eapply DAPIn.
-      *)
-      admit.
+      d_existsp "sl"; d_existsp "sr"; d_evalc.
+      d_destructc (fun t => {A: ("n'", "m") \in
+        match: t with: {{(#, %, %) -> #0}} endmatch}).
+      d_forallc "?n"; d_forallc "?m".
+      d_ifc; d_substc; d_evalc.
+
+      eapply DSCut; first by apply DAPInUnion.
+      d_forallp {t: "sl" ++ [("n'", "m")] ++ "sr"};
+        d_forallp {t: [("?m", "?n")]};
+        d_forallp {t: ("n'", "m")}.
+      d_ifp.
+        d_left.
+        eapply DSCut; first by apply DAPInConcat.
+        d_forallp {t: "sl"};
+          d_forallp {t: [("n'", "m")] ++ "sr"};
+          d_forallp {t: ("n'", "m")}.
+        d_ifp.
+          d_right.
+          eapply DSCut; first by apply DAPInConcat.
+          d_forallp {t: [("n'", "m")]};
+            d_forallp {t: "sr"};
+            d_forallp {t: ("n'", "m")}.
+          d_ifp; first by d_left; by eapply DAPIn.
+          d_head.
+        d_head.
+
+      d_head.
 
     (* Prove property for indications *)
     d_ifp.
-      d_forallc "s"; d_forallc "i"; d_forallc "e"; d_ifc.
-      (*
-      d_evalc.
-      *)
-      admit.
+      d_forallc "s"; d_forallc "i"; d_forallc "e"; d_ifc; d_evalc.
+      d_destructc (fun t => {A: ("n'", "m") \in
+        match: t with: {{(#, %, %) -> #0}} endmatch}).
+      d_forallc "?n"; d_forallc "?m".
+      by d_ifc; d_substc; d_evalc; d_clear.
 
     (* Prove property for periodics *)
     d_ifp.

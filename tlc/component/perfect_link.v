@@ -45,8 +45,8 @@ Definition perfect_link :=
     let c := {t: #(0, 0)} in
     let r := {t: #(0, 1)} in
     (* End scoped parameters *)
-    match: ir with: CPLSend $ # $ # (* n', m *)
-    then:
+    match: ir with:
+    {{ CPLSend $ # $ # (* n', m *) ->
       (* Begin scoped parameters *)
       let n := {t: #(4, 0)} in
       let s := {t: #(3, 0)} in
@@ -80,7 +80,7 @@ Definition perfect_link :=
       let or := {t: #(0, 0)} in
       (* End scoped parameters *)
       ((c', r), [or], [])
-    else: TFailure
+    }} endmatch
   }
   (* indication *)
   {t: fun: fun: fun:
@@ -97,8 +97,8 @@ Definition perfect_link :=
     let c := {t: #(0, 0)} in
     let r := {t: #(0, 1)} in
     (* End scoped parameters *)
-    match: #(1, 0) with: (slc, CPLDeliver $ # $ (#, #)) (* n, c', m *)
-    then:
+    match: #(1, 0) with:
+    {{ (slc, CPLDeliver $ # $ (#, #)) (* n, c', m *) ->
       (* Begin scoped parameters *)
       let n' := {t: #(4, 0)} in
       let s := {t: #(3, 0)} in
@@ -139,7 +139,7 @@ Definition perfect_link :=
         let oi := {t: #(0, 0)} in
         (* End scoped parameters *)
         ((c, r'), [], [oi])
-    else: TFailure
+    }} endmatch
   }
   (* periodic *)
   {t: fun: fun:

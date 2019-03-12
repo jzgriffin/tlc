@@ -32,7 +32,13 @@ Inductive term :=
 | TFunction (f : function) (* External functions *)
 | TApplication (tf ta : term) (* Function application *)
 | TAbstraction (tb : term) (* Function abstraction *)
-| TMatch (p : pattern) (ta tm tf : term). (* Pattern matching *)
+| TMatch (ta : term) (cs : cases) (* Pattern matching *)
+(* Cases of pattern matching *)
+with case :=
+| TCase (p : pattern) (t : term)
+with cases :=
+| TCNil
+| TCCons (c : case) (cs : cases).
 
 (* Equality *)
 Section eq.
@@ -60,18 +66,31 @@ Section eq.
     | TApplication _ _, _ => false
     | TAbstraction tbl, TAbstraction tbr => term_eq tbl tbr
     | TAbstraction _, _ => false
-    | TMatch pl tal tml tfl, TMatch pr tar tmr tfr =>
-      (pl == pr) && term_eq tal tar && term_eq tml tmr && term_eq tfl tfr
-    | TMatch _ _ _ _, _ => false
+    | TMatch tal csl, TMatch tar csr =>
+      term_eq tal tar && cases_eq csl csr
+    | TMatch _ _, _ => false
+    end
+  with case_eq cl cr :=
+    match cl, cr with
+    | TCase pl tl, TCase pr tr => (pl == pr) && term_eq tl tr
+    end
+  with cases_eq csl csr :=
+    match csl, csr with
+    | TCNil, TCNil => true
+    | TCNil, _ => false
+    | TCCons cl csl, TCCons cr csr => case_eq cl cr && cases_eq csl csr
+    | TCCons _ _, _ => false
     end.
 
   (* Boolean equality reflection *)
-  Lemma term_eqP : Equality.axiom term_eq.
+  Fixpoint term_eqP tl tr : reflect (tl = tr) (term_eq tl tr)
+  with case_eqP cl cr : reflect (cl = cr) (case_eq cl cr)
+  with cases_eqP csl csr : reflect (csl = csr) (cases_eq csl csr).
   Proof.
-    elim=> [| pl | vl | cl | ll | fl | tfl IHtf tal IHta | tbl IHtb |
-      pl tal IHta tml IHtm tfl IHtf] [| pr | vr | cr | lr | fr | tfr tar |
-      tbr | pr tar tmr tfr]
-      //=; try by constructor.
+    (* term_eqP *)
+    elim: tl tr => [| pl | vl | cl | ll | fl | tfl IHtf tal IHta | tbl IHtb |
+      tal IHta csl] [| pr | vr | cr | lr | fr | tfr tar | tbr | tar csr] //=;
+      try by constructor.
     - case H: (pl == pr); move/eqP: H => H //=; subst;
         last by constructor; move=> [].
       by constructor.
@@ -95,15 +114,27 @@ Section eq.
     - case H: (term_eq tbl tbr); move/IHtb: H => H //=; subst;
         last by constructor; move=> [].
       by constructor.
-    - case H: (pl == pr); move/eqP: H => H //=; subst;
+    - case H: (term_eq tal tar); move/IHta: H => H //=; subst;
         last by constructor; move=> [].
-      case H: (term_eq tal tar); move/IHta: H => H //=; subst;
-        last by constructor; move=> [].
-      case H: (term_eq tml tmr); move/IHtm: H => H //=; subst;
-        last by constructor; move=> [].
-      case H: (term_eq tfl tfr); move/IHtf: H => H //=; subst;
+      case H: (cases_eq csl csr); move/cases_eqP: H => H //=; subst;
         last by constructor; move=> [].
       by constructor.
+
+    (* case_eqP *)
+    elim: cl cr => [pl tl] [pr tr] //=; try by constructor.
+    case H: (pl == pr); move/eqP: H => H //=; subst;
+      last by constructor; move=> [].
+    case H: (term_eq tl tr); move/term_eqP: H => H //=; subst;
+      last by constructor; move=> [].
+    by constructor.
+
+    (* cases_eqP *)
+    elim: csl csr => [| cl csl IHcs] [| cr csr] //=; try by constructor.
+    case H: (case_eq cl cr); move/case_eqP: H => H //=; subst;
+      last by constructor; move=> [].
+    case H: (cases_eq csl csr); move/IHcs: H => H //=; subst;
+      last by constructor; move=> [].
+    by constructor.
   Qed.
 
   (* EqType canonical structures *)
@@ -111,6 +142,14 @@ Section eq.
     Eval hnf in EqMixin term_eqP.
   Canonical Structure term_eqType :=
     Eval hnf in EqType term term_eqMixin.
+  Canonical Structure case_eqMixin :=
+    Eval hnf in EqMixin case_eqP.
+  Canonical Structure case_eqType :=
+    Eval hnf in EqType case case_eqMixin.
+  Canonical Structure cases_eqMixin :=
+    Eval hnf in EqMixin cases_eqP.
+  Canonical Structure cases_eqType :=
+    Eval hnf in EqType cases cases_eqMixin.
 
 End eq.
 
@@ -126,6 +165,14 @@ Bind Scope term_scope with term.
 Delimit Scope term_scope with term.
 Notation "{t: t }" := (t%term)
   (at level 0, t at level 100, no associativity, only parsing).
+Bind Scope case_scope with case.
+Delimit Scope case_scope with case.
+Notation "{c: c }" := (c%case)
+  (at level 0, c at level 100, no associativity, only parsing).
+Bind Scope cases_scope with cases.
+Delimit Scope cases_scope with cases.
+Notation "{cs: cs }" := (cs%cases)
+  (at level 0, cs at level 100, no associativity, only parsing).
 
 (* Constructor notations *)
 Notation "# j" := (TParameter (P 0 j))
@@ -136,18 +183,25 @@ Notation "tf $ ta" := (TApplication tf ta)
   (at level 10, left associativity) : term_scope.
 Notation "fun: tb" := (TAbstraction tb)
   (at level 20, right associativity, tb at level 100) : term_scope.
-Notation "match: ta with: p then: tm else: tf" := (TMatch p ta tm tf)
-  (at level 20, right associativity, ta at level 100, tm at level 100,
-    tf at level 100) : term_scope.
+Notation "match: ta with: csl 'endmatch'" := (TMatch ta csl)
+  (at level 20, right associativity, ta at level 100, csl at level 0)
+  : term_scope.
+Notation "p -> t" := (TCase p t) : case_scope.
+Notation "[ ]" := (TCNil) : cases_scope.
+Notation "{{ c1 | .. | cn }}" := (TCCons c1 (.. (TCCons cn TCNil) ..))
+  : cases_scope.
 
 (* Derived constructor notations *)
-Definition TLet p ta tm := {t: match: ta with: p then: tm else: TFailure}.
+Definition TLet p ta tm := {t: match: ta with: {{ p -> tm }} endmatch}.
 Notation "let: p := ta in: tm" := (TLet p ta tm)
   (at level 20, right associativity, ta at level 100, tm at level 100)
   : term_scope.
 Definition TIf ta ti te := {t:
-  match: ta with: true then: ti else:
-  match: ta with: false then: te else: TFailure}.
+  match: ta with:
+  {{ true -> ti
+   | false -> te
+  }} endmatch
+}.
 Notation "if: ta then: ti else: te" := (TIf ta ti te)
   (at level 20, right associativity, ta at level 100, ti at level 100,
     te at level 100) : term_scope.

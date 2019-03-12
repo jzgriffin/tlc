@@ -19,7 +19,8 @@ Inductive error :=
 (* Opening *)
 | EParameter (t : term)
 (* Pattern matching *)
-| EMatch (p : pattern) (t : term)
+| EPattern (p : pattern) (t : term)
+| EMatch (ta : term) (cs : cases)
 (* Evaluation *)
 | EFailure
 | EBoolean (t : term)
