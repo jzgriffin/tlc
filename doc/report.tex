@@ -1,36 +1,113 @@
 \documentclass[12pt]{article}
 
+\usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{mathtools}
+\usepackage{MnSymbol}
 \usepackage{proof}
 \usepackage{stackengine}
 \usepackage{syntax}
 
-\DeclareMathOperator{\tmatch}{\mathbf{match}}
-\DeclareMathOperator{\twith}{\mathbf{with}}
-\DeclareMathOperator{\tthen}{\mathbf{then}}
-\DeclareMathOperator{\telse}{\mathbf{else}}
-\DeclareMathOperator{\tlet}{\mathbf{let}}
-\DeclareMathOperator{\tin}{\mathbf{in}}
-\DeclareMathOperator{\tif}{\mathbf{if}}
+\def\defeq{\mathrel{\mathop:}=}
 
-\DeclareMathOperator{\AuntilS}{\hat{\mathcal{U}}}
-\DeclareMathOperator{\AsinceS}{\hat{\mathcal{S}}}
-\newcommand\Aself{\stackMath\mathbin{\stackinset{c}{0ex}{c}{0ex}{s}{\bigcirc}}}
+% Term language
+\def\tfailure{\mathsf{TFailure}}
+\def\tmatch{\mathbf{match}}
+\def\twith{\mathbf{with}}
+\def\tlet{\mathbf{let}}
+\def\tin{\mathbf{in}}
+\def\tif{\mathbf{if}}
+\def\tthen{\mathbf{then}}
+\def\telse{\mathbf{else}}
+\def\tfun{\mathbf{fun}}
 
-\newcommand{\Match}[4]{
-  \tmatch\ #1\ \twith\ #2\ \tthen\ #3\ \telse\ #4
-}
-\newcommand{\Let}[3]{
-  \tlet\ #1\ :=\ #2\ \tin\ #3
-}
-\newcommand{\If}[3]{
-  \tif\ #1\ \tthen\ #2\ \telse\ #3
-}
+% Cases
+\def\tcasenil{\{\{\ \}\}}
+
+% Case
+\def\tcase{\rightarrow}
+
+% Constructors
+\def\tcpair{\mathsf{CPair}}
+\def\tcleft{\mathsf{CLeft}}
+\def\tcright{\mathsf{CRight}}
+\def\tcnil{\mathsf{CNil}}
+\def\tccons{\mathsf{CCons}}
+\def\tcsendfl{\mathsf{CFLSend}}
+\def\tcdeliverfl{\mathsf{CFLDeliver}}
+\def\tcsendsl{\mathsf{CSLSend}}
+\def\tcdeliversl{\mathsf{CSLDeliver}}
+\def\tcsendpl{\mathsf{CPLSend}}
+\def\tcdeliverpl{\mathsf{CPLDeliver}}
+
+% Literals
+\def\tlunit{\mathsf{LUnit}}
+\def\tlboolean{\mathsf{LBoolean}}
+\def\tlnatural{\mathsf{LNatural}}
+\def\tlorientation{\mathsf{LOrientation}}
+\def\tlperiodic{\mathsf{LPeriodic}}
+
+% Functions
+\def\tfequal{\mathsf{FEqual}}
+\def\tfnot{\mathsf{FNot}}
+\def\tfor{\mathsf{FOr}}
+\def\tfsucc{\mathsf{FSucc}}
+\def\tfadd{\mathsf{FAdd}}
+\def\tfconcat{\mathsf{FConcat}}
+\def\tfcount{\mathsf{FCount}}
+\def\tfunion{\mathsf{FUnion}}
+\def\tfmap{\mathsf{FMap}}
+
+% Patterns
+\def\tpwildcard{\%}
+\def\tpbinding{\#}
+\def\tpunit{\mathsf{PLUnit}}
+\def\tpboolean{\mathsf{PLBoolean}}
+\def\tpnatural{\mathsf{PLNatural}}
+\def\tpsucc{\mathsf{PLSucc}}
+\def\tporientation{\mathsf{PLOrientation}}
+\def\tpperiodic{\mathsf{PLPeriodic}}
+
+% Predicates
+\def\Pfalse{\mathsf{False}}
+\def\Pcorrect{\mathsf{correct}}
+
+% Assertion language
+\def\Anot{\neg}
+\def\Aand{\wedge}
+\def\Aor{\vee}
+\def\Aif{\Rightarrow}
+\def\Aiff{\Leftrightarrow}
+\def\Aforall{\forall}
+\def\Aalways{\square}
+\def\Astrictalways{\hat\Aalways}
+\def\Apastalways{\boxminus}
+\def\Astrictpastalways{\hat\Apastalways}
+\def\Aeventually{\raisebox{0.5\depth}{$\meddiamond$}}
+\def\Astricteventually{\hat\Aeventually}
+\def\Apasteventually{\raisebox{0.5\depth}{$\diamondminus$}}
+\def\Astrictpasteventually{\hat\Apasteventually}
+\def\Anext{\raisebox{0.6\depth}{$\medcircle\,$}}
+\def\Aprevious{\raisebox{0.6\depth}{$\ominus$}}
+\def\Astrictprevious{\hat\Aprevious}
+\def\Aself{\circledS\ }
+
+% Proofs
+\def\derives{\vdash}
+
+\newcommand{\TApp}[2]{#1\ \$\ #2}
+\newcommand{\TFun}[1]{\tfun\ #1}
+\newcommand{\TMatch}[2]{\tmatch\ #1\ \twith\ #2}
+\newcommand{\TCases}[1]{\{\{\ #1\ \}\}}
+\newcommand{\TCaseAlt}[1]{\ \vert\ #1}
+\newcommand{\TCase}[2]{#1 \tcase #2}
+\newcommand{\TLet}[3]{\tlet\ #1\ $\defeq$\ #2\ \tin\ #3}
+\newcommand{\TIf}[3]{\tif\ #1\ \tthen\ #2\ \telse\ #3}
 
 \title{TLC in Coq}
 \author{Jeremiah Griffin}
-\date{10 March 2019}
+\date{11 March 2019}
 
 \begin{document}
 
@@ -81,85 +158,105 @@ assertions.
 The third phase is the refinement of the proof system.  It changes the
 way in which proofs are written, reduces the dependency on Coq for
 proving assertions within the logic, and introduces Coq tactics for
-manipulating proofs.  It also includes the addition of the lowering
-transformation and its inner restrict and push transformations.
-Finally, the functional definition of the second distributed component,
-the perfect link, is included.  The previous two additions will serve as
-the basis for the next phase of the project: proving the perfect link.
+manipulating proofs.  It refines the syntax and semantics of pattern
+matching expressions to enable case analysis in proofs.  It also
+includes the addition of the lowering transformation and its inner
+restrict and push transformations.  Finally, the functional definition
+of the second distributed component, the perfect link, is included.  The
+previous two additions will serve as the basis for the next phase of the
+project: proving the perfect link.
+
+In addition to the high-level overview of the implementation provided in
+this document, the source code is thoroughly commented.
+
+\newpage
 
 \section{Syntax}
 
-The syntax of the subset of the assertion language implemented in this
-phase is described as follows:
+The combined syntax of the term and assertion languages is described as
+follows:
 
 \begin{center}
   \begin{tabular}{rcl}
-    $c$ & := &
-      pair $\vert$
-      left $\vert$
-      right $\vert$
-      nil $\vert$
-      cons
+    Constructor $c$ & $\defeq$ &
+      $\tcpair$ $\vert$
+      $\tcleft$ $\vert$
+      $\tcright$ $\vert$
+      $\tcnil$ $\vert$
+      $\tccons$
       \\ & $\vert$ &
-      send_fl $\vert$
-      deliver_fl $\vert$
-      send_sl $\vert$
-      deliver_sl \\
-    $l$ & := &
-      unit $u$ $\vert$
-      boolean $b$ $\vert$
-      natural $n$ $\vert$
+      $\tcsendfl$ $\vert$
+      $\tcdeliverfl$
       \\ & $\vert$ &
-      orientation $o$ $\vert$
-      periodic $pe$ \\
-    $f$ & := &
-      equal $\vert$
-      not $\vert$
-      or $\vert$
-      succ $\vert$
-      add
+      $\tcsendsl$ $\vert$
+      $\tcdeliversl$ $\vert$
+      $\tcsendpl$ $\vert$
+      $\tcdeliverpl$ \\
+    Literal $l$ & $\defeq$ &
+      $\tlunit\ u$ $\vert$
+      $\tlboolean\ b$ $\vert$
+      $\tlnatural\ n$
       \\ & $\vert$ &
-      concat $\vert$
-      count $\vert$
-      union $\vert$
-      map \\
-    $t$ & := &
-      $\bot$ $\vert$
+      $\tlorientation\ o$ $\vert$
+      $\tlperiodic\ pe$ \\
+    Function $f$ & $\defeq$ &
+      $\tfequal$ $\vert$
+      $\tfnot$ $\vert$
+      $\tfor$ $\vert$
+      $\tfsucc$ $\vert$
+      $\tfadd$
+      \\ & $\vert$ &
+      $\tfconcat$ $\vert$
+      $\tfcount$ $\vert$
+      $\tfunion$ $\vert$
+      $\tfmap$ \\
+    Term $t$ & $\defeq$ &
+      $\tfailure$ $\vert$
       $\#(i, j)$ $\vert$
       $v$ $\vert$
       $c$ $\vert$
       $l$ $\vert$
       $f$ $\vert$
-      $t$ $t$ $\vert$
-      $\lambda. t$
+      $\TApp{t}{t}$ $\vert$
+      $\TFun{t}$
       \\ & $\vert$ &
-      $\Match{t}{p}{t}{t}$ \\
-    $p$ & := &
-      \% $\vert$
-      \# $\vert$
+      $\TMatch{t}{Cs}$ \\
+    Cases $Cs$ & $\defeq$ &
+      $\tcasenil$ $\vert$
+      $\TCases{C \TCaseAlt{..} \TCaseAlt{C}}$ \\
+    Case $C$ & $\defeq$ &
+      $\TCase{p}{t}$ \\
+    Pattern $p$ & $\defeq$ &
+      $\tpwildcard$ $\vert$
+      $\tpbinding$ $\vert$
       $c$ $\vert$
       $p$ $p$
       \\ & $\vert$ &
-      unit $u$ $\vert$
-      boolean $b$ $\vert$
-      natural $n$ $\vert$
-      succ $p$ $\vert$
+      $\tpunit\ u$ $\vert$
+      $\tpboolean\ b$ $\vert$
+      $\tpnatural\ n$ $\vert$
+      $\tpsucc\ p$
       \\ & $\vert$ &
-      orientation $o$ $\vert$
-      periodic $pe$ \\
-    $P$ & := &
-      false $\vert$
-      equal $t$ $t$ $\vert$
-      in $t$ $t$ $\vert$
-      correct $t$ $\vert$ \\
-    $A$ & := &
+      $\tporientation\ o$ $\vert$
+      $\tpperiodic\ pe$ \\
+    Predicate $P$ & $\defeq$ &
+      $\Pfalse$ $\vert$
+      $t = t$ $\vert$
+      $t \in t$ $\vert$
+      $t \subseteq t$ $\vert$
+      $\Pcorrect\ t$ \\
+    Assertion $A$ & $\defeq$ &
       $P$ $\vert$
-      $\neg A$ $\vert$
-      $A \vee A$ $\vert$
-      $\forall v. A$
+      $\Anot A$ $\vert$
+      $A \Aand A$ $\vert$
+      $\Aforall v. A$
       \\ & $\vert$ &
-      $A \AuntilS A$ $\vert$
-      $A \AsinceS A$ $\vert$
+      $\Astrictalways A$ $\vert$
+      $\Astrictpastalways A$ $\vert$
+      $\Astricteventually A$ $\vert$
+      $\Astrictpasteventually A$ $\vert$
+      $\Anext A$ $\vert$
+      $\Aprevious A$ $\vert$
       $\Aself A$
   \end{tabular}
 \end{center}
@@ -167,15 +264,7 @@ phase is described as follows:
 The extensions to the untyped lambda calculus are clear from this
 grammar.  Pattern matching is accomplished with \emph{match} terms.
 From this term constructor, syntactic sugar can be defined to encode
-\emph{let} and \emph{if} terms in the following way:
-
-\begin{center}
-  \begin{tabular}{rcl}
-    $\Let{p}{t_a}{t_m}$ & := & $\Match{t_a}{p}{t_m}{\bot}$ \\
-    $\If{t_a}{t_i}{t_e}$ & := & $\Match{t_a}{$true$}{t_i}{}$ \\
-      & & $\Match{t_a}{$false$}{t_e}{\bot}$
-  \end{tabular}
-\end{center}
+\emph{let} and \emph{if} terms.
 
 External functions are represented by atomic \emph{function} terms.
 These terms have special treatment within the evaluation engine
@@ -212,19 +301,19 @@ its binder.
 
 Parameters are accessed with the syntax \#($i$, $j$), referring to the
 $j$th binding in the $i$th enclosing binder.  Within a function
-abstraction, typeset here at $\lambda. t$, the parameter is accessed as
+abstraction, typeset here at $\TFun{t}$, the parameter is accessed as
 \#(0, 0), representing the leftmost binding in the closest binder: in
 this case, the abstraction. The syntactic sugar \#$j$ is defined as
 \#(0, $j$), to access the $j$th binding in the immediate binder.  For
-example, the identity function would be written $\lambda.$ \#0 and the
-constant function would be written $\lambda. \lambda.$ \#1.
+example, the identity function would be written $\TFun{\#0}$ and the
+constant function would be written $\TFun{\TFun{\#(1, 0)}}$.
 
 Matching abstractions produce multiple bindings: one for each binding
-appearing in the pattern. In $\Match{t}{(\#, \#)}{\#(0, 1)}{\bot}$
-the parameter \#(0, 1) refers to the right-hand binding within the
+appearing in the pattern. In $\TMatch{t}{\TCases{\TCase{(\#, \#)}{\#0 +
+\#1}}}$ the parameter \#1 refers to the right-hand binding within the
 matched pair.  If the left-hand binding were instead a wildcard, as in
 the pattern (\%, \#), the right-hand element of the pair would instead
-be accessed as \#(0, 0).
+be accessed as \#0.
 
 \section{Semantics}
 
@@ -308,18 +397,18 @@ constructor, or fails if the term is not a well-formed list constructor.
 \subsubsection{Pattern matching}
 
 Match terms are evaluated by evaluating their argument and performing
-pattern matching on the evaluated argument and the given pattern.  If
-the pattern matches correctly, the then-term is opened with the
-resulting bindings and then evaluated.  Otherwise, the else-term is
-evaluated.
+pattern matching on the evaluated argument and the set of cases.  The
+cases are matched in order.  The first case with a pattern that matches
+correctly is then evaluated.  If none of the cases match the argument,
+a matching error is produced.
 
 Pattern matching is done by a separate algorithm, called
 \texttt{match\_pattern}.  This algorithm takes a pattern and a term and
 returns a result that contains a list of bound terms on success and a
 match error on failure.  It accomplishes this by simultaneously matching
-on the pattern and the term.  Wildcard patterns ($\%$) match any term and
-produce an empty binding list.  Binding patterns ($\#$) match any term
-and produce a binding list containing the term.
+on the pattern and the term.  Wildcard patterns ($\%$) match any term
+and produce an empty binding list.  Binding patterns ($\#$) match any
+term and produce a binding list containing the term.
 
 Each constructor is implemented separately.  For example, the unit
 constructor matches when both the pattern and the term are $\top$.  It
@@ -332,23 +421,98 @@ concatenation of the first and second binding lists.
 \section{Logic}
 
 The logic is defined in the \texttt{derives} inductive relation.  If an
-assertion $A$ can be derived from a set of assumptions $\Gamma$ for a
-component $C$ then it is stated that $\Gamma \vdash C, A$.  The derives
-relation includes the standard inference rules from sequent calculus,
-temporal logic axioms and inference rules, axioms and inference rules
-from the program logic, and additional implementation-specific rules.
-The implementation-specific rules enable term evaluation and
-substitution, assertion rewriting, predicate rules, and constructor
-injectivity rules.
+assertion $A$ can be derived from a set of assumptions $\Gamma$ with
+bound variables $\Delta$ for a component $C$ then it is stated that
+$(\Delta, \Gamma) \derives C, A$.  The derives relation includes the
+standard inference rules from sequent calculus, temporal logic axioms
+and inference rules, axioms and inference rules from the program logic,
+and additional implementation-specific rules.  The
+implementation-specific rules enable term evaluation and substitution,
+assertion rewriting, predicate rules, constructor injectivity rules,
+and case analysis rules.
 
 Derived rules and lemmas for sequent, predicate, temporal, and program
 logics are provided in separate files.  These lemmas, such as the
-sequent DAnyAxiom and DModusPonensC lemmas, are built upon the basic
+sequent DSAssumption and DSModusPonensC lemmas, are built upon the basic
 axioms and rules defined in the derives relation.  The temporal and
 program derived rules and lemmas are implemented directly from the TLC
 paper.  The sequent and predicate derived rules and lemmas are made
 specifically to ease the writing of proofs in this embedded logic.  They
 emulate behaviors available when writing proofs directly in Coq.
+
+The pair $(\Delta, \Gamma)$ is referred to as the context of a proof.
+It can be thought of as an emulation of Coq's proof context, which
+consists of terms that may be either values or propositions.  Without
+the benefit of a type system, it is necessary to separate untyped terms
+from assertions. $\Delta$ is a set of variable names that are
+universally quantified within the premises and conclusion of the proof.
+$\Gamma$ is a set of assertions that are assumed to be true.  Variables
+are introduced to the context by sequent logic rules for universal and
+existential quantifiers.
+
+\subsection{Rules}
+
+These rules are specific to this implementation of the logic.  They
+largely exist to emulate the behavior of certain Coq tactics that are
+helpful for writing proofs.
+
+\begin{itemize}
+
+  \item DAEvaluateP: Evaluates all terms in the head premise.
+  \item DAEvaluateC: Evaluates all terms in the conclusion.
+  \item DASubstituteP: Substitutes all term equalities that appear in
+    the tail premises within the head premise.
+  \item DASubstituteC: Substitutes all term equalities that appear in
+    the premises within the conclusion.
+  \item DARewriteIfP: Replaces all positive occurrences of $A_p$ in the
+    proven assertion $A_p \Aif A_c$ with $A_c$ within the head premise.
+  \item DARewriteIfC: Replaces all positive occurrences of $A_p$ in the
+    proven assertion $A_p \Aif A_c$ with $A_c$ within the conclusion.
+  \item DARewriteIffPL: Replaces all occurrences of $A_{pl}$ in the
+    proven assertion $A_{pl} \Aiff A_{pr}$ with $A_{pr}$ within the head
+    premise.
+  \item DARewriteIffPR: Replaces all occurrences of $A_{pr}$ in the
+    proven assertion $A_{pl} \Aiff A_{pr}$ with $A_{pl}$ within the head
+    premise.
+  \item DARewriteIffCL: Replaces all occurrences of $A_{pl}$ in the
+    proven assertion $A_{pl} \Aiff A_{pr}$ with $A_{pr}$ within the
+    conclusion.
+  \item DARewriteIffCR: Replaces all occurrences of $A_{pr}$ in the
+    proven assertion $A_{pl} \Aiff A_{pr}$ with $A_{pl}$ within the
+    conclusion.
+  \item DAPEqual: Proves that two terms are syntactically equal.
+  \item DAPIn: Proves that a term is a member of a list term.
+  \item DAPExtension: Proves that a list term is an extension of another
+    list term.
+  \item DADestructP: Destructs a match term within the head premise,
+    generating case analysis assertions for each case.
+  \item DADestructC: Destructs a match term within the conclusion,
+    generating case analysis assertions for each case.
+
+\end{itemize}
+
+The rewriting rules for implication and bicondition are repeated for
+their strong temporal counterparts.
+
+\subsection{Tactics}
+
+These tactics are provided for working with the proof system in a more
+natural, Coq-like way.  Not listed here are tactics for ergonomic use of
+the sequent rules and axioms.
+
+\begin{itemize}
+
+  \item d\_evalp, d\_evalc, d\_eval: Similar to Coq's simpl tactic.
+  \item d\_substp, d\_substc, d\_subst: Similar to Coq's subst tactic.
+  \item d\_destructp, d\_destructc: Similar to Coq's case tactic.
+  \item d\_false: Immediately completes a proof when False is the head
+    premise.
+  \item d\_clear: Removes the head premise from the context.
+  \item d\_swap: Exchanges the first two premises.
+  \item d\_have: Adds a premise to the context and generates a Coq goal
+    for proving its truth.
+
+\end{itemize}
 
 \section{Components}
 
@@ -389,8 +553,8 @@ The first is the stubborn delivery specification: if a correct node $n$
 sends a message $m$ to a correct node $n'$, then $m$ will be delivered
 to $n'$ infinitely often.  The second is the no-forge specification: if
 a message $m$ is delivered to a node $n$ from node $n'$, then $m$ was
-previously sent to $n$ by $n'$.  The stubborn delivery specification is
-proven true in this phase.
+previously sent to $n$ by $n'$.  Both of these properties are partially
+proven true.
 
 \section{Usage}
 
@@ -416,7 +580,7 @@ To evaluate a term, the $[[t t ]]$ notation can be used:
 
 \begin{verbatim}
 Eval compute in [[t
-  (fun: match: #0 with: #.+1 then: #0 else: 0) <$> [0, 1, 2, 3]
+  (fun: match: #0 with: {{ #.+1 -> #0 | % -> 0}}) <$> [0, 1, 2, 3]
 ]].
 (* Output:
 = Success
@@ -436,25 +600,19 @@ Eval compute in [[
 \end{verbatim}
 
 To enter proof mode on an assertion within the logic, the
-$\Gamma \vdash C, A$ notation can be used:
+$(\Delta, \Gamma) \vdash C, A$ notation can be used:
 
 \begin{verbatim}
 Example example1 C :
-  [::] |- C, {A: ATrue \/ AFalse}.
+  Context [::] [::] |- C, {A: ATrue \/ AFalse}.
 Proof.
-  apply DSIfC.
-  apply DASubstituteC; rewrite /=.
-  eapply DAEvaluateC; first by [].
-  by apply DAPEqual.
+  d_left. d_notc. d_head.
 Qed.
 
 Example example2 C :
-  [::] |- C, {A: x = 5 -> "x" + "x" = 10}.
+  Context [::] [::] |- C, {A: x = 5 -> "x" + "x" = 10}.
 Proof.
-  apply DSIfC.
-  apply DASubstituteC; rewrite /=.
-  eapply DAEvaluateC; first by [].
-  by apply DAPEqual.
+  d_ifc. d_substc. d_evalc. by exact: DAPEqual.
 Qed.
 \end{verbatim}
 
