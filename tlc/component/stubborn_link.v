@@ -361,6 +361,7 @@ Proof.
     }.
     eapply DSCut; first by apply DPInvL with (A := A);
       first by repeat constructor.
+    rewrite /A.
 
     (* Prove that A holds for requests *)
     d_ifp.
@@ -370,7 +371,18 @@ Proof.
     (* Prove that A holds for indications *)
     d_ifp.
       d_forallc "i"; d_forallc "e".
-      admit. (* TODO *)
+      d_ifc; d_splitp; d_swap; d_evalp.
+      d_destructp (fun t => {A: t = ("Fs'" $ "Fn", "Fors", "Fois")}).
+      d_forallp "m"; d_forallp "n'"; d_splitp; d_swap; d_subst; d_evalp.
+      do 2 eapply DAInjectivePairP.
+      d_ifc; d_splitp.
+      d_splitc; first by d_head. d_clear.
+      d_rotate 4; eapply DAInjectivePairP.
+      d_rotate 2; d_splitp; d_swap; d_splitp.
+      do 2 d_substc.
+      d_splitc; first by eapply DAPEqual.
+      d_splitc; first by eapply DAPEqual.
+      by eapply DAPEqual.
 
     (* Prove that A holds for periodics *)
     d_ifp.
@@ -449,7 +461,17 @@ Proof.
     (* Prove that A holds for requests *)
     d_ifp.
       d_forallc "e".
-      admit. (* TODO *)
+      d_ifc; d_splitp; d_swap; d_evalp.
+      d_destructp (fun t => {A: t = ("Fs'" $ "Fn", "Fors", "Fois")}).
+      d_forallp "m"; d_forallp "n"; d_splitp; d_swap; d_subst; d_evalp.
+      do 2 eapply DAInjectivePairP.
+      d_ifc; d_splitp.
+      d_splitc; first by d_head. d_clear.
+      d_rotate 5; d_splitp; d_swap; d_splitp.
+      do 2 d_substc.
+      d_splitc; first by eapply DAPEqual.
+      d_splitc; first by eapply DAPEqual.
+      by eapply DAPEqual.
 
     (* Prove that A holds for indications *)
     d_ifp.
