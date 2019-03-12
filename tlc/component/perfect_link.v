@@ -80,7 +80,7 @@ Definition perfect_link :=
       let or := {t: #(0, 0)} in
       (* End scoped parameters *)
       ((c', r), [or], [])
-    }} endmatch
+    }}
   }
   (* indication *)
   {t: fun: fun: fun:
@@ -139,7 +139,7 @@ Definition perfect_link :=
         let oi := {t: #(0, 0)} in
         (* End scoped parameters *)
         ((c, r'), [], [oi])
-    }} endmatch
+    }}
   }
   (* periodic *)
   {t: fun: fun:

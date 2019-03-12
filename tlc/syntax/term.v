@@ -183,16 +183,16 @@ Notation "tf $ ta" := (TApplication tf ta)
   (at level 10, left associativity) : term_scope.
 Notation "fun: tb" := (TAbstraction tb)
   (at level 20, right associativity, tb at level 100) : term_scope.
-Notation "match: ta with: csl 'endmatch'" := (TMatch ta csl)
+Notation "match: ta with: csl" := (TMatch ta csl)
   (at level 20, right associativity, ta at level 100, csl at level 0)
   : term_scope.
 Notation "p -> t" := (TCase p t) : case_scope.
-Notation "[ ]" := (TCNil) : cases_scope.
+Notation "{{ }}" := (TCNil) : cases_scope.
 Notation "{{ c1 | .. | cn }}" := (TCCons c1 (.. (TCCons cn TCNil) ..))
   : cases_scope.
 
 (* Derived constructor notations *)
-Definition TLet p ta tm := {t: match: ta with: {{ p -> tm }} endmatch}.
+Definition TLet p ta tm := {t: match: ta with: {{ p -> tm }}}.
 Notation "let: p := ta in: tm" := (TLet p ta tm)
   (at level 20, right associativity, ta at level 100, tm at level 100)
   : term_scope.
@@ -200,7 +200,7 @@ Definition TIf ta ti te := {t:
   match: ta with:
   {{ true -> ti
    | false -> te
-  }} endmatch
+  }}
 }.
 Notation "if: ta then: ti else: te" := (TIf ta ti te)
   (at level 20, right associativity, ta at level 100, ti at level 100,

@@ -51,7 +51,7 @@ Definition stubborn_link :=
       let m := {t: #(0, 1)} in
       (* End scoped parameters *)
       (s \union [(n', m)], [(flc, CFLSend $ n' $ m)], [])
-    }} endmatch
+    }}
   }
   (* indication *)
   {t: fun: fun: fun:
@@ -70,7 +70,7 @@ Definition stubborn_link :=
       let m := {t: #(0, 1)} in
       (* End scoped parameters *)
       (s, [], [CSLDeliver $ n $ m])
-    }} endmatch
+    }}
   }
   (* periodic *)
   {t: fun: fun:
@@ -131,7 +131,7 @@ Proof.
 
       d_existsp "sl"; d_existsp "sr"; d_evalc.
       d_destructc (fun t => {A: ("n'", "m") \in
-        match: t with: {{(#, %, %) -> #0}} endmatch}).
+        match: t with: {{(#, %, %) -> #0}}}).
       d_forallc "?n"; d_forallc "?m".
       d_ifc; d_substc; d_evalc.
 
@@ -161,7 +161,7 @@ Proof.
     d_ifp.
       d_forallc "s"; d_forallc "i"; d_forallc "e"; d_ifc; d_evalc.
       d_destructc (fun t => {A: ("n'", "m") \in
-        match: t with: {{(#, %, %) -> #0}} endmatch}).
+        match: t with: {{(#, %, %) -> #0}}}).
       d_forallc "?n"; d_forallc "?m".
       by d_ifc; d_substc; d_evalc; d_clear.
 
