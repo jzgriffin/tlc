@@ -379,10 +379,10 @@ Tactic Notation "d_subst" :=
   d_substp; d_substc.
 Tactic Notation "d_destructp" constr(Pp) :=
   eapply DADestructP with (P := Pp);
-  rewrite /destruct_match /=.
+  rewrite /destruct_matchp /=.
 Tactic Notation "d_destructc" constr(Pc) :=
   eapply DADestructC with (P := Pc);
-  rewrite /destruct_match /=.
+  rewrite /destruct_matchc /=.
 
 (* Sequent logic tactics *)
 Tactic Notation "d_false" := apply DSFalse.
