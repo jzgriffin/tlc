@@ -26,6 +26,15 @@ Lemma DAPEqualSymmetric C ctx :
 Proof.
 Admitted. (* TODO *)
 
+(* No element may appear in an empty list *)
+Lemma DAPInNil C ctx :
+  ctx |- C, {A:
+    forall: "t":
+    ~("t" \in [])
+  }.
+Proof.
+Admitted. (* TODO *)
+
 (* If t is in tsl or tsr, then t is in the concatenation of tsl and tsr *)
 Lemma DAPInConcat C ctx :
   ctx |- C, {A:
