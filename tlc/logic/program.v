@@ -55,21 +55,21 @@ Lemma DPInvL C ctx A :
     (
       forall: "e":
       when[]-> "e" /\
-      request C $ "Fn" $ ("Fs" $ "Fn") $ "e" =
-        ("Fs'" $ "Fn", "Fors", "Fois") ->
+      ("Fs'" $ "Fn", "Fors", "Fois") =
+        request C $ "Fn" $ ("Fs" $ "Fn") $ "e" ->
       A
     ) ->
     (
       forall: "i", "e":
       when["i"]<- "e" /\
-      indication C $ "Fn" $ ("Fs" $ "Fn") $ ("i", "e") =
-        ("Fs'" $ "Fn", "Fors", "Fois") ->
+      ("Fs'" $ "Fn", "Fors", "Fois") =
+        indication C $ "Fn" $ ("Fs" $ "Fn") $ ("i", "e") ->
       A
     ) ->
     (
       when[]~> PE /\
-      periodic C $ "Fn" $ ("Fs" $ "Fn") =
-        ("Fs'" $ "Fn", "Fors", "Fois") ->
+      ("Fs'" $ "Fn", "Fors", "Fois") =
+        periodic C $ "Fn" $ ("Fs" $ "Fn") ->
       A
     ) ->
     (
