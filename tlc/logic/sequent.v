@@ -165,3 +165,15 @@ Proof.
           rewrite in_cons; apply/orP; left.
     by d_head.
 Qed.
+
+(* Negation is the same as implication with a false conclusion *)
+Lemma DSNotImpliesFalse C ctx Ac :
+  ctx |- C, {A: ~Ac <-> (Ac -> AFalse)}.
+Proof.
+  case: ctx => Delta Gamma.
+  d_splitc; d_ifc.
+  - by d_ifc; d_swap; d_notp.
+  - d_notc; d_swap; d_notp; d_splitc.
+    + by d_notc; d_notp.
+    + by d_notc.
+Qed.
