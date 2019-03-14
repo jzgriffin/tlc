@@ -354,41 +354,72 @@ Proof.
     when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m"
   }.
   {
+    d_clear. (* Clean up the context *)
+
     (* Instantiate InvL *)
-    set A := {A:
-      when-on["n"] (CSLDeliver $ "n'" $ "m" \in "Fois") ->
-      when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m"
-    }.
-    eapply DSCut; first by apply DPInvL with (A := A);
-      first by repeat constructor.
-    rewrite /A.
+    eapply DSCut; first by apply DPInvL with (A := {A:
+        when-on["n"] (CSLDeliver $ "n'" $ "m" \in "Fois") ->
+        when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m"
+      }); first by repeat constructor.
 
-    (* Prove that A holds for requests *)
+    (* Prove for requests *)
     d_ifp.
+      (* Obtain the first contradictory premise *)
       d_forallc "e".
-      admit. (* TODO *)
+      d_ifc; d_splitp; d_swap; d_evalp.
+      d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
+      d_forallp "m"; d_forallp "n'"; d_splitp; d_swap.
+      d_substp; d_evalp.
+      do 2 eapply DAInjectivePairP.
+      do 2 d_clear; do 2 (d_swap; d_clear). (* Clean up the context *)
 
-    (* Prove that A holds for indications *)
+      (* Obtain the second contradictory premise *)
+      d_ifc; d_splitp; d_clear; d_substp.
+
+      (* Prove the contradiction *)
+      eapply DSCut; first by eapply DAPInNil.
+      d_forallp {t: CSLDeliver $ "n'" $ "m"}.
+      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
+        CSLDeliver $ "n'" $ "m" \in CNil}).
+      d_swap; eapply DARewriteIffPL; first by d_head.
+      rewrite_assertion_any; d_swap; d_clear.
+      by d_ifp; first by d_head; d_false.
+
+    (* Prove for indications *)
     d_ifp.
       d_forallc "i"; d_forallc "e".
       d_ifc; d_splitp; d_swap; d_evalp.
-      d_destructp (fun t => {A: t = ("Fs'" $ "Fn", "Fors", "Fois")}).
+      d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
       d_forallp "m"; d_forallp "n'"; d_splitp; d_swap; d_subst; d_evalp.
       do 2 eapply DAInjectivePairP.
       d_ifc; d_splitp.
-      d_splitc; first by d_head. d_clear.
-      d_rotate 4; eapply DAInjectivePairP.
+      d_splitc; first by d_head; d_clear.
+      d_rotate 5; eapply DAInjectivePairP.
       d_rotate 2; d_splitp; d_swap; d_splitp.
       do 2 d_substc.
       d_splitc; first by eapply DAPEqual.
       d_splitc; first by eapply DAPEqual.
       by eapply DAPEqual.
 
-    (* Prove that A holds for periodics *)
+    (* Prove for periodics *)
     d_ifp.
-      admit. (* TODO *)
+      (* Obtain the first contradictory premise *)
+      d_ifc; d_splitp; d_swap; d_evalp.
+      do 2 eapply DAInjectivePairP.
+      do 2 d_clear; (d_swap; d_clear). (* Clean up the context *)
 
-    rewrite /A.
+      (* Obtain the second contradictory premise *)
+      d_ifc; d_splitp; d_clear; d_substp.
+
+      (* Prove the contradiction *)
+      eapply DSCut; first by eapply DAPInNil.
+      d_forallp {t: CSLDeliver $ "n'" $ "m"}.
+      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
+        CSLDeliver $ "n'" $ "m" \in CNil}).
+      d_swap; eapply DARewriteIffPL; first by d_head.
+      rewrite_assertion_any; d_swap; d_clear.
+      by d_ifp; first by d_head; d_false.
+
     eapply DARewriteIffPL; first by apply DSMergeIf with
       (Ap1 := {A: when-self})
       (Ap2 := {A: when-on["n"] (CSLDeliver $ "n'" $ "m" \in "Fois")})
@@ -450,19 +481,19 @@ Proof.
     when-on["n'"] when[]-> CSLSend $ "n" $ "m"
   }.
   {
-    (* Instantiate InvL *)
-    set A := {A:
-      when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors") ->
-      when-on["n'"] when[]-> CSLSend $ "n" $ "m"
-    }.
-    eapply DSCut; first by apply DPInvL with (A := A);
-      first by repeat constructor.
+    do 6 d_clear. (* Clean up the context *)
 
-    (* Prove that A holds for requests *)
+    (* Instantiate InvL *)
+    eapply DSCut; first by apply DPInvL with (A := {A:
+        when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors") ->
+        when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+      }); first by repeat constructor.
+
+    (* Prove for requests *)
     d_ifp.
       d_forallc "e".
       d_ifc; d_splitp; d_swap; d_evalp.
-      d_destructp (fun t => {A: t = ("Fs'" $ "Fn", "Fors", "Fois")}).
+      d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
       d_forallp "m"; d_forallp "n"; d_splitp; d_swap; d_subst; d_evalp.
       do 2 eapply DAInjectivePairP.
       d_ifc; d_splitp.
@@ -473,16 +504,36 @@ Proof.
       d_splitc; first by eapply DAPEqual.
       by eapply DAPEqual.
 
-    (* Prove that A holds for indications *)
+    (* Prove for indications *)
     d_ifp.
+      (* Obtain the first contradictory premise *)
       d_forallc "i"; d_forallc "e".
-      admit. (* TODO *)
+      d_ifc; d_splitp; d_swap; d_evalp.
+      d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
+      d_forallp "m"; d_forallp "n"; d_splitp; d_swap.
+      d_substp; d_evalp.
+      do 2 eapply DAInjectivePairP.
+      d_clear; do 3 (d_swap; d_clear). (* Clean up the context *)
 
-    (* Prove that A holds for periodics *)
+      (* Obtain the second contradictory premise *)
+      d_ifc; d_splitp; d_clear; d_substp.
+
+      (* Prove the contradiction *)
+      eapply DSCut; first by eapply DAPInNil.
+      d_forallp {t: (0, CFLSend $ "n" $ "m")}.
+      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
+        (0, CFLSend $ "n" $ "m") \in CNil}).
+      d_swap; eapply DARewriteIffPL; first by d_head.
+      rewrite_assertion_any; d_swap; d_clear.
+      by d_ifp; first by d_head; d_false.
+
+    (* Prove for periodics *)
     d_ifp.
-      admit. (* TODO *)
+      d_ifc; d_splitp; d_splitp; d_swap; d_splitp; d_rotate 3.
+      d_evalp.
+      do 2 eapply DAInjectivePairP.
+      admit. (* TODO: I don't think this is really true *)
 
-    rewrite /A.
     eapply DARewriteIffPL; first by apply DSMergeIf with
       (Ap1 := {A: when-self})
       (Ap2 := {A: when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors")})
