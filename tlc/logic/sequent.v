@@ -209,3 +209,16 @@ Proof.
   d_ifc; d_ifc; d_swap; d_ifp; first by d_head.
   by d_splitp; d_head.
 Qed.
+
+Lemma DSOrDistributesAnd C ctx Al Ar A :
+  ctx |- C, {A: (Al \/ Ar) /\ A <-> (Al /\ A) \/ (Ar /\ A)}.
+Proof.
+  case: ctx => Delta Gamma.
+  d_splitc; d_ifc.
+  - d_splitp; d_orp.
+    + by d_left; d_splitc; [d_head | d_clear; d_head].
+    + by d_right; d_splitc; [d_head | d_clear; d_head].
+  - d_splitc.
+    + by d_orp; d_splitp; [d_left | d_right]; d_head.
+    + by d_orp; d_splitp; d_clear; d_head.
+Qed.
