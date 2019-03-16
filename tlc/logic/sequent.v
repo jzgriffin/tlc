@@ -177,3 +177,16 @@ Proof.
     + by d_notc; d_notp.
     + by d_notc.
 Qed.
+
+Lemma DSIfAndSplit C ctx Ap Acl Acr :
+  ctx |- C, {A: ((Ap -> Acl) /\ (Ap -> Acr)) <-> (Ap -> (Acl /\ Acr))}.
+Proof.
+  case: ctx => Delta Gamma.
+  d_splitc; d_ifc.
+  - d_splitp; d_ifc; d_splitc.
+    + by d_swap; d_ifp; first by d_head.
+    + by d_swap; d_clear; d_swap; d_ifp; first by d_head.
+  - d_splitc; d_ifc; d_swap; (d_ifp; first by d_head); d_splitp.
+    + by d_head.
+    + by d_swap.
+Qed.
