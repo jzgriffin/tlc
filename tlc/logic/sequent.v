@@ -190,3 +190,14 @@ Proof.
     + by d_head.
     + by d_swap.
 Qed.
+
+Lemma DSIfAndIntroduce C ctx Apl Apr Ac :
+  ctx |- C, {A: (Apl /\ Apr -> Ac) <-> (Apl /\ Apr -> Ac /\ Apr)}.
+Proof.
+  case: ctx => Delta Gamma.
+  d_splitc; d_ifc; d_ifc.
+  - d_splitc.
+    + by d_swap; d_ifp.
+    + by d_splitp; d_swap.
+  - d_swap; d_ifp; first by d_head. by d_splitp.
+Qed.
