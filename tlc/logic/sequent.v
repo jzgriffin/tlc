@@ -201,3 +201,11 @@ Proof.
     + by d_splitp; d_swap.
   - d_swap; d_ifp; first by d_head. by d_splitp.
 Qed.
+
+Lemma DSIfAndEliminate C ctx Ap Acl Acr :
+  ctx |- C, {A: (Ap -> (Acl /\ Acr)) -> (Ap -> Acl)}.
+Proof.
+  case: ctx => Delta Gamma.
+  d_ifc; d_ifc; d_swap; d_ifp; first by d_head.
+  by d_splitp; d_head.
+Qed.
