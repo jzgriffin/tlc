@@ -124,3 +124,11 @@ Lemma DPAPerSA C ctx (S : term -> assertion) A :
   }.
 Proof.
 Admitted. (* TODO *)
+
+Lemma DPWhenTopRequestSelf C ctx :
+  ctx |- C, {A:
+    forall: "e":
+    when[]-> "e" =>> when-self
+  }.
+Proof.
+Admitted. (* TODO *)
