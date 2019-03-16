@@ -165,3 +165,18 @@ Lemma DPWhenTopRequestSelf C ctx :
   }.
 Proof.
 Admitted. (* TODO *)
+
+Lemma DPWhenTopRequestSelfEliminate C ctx :
+  ctx |- C, {A:
+    forall: "e":
+    when[]-> "e" /\ when-self <-> when[]-> "e"
+  }.
+Proof.
+  case: ctx => Delta Gamma.
+  d_forallc "e"; d_splitc; d_ifc.
+  - by d_splitp; d_head.
+  - d_splitc; first by d_head.
+  - d_splitp; d_swap; d_splitp; d_right; d_left; d_splitc.
+    + by d_clear; d_clear; d_head.
+    + by d_head.
+Qed.
