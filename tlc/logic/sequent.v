@@ -222,3 +222,20 @@ Proof.
     + by d_orp; d_splitp; [d_left | d_right]; d_head.
     + by d_orp; d_splitp; d_clear; d_head.
 Qed.
+
+Lemma DSAndAssociative C ctx Al Am Ar :
+  ctx |- C, {A: (Al /\ Am) /\ Ar <-> Al /\ (Am /\ Ar)}.
+Proof.
+  case: ctx => Delta Gamma.
+  d_splitc; d_ifc.
+  - d_splitp; d_splitp.
+    d_splitc; first by d_head.
+    d_clear; d_splitc; first by d_head.
+    by d_clear; d_head.
+  - d_splitp; d_swap; d_splitp.
+    d_splitc.
+    + d_splitc.
+      * by d_clear; d_clear; d_head.
+      * by d_head.
+    + by d_clear; d_head.
+Qed.
