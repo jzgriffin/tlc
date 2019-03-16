@@ -108,31 +108,31 @@ Admitted. (* TODO *)
 Lemma DPInvSA C ctx (S : term -> assertion) A :
   non_temporal_assertion A ->
   ctx |- C, {A:
-    forall: "n":
-    ~(S {t: initialize C $ "n"}) ->
+    forall: "?n":
+    ~(S {t: initialize C $ "?n"}) ->
     (
-      forall: "e":
-      when-on["n"] when[]-> "e" /\
-      ~(S {t: "Fs" $ "n"}) /\
-      S {t: let: (#, %, %) := request C $ "n" $ ("Fs" $ "n") $ "e" in: #0} ->
+      forall: "?e":
+      when-on["?n"] when[]-> "?e" /\
+      ~(S {t: "Fs" $ "?n"}) /\
+      S {t: let: (#, %, %) := request C $ "?n" $ ("Fs" $ "?n") $ "?e" in: #0} ->
       A
     ) ->
     (
-      forall: "i", "e":
-      when-on["n"] when["i"]<-"e" /\
-      ~(S {t: "Fs" $ "n"}) /\
+      forall: "?i", "?e":
+      when-on["?n"] when["?i"]<-"?e" /\
+      ~(S {t: "Fs" $ "?n"}) /\
       S {t: let: (#, %, %) :=
-        indication C $ "n" $ ("Fs" $ "n") $ ("i", "e") in: #0} ->
+        indication C $ "?n" $ ("Fs" $ "?n") $ ("?i", "?e") in: #0} ->
       A
     ) ->
     (
-      when-on["n"] when[]~> PE /\
-      ~(S {t: "Fs" $ "n"}) /\
-      S {t: let: (#, %, %) := periodic C $ "n" $ ("Fs" $ "n") in: #0} ->
+      when-on["?n"] when[]~> PE /\
+      ~(S {t: "Fs" $ "?n"}) /\
+      S {t: let: (#, %, %) := periodic C $ "?n" $ ("Fs" $ "?n") in: #0} ->
       A
     ) ->
     (
-      (when-self /\ S {t: "Fs" $ "n"}) =>> eventuallyp^ when-on["n"] A
+      (S {t: "Fs" $ "?n"} /\ when-self) =>> eventuallyp^ when-on["?n"] A
     )
   }.
 Proof.

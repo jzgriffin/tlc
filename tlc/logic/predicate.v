@@ -56,10 +56,10 @@ Proof.
 Admitted. (* TODO *)
 
 (* If t is in ts, then t under mapping tf is in tf mapped over ts *)
-Lemma DAPInMap C ctx t ts tf tft :
-  ctx |- C, {A: t \in ts} ->
-  [[t tf $ t]] = Success tft ->
-  ctx |- C, {A: tft \in tf <$> ts}.
+Lemma DAPInMap C ctx : ctx |- C, {A:
+  forall: "f", "t", "ts":
+  ("t" \in "ts") <-> (("f" $ "t") \in ("f" <$> "ts"))
+}.
 Proof.
 Admitted. (* TODO *)
 

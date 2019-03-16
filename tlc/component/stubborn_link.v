@@ -244,13 +244,13 @@ Proof.
     d_ifp.
       d_ifc; do 3 (d_splitp; d_swap).
       d_evalp.
-      set t1l := {t: "Fs'" $ "n"};
+      set tf := {t: fun: match: #0 with:
+        {{(#, #) -> CPair $ 0 $ (CFLSend $ #0 $ #1)}}};
+        set t1l := {t: "Fs'" $ "n"};
         set t2l := {t: "Fors"};
         set t3l := {t: "Fois"};
         set t1r := {t: ("Fs" $ "n")};
-        set t2r := {t: FMap $
-          (fun: match: #0 with: {{(#, #) -> CPair $ 0 $ (CFLSend $ #0 $ #1)}}) $
-          t1r};
+        set t2r := {t: FMap $ tf $ t1r};
         set t3r := {t: []};
         d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
         d_destructpairp t1l t2l t1r t2r;
@@ -261,7 +261,12 @@ Proof.
 
       d_splitc; first by d_assumption.
       d_splitc; first by d_assumption.
-      by d_substc; eapply DAPInMap; first by do 3 d_clear.
+      d_substc.
+      eapply DSCut; first by apply DAPInMap.
+      d_forallp tf; d_forallp {t: ("n'", "m")};
+        d_forallp {t: "Fs" $ "n"}.
+      d_splitp; d_swap; d_clear; d_ifp; first by d_rotate 3; d_head.
+      by d_evalp.
 
     by d_ifp; first by d_assumption.
   }
@@ -568,26 +573,198 @@ Proof.
           when-self}).
   }
 
-  (* By InvL *)
+  (* By InvSA *)
   d_have {A:
-    when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors") /\ when-self =>>
-    when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+    when-on["n'"] (("n", "m") \in "Fs" $ "n'") /\ when-self =>>
+    eventuallyp^ when-on["n'"] when[]-> CSLSend $ "n" $ "m"
   }.
   {
     do 6 d_clear. (* Clean up the context *)
 
+    (* Instantiate InvSA *)
+    eapply DSCut; first by apply DPInvSA with
+      (S := fun ts => {A: when-on["n'"] (("n", "m") \in ts)})
+      (A := {A: when[]-> CSLSend $ "n" $ "m"});
+      first by repeat constructor.
+    d_forallp "n'".
+
+    (* Prove for initialization *)
+    d_ifp.
+      d_evalc.
+      eapply DSCut; first by eapply DAPInNil.
+      d_forallp {t: ("n", "m")}.
+      d_notc; d_splitp; d_clear; d_swap.
+      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
+        ("n", "m") \in []}).
+      d_swap; eapply DARewriteIffPL; first by d_head.
+      rewrite_assertion_any; d_swap; d_clear.
+      by d_ifp; first by d_head; d_false.
+
+    (* Prove for requests *)
+    d_ifp.
+      d_forallc "e".
+      d_ifc; d_splitp; d_splitp; do 2 (d_swap; d_splitp).
+      d_rotate 4; do 2 (d_splitp; d_swap); d_subst.
+      d_splitc; first by eapply DAPEqual.
+      d_splitc; first by eapply DAPEqual.
+      d_evalp; d_destructp (fun t => {A: ("n", "m") \in t}).
+      d_forallp "Fois"; d_forallp "Fors"; d_forallp {t: "Fs'" $ "n'"}; d_splitp.
+      d_destructp (fun t => {A: t = ("Fs'" $ "n'", "Fors", "Fois")}).
+      by d_forallp "m"; d_forallp "n"; d_splitp.
+
+    (* Prove for indications *)
+    d_ifp.
+      d_forallc "i"; d_forallc "e".
+      d_ifc; d_splitp; d_splitp; do 2 (d_swap; d_splitp).
+      d_rotate 4; do 2 (d_splitp; d_swap); d_subst.
+      d_evalp; d_destructp (fun t => {A: ("n", "m") \in t}).
+      d_forallp "Fois"; d_forallp "Fors"; d_forallp {t: "Fs'" $ "n'"}; d_splitp.
+      d_destructp (fun t => {A: t = ("Fs'" $ "n'", "Fors", "Fois")}).
+      d_forallp "m"; d_forallp "n"; d_splitp.
+
+      d_destructpairp "i" "e" 0 {t: CFLDeliver $ "n" $ "m"}.
+      rewrite_assertion_any; d_splitp; d_rotate 2; d_substp; d_evalp.
+
+      set t1l := {t: "Fs" $ "n'"};
+        set t2l : term := {t: []};
+        set t3l := {t: [CSLDeliver $ "n" $ "m"]};
+        set t1r := {t: "Fs'" $ "n'"};
+        set t2r : term := "Fors";
+        set t3r : term := "Fois".
+        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r; d_splitp.
+        d_destructpairp t1l t2l t1r t2r; d_splitp.
+      rewrite_assertion_any;
+        rewrite /t1l /t2l /t3l /t1r /t2r /t3r;
+        clear t1l t2l t3r t1r t2r t3r.
+      d_rotate 3; d_substp; d_evalp; d_swap; d_clear; d_swap; d_substp.
+      by d_notp; d_splitc; first by eapply DAPEqual.
+
+    (* Prove for periodics *)
+    d_ifp.
+      d_ifc; d_splitp; d_splitp; do 2 (d_swap; d_splitp).
+      d_rotate 4; do 2 (d_splitp; d_swap); d_subst.
+      d_evalp; d_rotate 2; d_substp.
+      d_notp; d_splitc; first by eapply DAPEqual.
+      by do 4 d_clear.
+
+    by d_head.
+  }
+
+  (* By InvL *)
+  d_have {A:
+    when-on["n'"] (("n", "m") \in "Fs'" $ "n'") /\ when-self =>>
+    (when-on["n'"] ((("n", "m") \in "Fs" $ "n'")) /\ when-self \/
+      when-on["n'"] when[]-> CSLSend $ "n" $ "m")
+  }.
+  {
+    do 7 d_clear. (* Clean up the context *)
+
+    (* Instantiate InvL *)
+    eapply DSCut; first by apply DPInvL with (A := {A:
+        when-on["n'"] (("n", "m") \in "Fs'" $ "n'") ->
+        (when-on["n'"] (("n", "m") \in "Fs" $ "n'") \/
+          when-on["n'"] when[]-> CSLSend $ "n" $ "m")});
+      first by repeat constructor.
+
+    (* Prove for requests *)
+    d_ifp.
+      d_forallc "e".
+      d_ifc; d_splitp; d_splitp; d_swap; d_splitp.
+      d_rotate 3; d_substp; d_evalp.
+      d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
+      d_forallp "m"; d_forallp "n"; d_splitp.
+
+      d_ifc; d_splitp; d_right; do 2 d_substc.
+      d_splitc; first by eapply DAPEqual.
+      d_splitc; first by eapply DAPEqual.
+      d_splitc; first by eapply DAPEqual.
+      by eapply DAPEqual.
+
+    (* Prove for indications *)
+    d_ifp.
+      d_forallc "i"; d_forallc "e".
+      d_ifc; d_splitp; d_splitp; d_swap; d_splitp.
+      d_rotate 3; d_substp; d_evalp.
+      d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
+      d_forallp "m"; d_forallp "n"; d_splitp.
+
+      d_ifc; d_splitp; d_left; do 2 d_substc.
+      d_splitc; first by eapply DAPEqual.
+
+      d_rotate 3; d_substp; d_evalp.
+      d_destructpairp {t: ("Fs'" $ "n'", "Fors")} "Fois"
+        {t: ("Fs" $ "n'", [])} {t: [CSLDeliver $ "n" $ "m"]}; d_splitp.
+      d_destructpairp {t: "Fs'" $ "n'"} "Fors"
+        {t: "Fs" $ "n'"} {t: []}; d_splitp.
+      by d_rotate 7; d_substp.
+
+    (* Prove for periodics *)
+    d_ifp.
+      d_ifc; d_splitp; d_splitp; d_swap; d_splitp.
+      d_rotate 3; d_substp; d_evalp.
+
+      d_ifc; d_splitp; d_left; d_substc.
+      d_splitc; first by eapply DAPEqual.
+
+      d_rotate 2; d_substp.
+      set t := {t: FMap $
+        (fun: match: #0 with: {{(#, #) -> CPair $ 0 $ (CFLSend $ #0 $ #1)}}) $
+        ("Fs" $ "n'")}.
+      d_destructpairp {t: ("Fs'" $ "n'", "Fors")} {t: "Fois"}
+        {t: ("Fs" $ "n'", t)} {t: []}; d_splitp;
+        d_destructpairp {t: "Fs'" $ "n'"} "Fors" {t: "Fs" $ "n'"} t; d_splitp;
+        rewrite {}/t.
+      by d_rotate 7; d_substp.
+
+    eapply DARewriteIffPL; first by apply DSMergeIf with
+      (Ap1 := {A: when-self})
+      (Ap2 := {A: when-on["n'"] (("n", "m") \in "Fs'" $ "n'")})
+      (Ac := {A: when-on["n'"] ((("n", "m") \in "Fs" $ "n'")) \/
+        when-on["n'"] when[]-> CSLSend $ "n" $ "m"}).
+    eapply DARewriteIffPL; first by apply DSAndCommutative with
+      (Acl := {A: when-self})
+      (Acr := {A: when-on["n'"] (("n", "m") \in "Fs'" $ "n'")}).
+    eapply DARewriteIffPL; first by apply DSIfAndIntroduce with
+      (Apl := {A: when-on["n'"] (("n", "m") \in "Fs'" $ "n'")})
+      (Apr := {A: when-self})
+      (Ac := {A: when-on["n'"] (("n", "m") \in "Fs" $ "n'") \/
+        when-on["n'"] when[]-> CSLSend $ "n" $ "m"}).
+    eapply DARewriteIffPL; first by apply DSOrDistributesAnd with
+      (Al := {A: when-on["n'"] (("n", "m") \in "Fs" $ "n'")})
+      (Ar := {A: when-on["n'"] when[]-> CSLSend $ "n" $ "m"})
+      (A := {A: when-self}).
+    eapply DARewriteIffPL; first by apply DSAndAssociative with
+      (Al := {A: "Fn" = "n'"})
+      (Am := {A: when[]-> CSLSend $ "n" $ "m"})
+      (Ar := {A: when-self}).
+    eapply DARewriteIffPL.
+      eapply DSCut; first by apply DPWhenTopRequestSelfEliminate.
+      d_forallp {t: CSLSend $ "n" $ "m"}; d_head.
+    by [].
+  }
+
+  (* By InvL *)
+  d_have {A:
+    when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors") /\ when-self =>>
+    when-on["n'"] (("n", "m") \in "Fs'" $ "n'") /\ when-self
+  }.
+  {
+    do 7 d_clear. (* Clean up the context *)
+
     (* Instantiate InvL *)
     eapply DSCut; first by apply DPInvL with (A := {A:
         when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors") ->
-        when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+        when-on["n'"] (("n", "m") \in "Fs'" $ "n'")
       }); first by repeat constructor.
 
     (* Prove for requests *)
     d_ifp.
       d_forallc "e".
-      d_ifc; d_splitp; d_swap; d_evalp.
+      d_ifc; d_splitp; d_splitp; d_swap; d_splitp.
+      d_rotate 3; d_evalp.
       d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
-      d_forallp "m"; d_forallp "n"; d_splitp; d_swap; d_subst; d_evalp.
+      d_forallp "m"; d_forallp "n"; d_splitp; d_swap.
+      d_substp; d_evalp.
       set t1l := {t: "Fs'" $ "Fn"};
         set t2l := {t: "Fors"};
         set t3l := {t: "Fois"};
@@ -600,13 +777,13 @@ Proof.
         rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
         clear t1l t2l t3l t1r t2r t3r;
         do 2 d_splitp.
-      d_ifc; d_splitp.
-      d_splitc; first by d_head. d_clear.
-      d_rotate 5; d_splitp; d_swap; d_splitp.
-      do 2 d_substc.
-      d_splitc; first by eapply DAPEqual.
-      d_splitc; first by eapply DAPEqual.
-      by eapply DAPEqual.
+      d_ifc; d_splitp; d_splitc; first by d_head.
+      d_swap; d_clear; d_swap; d_subst.
+      eapply DSCut; first by apply DAPInUnion.
+      d_forallp {t: "Fs" $ "n'"};
+        d_forallp {t: [("n", "m")]};
+        d_forallp {t: ("n", "m")}.
+      by d_ifp; first by d_right; eapply DAPIn.
 
     (* Prove for indications *)
     d_ifp.
@@ -644,36 +821,81 @@ Proof.
 
     (* Prove for periodics *)
     d_ifp.
-      d_ifc; d_splitp; d_splitp; d_swap; d_splitp; d_rotate 3.
-      d_evalp.
-      admit. (* TODO: I don't think this is really true *)
+      d_ifc; d_splitp; d_swap; d_evalp.
+      set tf := {t: fun: match: #0 with: {{(#, #) -> (0, CFLSend $ #0 $ #1)}}}.
+      set ts := {t: FMap $ tf $ ("Fs" $ "Fn")};
+      d_destructpairp {t: ("Fs'" $ "Fn", "Fors")} "Fois"
+        {t: ("Fs" $ "Fn", ts)} {t: []}; d_splitp;
+      d_destructpairp {t: "Fs'" $ "Fn"} "Fors"
+        {t: "Fs" $ "Fn"} ts; d_splitp;
+        rewrite {}/ts.
+      d_ifc; d_splitp; d_splitc; first by d_head.
+      d_swap; d_substp; d_rotate 2; d_subst; d_rotate 5.
+      eapply DSCut; first by apply DAPInMap.
+      d_forallp tf; d_forallp {t: ("n", "m")}; d_forallp {t: "Fs" $ "Fn"}.
+      d_splitp; d_clear; d_evalp; d_ifp; first by d_head.
+      by d_substp.
 
     eapply DARewriteIffPL; first by apply DSMergeIf with
       (Ap1 := {A: when-self})
       (Ap2 := {A: when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors")})
-      (Ac := {A: when-on["n'"] when[]-> CSLSend $ "n" $ "m"}).
-    by eapply DARewriteIffPL; first by apply DSAndCommutative with
+      (Ac := {A: when-on["n'"] (("n", "m") \in "Fs'" $ "n'")}).
+    eapply DARewriteIffPL; first by apply DSAndCommutative with
       (Acl := {A: when-self})
       (Acr := {A: when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors")}).
+    by eapply DARewriteIffPL; first by apply DSIfAndIntroduce with
+      (Apl := {A: when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors")})
+      (Apr := {A: when-self})
+      (Ac := {A: when-on["n'"] (("n", "m") \in "Fs'" $ "n'")}).
   }
 
-  (* From (6) and (7) *)
+  (* By (8) and (9) *)
+  d_have {A:
+    when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors") /\ when-self =>>
+    (when-on["n'"] (("n", "m") \in "Fs" $ "n'")) /\ when-self \/
+      when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+  }.
+  {
+    eapply DARewriteIffPL; first by eapply DSCut;
+      first by apply DSIfAndIntroduce with
+        (Apl := {A: when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors")})
+        (Apr := {A: when-self})
+        (Ac := {A: when-on["n'"] (("n", "m") \in "Fs'" $ "n'")}).
+    by eapply DARewriteEntailsP; first by d_head.
+  }
+
+  (* By (6) and (10) *)
+  d_have {A:
+    when-on["n'"] when[0]-> CFLSend $ "n" $ "m" <~
+    (when-on["n'"] (("n", "m") \in "Fs" $ "n'")) /\ when-self \/
+    when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+  }.
+  {
+    by d_rotate 4; eapply DARewriteEntailsP; first by d_rotate 5; d_head.
+  }
+
+  (* By (7) and (11) *)
   d_have {A:
     when-on["n'"] when[0]-> CFLSend $ "n" $ "m" <~
     when-on["n'"] when[]-> CSLSend $ "n" $ "m"
   }.
   {
-    by d_rotate 1; eapply DARewriteEntailsP;
-      first by d_rotate 5; d_head.
+    eapply DARewriteEntailsP; first by d_rotate 3; d_head.
+    eapply DARewriteIffPL; first by apply DSOrCommutative with
+      (Acl := {A: eventuallyp^ when-on["n'"] when[]-> CSLSend $ "n" $ "m"})
+      (Acr := {A: when-on["n'"] when[]-> CSLSend $ "n" $ "m"}).
+    by eapply DARewriteCongruentCL;
+      first by apply DTL83_1 with
+      (A := {A: when-on["n'"] when[]-> CSLSend $ "n" $ "m"}).
   }
 
-  (* From (5) and (8) *)
+  (* From (5) and (12) *)
   d_have {A:
     when-on["n"] when[]<- CSLDeliver $ "n'" $ "m" <~
     eventuallyp when-on["n'"] when[]-> CSLSend $ "n" $ "m"
   }.
   {
-    by d_rotate 3; eapply DARewriteEntailsP;
+    by d_rotate 7; eapply DARewriteEntailsP;
       first by d_rotate 4; d_head.
   }
 
@@ -690,4 +912,4 @@ Proof.
   }
 
   by [].
-Admitted. (* TODO *)
+Qed.
