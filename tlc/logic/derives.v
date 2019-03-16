@@ -150,16 +150,9 @@ Section derives.
   | DADestructC ctx P ta cs :
     ctx |- destruct_matchc P ta cs ->
     ctx |- P (TMatch ta cs)
-  (* Constructors *)
-  | DAInjectivePairP Delta Gamma tll trl tlr trr Ac :
-    (* Proves the injective equality of two pairs in the head premise *)
-    Context Delta ({A: tll = tlr} :: {A: trl = trr} :: Gamma) |- Ac ->
-    Context Delta ({A: (tll, trl) = (tlr, trr)} :: Gamma) |- Ac
-  | DAInjectivePairC ctx tll trl tlr trr :
-    (* Proves the injective equality of two pairs in the conclusion *)
-    ctx |- {A: tll = tlr} ->
-    ctx |- {A: trl = trr} ->
-    ctx |- {A: (tll, trl) = (tlr, trr)}
+  | DADestructPair ctx tll trl tlr trr :
+    (* Proves the injective equality of two pairs *)
+    ctx |- {A: (tll = tlr /\ trl = trr) <-> ((tll, trl) = (tlr, trr))}
   (* Sequent logic *)
   | DSFalse Delta Gamma A :
     (* Proves that any assertion is true when false is assumed *)
@@ -383,6 +376,11 @@ Tactic Notation "d_destructp" constr(Pp) :=
 Tactic Notation "d_destructc" constr(Pc) :=
   eapply DADestructC with (P := Pc);
   rewrite /destruct_matchc /=.
+Tactic Notation "d_destructpairp"
+  constr(tll) constr(trl) constr(tlr) constr(trr) :=
+  eapply DARewriteIffPR; first by eapply DSCut;
+    first by apply (DADestructPair _ _ tll trl tlr trr);
+  rewrite_assertion_any.
 
 (* Sequent logic tactics *)
 Tactic Notation "d_false" := apply DSFalse.

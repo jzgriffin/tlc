@@ -107,7 +107,49 @@ Proof.
     eapply DSCut; first by apply DPIR.
     d_forallp {t: CSLSend $ "n'" $ "m"}; d_evalp.
 
-    admit. (* TODO *)
+    set t1l := {t: "Fs'" $ "Fn"}.
+      set t2l := {t: "Fors"};
+      set t3l := {t: "Fois"};
+      set t1r := {t: ("Fs" $ "Fn") \union [("n'", "m")]};
+      set t2r := {t: [(0, CFLSend $ "n'" $ "m")]};
+      set t3r := {t: []};
+      d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
+      d_destructpairp t1l t2l t1r t2r;
+      rewrite_assertion_any;
+      rewrite /t1l /t2l /t3l /t1r /t2r /t3r;
+      clear t1l t2l t3l t1r t2r t3r.
+
+    d_have {A: ("Fs'" $ "Fn" = "Fs" $ "Fn" \union [("n'", "m")] /\
+      "Fors" = [(0, CFLSend $ "n'" $ "m")]) /\ "Fois" = [] ->
+      ("n'", "m") \in "Fs'" $ "Fn"}.
+      d_ifc; d_splitp; d_splitp; d_substc.
+      eapply DSCut; first by eapply DAPInUnion.
+      d_forallp {t: "Fs" $ "Fn"};
+        d_forallp {t: [("n'", "m")]};
+        d_forallp {t: ("n'", "m")}.
+      by d_ifp; first by by d_right; eapply DAPIn.
+    d_swap; eapply DARewriteIfP; first by d_head. rewrite_assertion_pos.
+
+    eapply DSCut.
+      apply DSIfAndSplit with
+        (Ap := {A: when[]-> CSLSend $ "n'" $ "m"})
+        (Acl := {A: when-self})
+        (Acr := {A: ("n'", "m") \in "Fs'" $ "Fn"}).
+      d_splitp; d_swap; d_clear; d_ifp.
+      d_splitc.
+      - eapply DSCut; first by apply DPWhenTopRequestSelf.
+        by d_forallp {t: CSLSend $ "n'" $ "m"}; d_splitp.
+      - by d_splitp.
+
+    do 4 (d_swap; d_clear). (* Clean up the context *)
+    d_have {A: when-on["n"] when[]-> CSLSend $ "n'" $ "m" -> when-self /\
+      ("n'", "m") \in "Fs'" $ "n"}.
+      d_ifc; d_splitp; d_rotate 2.
+      d_ifp; first by d_swap.
+      by d_subst.
+
+    by d_have {A: when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>> when-self /\
+      ("n'", "m") \in "Fs'" $ "n"}; first by apply DTGeneralization.
   }
 
   (* By InvS'' *)
@@ -201,7 +243,22 @@ Proof.
 
     d_ifp.
       d_ifc; do 3 (d_splitp; d_swap).
-      d_evalp; do 2 apply DAInjectivePairP.
+      d_evalp.
+      set t1l := {t: "Fs'" $ "n"};
+        set t2l := {t: "Fors"};
+        set t3l := {t: "Fois"};
+        set t1r := {t: ("Fs" $ "n")};
+        set t2r := {t: FMap $
+          (fun: match: #0 with: {{(#, #) -> CPair $ 0 $ (CFLSend $ #0 $ #1)}}) $
+          t1r};
+        set t3r := {t: []};
+        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
+        d_destructpairp t1l t2l t1r t2r;
+        rewrite_assertion_any;
+        rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
+        clear t1l t2l t3l t1r t2r t3r;
+        do 2 d_splitp.
+
       d_splitc; first by d_assumption.
       d_splitc; first by d_assumption.
       by d_substc; eapply DAPInMap; first by do 3 d_clear.
@@ -321,7 +378,7 @@ Proof.
     when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"}).
 
   by [].
-Admitted. (* TODO *)
+Qed.
 
 (* No-forge
  * If a node n delivers a message m with sender n', then m was previously sent
@@ -370,7 +427,18 @@ Proof.
       d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
       d_forallp "m"; d_forallp "n'"; d_splitp; d_swap.
       d_substp; d_evalp.
-      do 2 eapply DAInjectivePairP.
+      set t1l := {t: "Fs'" $ "Fn"};
+        set t2l := {t: "Fors"};
+        set t3l := {t: "Fois"};
+        set t1r := {t: ("Fs" $ "Fn") \union [("n'", "m")]};
+        set t2r := {t: [(0, CFLSend $ "n'" $ "m")]};
+        set t3r := {t: []};
+        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
+        d_destructpairp t1l t2l t1r t2r;
+        rewrite_assertion_any;
+        rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
+        clear t1l t2l t3l t1r t2r t3r;
+        do 2 d_splitp.
       do 2 d_clear; do 2 (d_swap; d_clear). (* Clean up the context *)
 
       (* Obtain the second contradictory premise *)
@@ -391,10 +459,23 @@ Proof.
       d_ifc; d_splitp; d_swap; d_evalp.
       d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
       d_forallp "m"; d_forallp "n'"; d_splitp; d_swap; d_subst; d_evalp.
-      do 2 eapply DAInjectivePairP.
+      set t1l := {t: "Fs'" $ "Fn"};
+        set t2l := {t: "Fors"};
+        set t3l := {t: "Fois"};
+        set t1r := {t: ("Fs" $ "Fn")};
+        set t2r := {t: []};
+        set t3r := {t: [CSLDeliver $ "n'" $ "m"]};
+        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
+        d_destructpairp t1l t2l t1r t2r;
+        rewrite_assertion_any;
+        rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
+        clear t1l t2l t3l t1r t2r t3r;
+        do 2 d_splitp.
       d_ifc; d_splitp.
       d_splitc; first by d_head; d_clear.
-      d_rotate 5; eapply DAInjectivePairP.
+      d_rotate 5;
+        d_destructpairp {t: "i"} {t: "e"} {t: 0} {t: CFLDeliver $ "n'" $ "m"}.
+      rewrite_assertion_any; d_splitp.
       d_rotate 2; d_splitp; d_swap; d_splitp.
       do 2 d_substc.
       d_splitc; first by eapply DAPEqual.
@@ -405,7 +486,19 @@ Proof.
     d_ifp.
       (* Obtain the first contradictory premise *)
       d_ifc; d_splitp; d_swap; d_evalp.
-      do 2 eapply DAInjectivePairP.
+      set t1l := {t: "Fs'" $ "Fn"};
+        set t2l := {t: "Fors"};
+        set t3l := {t: "Fois"};
+        set t1r := {t: ("Fs" $ "Fn")};
+        set t2r := {t: FMap $ (fun: match: #0 with: {{
+          (#, #) -> CPair $ 0 $ (CFLSend $ #0 $ #1)}}) $ ("Fs" $ "Fn")};
+        set t3r := {t: []};
+        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
+        d_destructpairp t1l t2l t1r t2r;
+        rewrite_assertion_any;
+        rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
+        clear t1l t2l t3l t1r t2r t3r;
+        do 2 d_splitp.
       do 2 d_clear; (d_swap; d_clear). (* Clean up the context *)
 
       (* Obtain the second contradictory premise *)
@@ -495,7 +588,18 @@ Proof.
       d_ifc; d_splitp; d_swap; d_evalp.
       d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
       d_forallp "m"; d_forallp "n"; d_splitp; d_swap; d_subst; d_evalp.
-      do 2 eapply DAInjectivePairP.
+      set t1l := {t: "Fs'" $ "Fn"};
+        set t2l := {t: "Fors"};
+        set t3l := {t: "Fois"};
+        set t1r := {t: ("Fs" $ "Fn") \union [("n", "m")]};
+        set t2r := {t: [(0, CFLSend $ "n" $ "m")]};
+        set t3r := {t: []};
+        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
+        d_destructpairp t1l t2l t1r t2r;
+        rewrite_assertion_any;
+        rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
+        clear t1l t2l t3l t1r t2r t3r;
+        do 2 d_splitp.
       d_ifc; d_splitp.
       d_splitc; first by d_head. d_clear.
       d_rotate 5; d_splitp; d_swap; d_splitp.
@@ -512,7 +616,18 @@ Proof.
       d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
       d_forallp "m"; d_forallp "n"; d_splitp; d_swap.
       d_substp; d_evalp.
-      do 2 eapply DAInjectivePairP.
+      set t1l := {t: "Fs'" $ "Fn"};
+        set t2l := {t: "Fors"};
+        set t3l := {t: "Fois"};
+        set t1r := {t: ("Fs" $ "Fn")};
+        set t2r := {t: []};
+        set t3r := {t: [CSLDeliver $ "n" $ "m"]};
+        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
+        d_destructpairp t1l t2l t1r t2r;
+        rewrite_assertion_any;
+        rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
+        clear t1l t2l t3l t1r t2r t3r;
+        do 2 d_splitp.
       d_clear; do 3 (d_swap; d_clear). (* Clean up the context *)
 
       (* Obtain the second contradictory premise *)
@@ -531,7 +646,6 @@ Proof.
     d_ifp.
       d_ifc; d_splitp; d_splitp; d_swap; d_splitp; d_rotate 3.
       d_evalp.
-      do 2 eapply DAInjectivePairP.
       admit. (* TODO: I don't think this is really true *)
 
     eapply DARewriteIffPL; first by apply DSMergeIf with
