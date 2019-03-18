@@ -4,8 +4,10 @@
  * Purpose: Contains derived rules and lemmas regarding the program logic.
  *)
 
+Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import tlc.component.component.
+Require Import tlc.logic.context.
 Require Import tlc.logic.derives.
 Require Import tlc.operation.periodic_event.
 Require Import tlc.semantics.all_semantics.
@@ -155,6 +157,16 @@ Lemma DPAPerSA C ctx (S : term -> assertion) A :
       always eventually A
     )
   }.
+Proof.
+Admitted. (* TODO *)
+
+(* These rules are specific to this implementation *)
+
+Lemma DPLower :
+  forall C' Delta A,
+  Context Delta [::] |- C', A ->
+  forall C i (TI : top_invariant A),
+  Context Delta [::] |- C, lower_assertion i TI.
 Proof.
 Admitted. (* TODO *)
 
