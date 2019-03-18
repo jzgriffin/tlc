@@ -258,6 +258,10 @@ Definition FAnd := {t: fun: fun: ~(~#(1, 0) \/ ~#0)}.
 Definition TAnd tl tr := {t: FAnd $ tl $ tr}.
 Notation "tl /\ tr" := (TAnd tl tr) : term_scope.
 
+(* Derived pair functions *)
+Definition FLeft := {t: fun: match: #0 with: {{ (#, %) -> #0 }}}.
+Definition FRight := {t: fun: match: #0 with: {{ (%, #) -> #0 }}}.
+
 (* Derived list functions *)
 Definition FMember := {t: fun: fun: (FCount $ #(1, 0) $ #0) <> 0}.
 Definition TMember t ts := {t: FMember $ t $ ts}.
