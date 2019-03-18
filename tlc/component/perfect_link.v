@@ -160,10 +160,10 @@ Definition PL_SL_2 := DPLower SL_2 perfect_link 0 SL_2_TI.
  * If a correct node n sends a message m to a correct node n', then n' will
  * eventually deliver m.
  *)
-Theorem PL_1 : Context [::] [::] |- perfect_link, {A:
+Theorem PL_1 : Context [:: V "n"; V "n'"; V "m"] [::] |- perfect_link, {A:
   correct "n" /\ correct "n'" ->
-  (when-on["n"] when[]-> CPLSend $ "n'" $ "m" ~>
-    when-on["n'"] when[]<- CPLDeliver $ "n" $ "m")
+  when-on["n"] when[]-> CPLSend $ "n'" $ "m" ~>
+  when-on["n'"] when[]<- CPLDeliver $ "n" $ "m"
 }.
 Proof.
 Admitted. (* TODO *)
@@ -171,11 +171,11 @@ Admitted. (* TODO *)
 (* No-duplication
  * If a message is sent at most once, it will be delivered at most once.
  *)
-Theorem PL_2 : Context [::] [::] |- perfect_link, {A:
+Theorem PL_2 : Context [:: V "n"; V "n'"; V "m"] [::] |- perfect_link, {A:
   (when-on["n'"] when[]-> CPLSend $ "n" $ "m" =>>
-    alwaysp^ ~(when-on["n'"] when[]-> CPLSend $ "n" $ "m")) ->
+    alwaysp^ ~when-on["n'"] when[]-> CPLSend $ "n" $ "m") ->
   (when-on["n"] when[]<- CPLDeliver $ "n'" $ "m" =>>
-    alwaysp^ ~(when-on["n"] when[]<- CPLDeliver $ "n'" $ "m"))
+    alwaysp^ ~when-on["n"] when[]<- CPLDeliver $ "n'" $ "m")
 }.
 Proof.
 Admitted. (* TODO *)
@@ -184,7 +184,7 @@ Admitted. (* TODO *)
  * If a node n delivers a message m with sender n', then m was previously sent
  * to n by node n'.
  *)
-Theorem PL_3 : Context [::] [::] |- perfect_link, {A:
+Theorem PL_3 : Context [:: V "n"; V "n'"; V "m"] [::] |- perfect_link, {A:
   when-on["n"] when[]<- CPLDeliver $ "n'" $ "m" <~
   when-on["n'"] when[]-> CPLSend $ "n" $ "m"
 }.
