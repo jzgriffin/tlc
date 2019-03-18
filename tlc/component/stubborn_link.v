@@ -912,3 +912,20 @@ Proof.
 
   by [].
 Qed.
+
+(* Top invariants for properties *)
+Definition SL_1_TI : top_invariant (derives_assertion SL_1).
+Proof.
+  rewrite /derives_assertion /top_invariant.
+  apply LIA, LAEntails.
+    by apply LAAnd; apply LACorrect.
+  apply LAEntails.
+    by apply LAEventOn with (d' := [::]).
+  by apply LAAlways, LAEventually, LAEventOn with (d' := [::]).
+Defined.
+
+Definition SL_2_TI : top_invariant (derives_assertion SL_2).
+Proof.
+  rewrite /derives_assertion /top_invariant.
+  by apply LIA, LAAlways, LAPrecededBy; apply LAEventOn with (d' := [::]).
+Defined.
