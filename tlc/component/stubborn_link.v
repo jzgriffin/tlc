@@ -86,8 +86,7 @@ Definition stubborn_link :=
 (* Stubborn delivery
  * If a correct node n sends a message m to a correct node n', then n'
  * delivers m infinitely often *)
-Theorem SL_1 : Context [::] [::] |- stubborn_link, {A:
-  forall: "n", "n'", "m":
+Theorem SL_1 : Context [:: V "n"; V "n'"; V "m"] [::] |- stubborn_link, {A:
   correct "n" /\ correct "n'" ->
   when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>>
   always eventually when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"
@@ -95,7 +94,7 @@ Theorem SL_1 : Context [::] [::] |- stubborn_link, {A:
 Proof.
   (* Introduce context *)
   set C := stubborn_link; rewrite -/C.
-  d_forallc "n"; d_forallc "n'"; d_forallc "m"; d_ifc; d_splitp.
+  d_ifc; d_splitp.
 
   (* By IR *)
   d_have {A:
@@ -388,7 +387,7 @@ Qed.
 (* No-forge
  * If a node n delivers a message m with sender n', then m was previously sent
  * to n by n' *)
-Theorem SL_2 : Context [::] [::] |- stubborn_link, {A:
+Theorem SL_2 : Context [:: V "n"; V "n'"; V "m"] [::] |- stubborn_link, {A:
   when-on["n"] when[]<- {t: CSLDeliver $ "n'" $ "m"} <~
   when-on["n'"] when[]-> {t: CSLSend $ "n" $ "m"}
 }.
