@@ -152,6 +152,10 @@ Definition perfect_link :=
 
 (* Specification *)
 
+(* Lowered stubborn link properties *)
+Definition PL_SL_1 := DPLower SL_1 perfect_link 0 SL_1_TI.
+Definition PL_SL_2 := DPLower SL_2 perfect_link 0 SL_2_TI.
+
 (* Reliable delivery
  * If a correct node n sends a message m to a correct node n', then n' will
  * eventually deliver m.
