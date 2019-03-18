@@ -314,6 +314,89 @@ Inductive location_assertion : seq nat -> assertion -> Type :=
   location_assertion d A ->
   location_assertion d {A: eventuallyp^ A}.
 
+(* Derived first-order operators *)
+Lemma LAOr d Al Ar :
+  location_assertion d Al ->
+  location_assertion d Ar ->
+  location_assertion d {A: Al \/ Ar}.
+Proof. move=> LAl LAr; by repeat constructor. Qed.
+Hint Resolve LAOr.
+
+Lemma LAIf d Al Ar :
+  location_assertion d Al ->
+  location_assertion d Ar ->
+  location_assertion d {A: Al -> Ar}.
+Proof. move=> LAl LAr; by repeat constructor. Qed.
+Hint Resolve LAIf.
+
+Lemma LAIff d Al Ar :
+  location_assertion d Al ->
+  location_assertion d Ar ->
+  location_assertion d {A: Al <-> Ar}.
+Proof. move=> LAl LAr; by repeat constructor. Qed.
+Hint Resolve LAIff.
+
+Lemma LAExists d v A :
+  location_assertion d A ->
+  location_assertion d {A: exists: v: A}.
+Proof. move=> LA; by repeat constructor. Qed.
+Hint Resolve LAExists.
+
+(* Derived reflexive future temporal operators *)
+Lemma LAEventually d A :
+  location_assertion d A ->
+  location_assertion d {A: eventually A}.
+Proof. move=> LA; by repeat constructor. Qed.
+Hint Resolve LAEventually.
+
+Lemma LAAlways d A :
+  location_assertion d A ->
+  location_assertion d {A: always A}.
+Proof. move=> LA; by repeat constructor. Qed.
+Hint Resolve LAAlways.
+
+(* Derived reflexive past temporal operators *)
+Lemma LAEventuallyP d A :
+  location_assertion d A ->
+  location_assertion d {A: eventuallyp A}.
+Proof. move=> LA; by repeat constructor. Qed.
+Hint Resolve LAEventuallyP.
+
+Lemma LAAlwaysP d A :
+  location_assertion d A ->
+  location_assertion d {A: alwaysp A}.
+Proof. move=> LA; by repeat constructor. Qed.
+Hint Resolve LAAlwaysP.
+
+(* Additional temporal operators *)
+Lemma LAEntails d Al Ar :
+  location_assertion d Al ->
+  location_assertion d Ar ->
+  location_assertion d {A: Al =>> Ar}.
+Proof. move=> LAl LAr; by repeat constructor. Qed.
+Hint Resolve LAEntails.
+
+Lemma LACongruent d Al Ar :
+  location_assertion d Al ->
+  location_assertion d Ar ->
+  location_assertion d {A: Al <=> Ar}.
+Proof. move=> LAl LAr; by repeat constructor. Qed.
+Hint Resolve LACongruent.
+
+Lemma LAFollowedBy d Al Ar :
+  location_assertion d Al ->
+  location_assertion d Ar ->
+  location_assertion d {A: Al ~> Ar}.
+Proof. move=> LAl LAr; by repeat constructor. Qed.
+Hint Resolve LAFollowedBy.
+
+Lemma LAPrecededBy d Al Ar :
+  location_assertion d Al ->
+  location_assertion d Ar ->
+  location_assertion d {A: Al <~ Ar}.
+Proof. move=> LAl LAr; by repeat constructor. Qed.
+Hint Resolve LAPrecededBy.
+
 (* Sigma type for location assertions *)
 Definition location_assertion_t d :=
   {A : assertion & location_assertion d A}.
