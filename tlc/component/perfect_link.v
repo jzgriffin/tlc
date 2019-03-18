@@ -156,6 +156,82 @@ Definition perfect_link :=
 Definition PL_SL_1 := DPLower SL_1 perfect_link 0 SL_1_TI.
 Definition PL_SL_2 := DPLower SL_2 perfect_link 0 SL_2_TI.
 
+(* Lemmas used in proving PL_1 *)
+
+Lemma L37_1 :
+  Context
+    [:: V "m'"; V "c"; V "n"; V "n'"; V "m"]
+    [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
+    when-self /\ when-on["n"] ((0, CSLSend $ "n'" $ ("c", "m")) \in "Fors") =>>
+    always^ ~(when-self /\
+      when-on["n"] ((0, CSLSend $ "n'" $ ("c", "m'")) \in "Fors"))
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma L37_2 :
+  Context
+    [:: V "m'"; V "c"; V "n"; V "n'"; V "m"]
+    [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
+    when-self /\ when-on["n"] ((0, CSLSend $ "n'" $ ("c", "m")) \in "Fors") =>>
+    alwaysp^ ~(when-self /\
+      when-on["n"] ((0, CSLSend $ "n'" $ ("c", "m'")) \in "Fors"))
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma L38 :
+  Context
+    [:: V "c"; V "n"; V "n'"; V "m"]
+    [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
+    when-on["n'"] when[0]<- CSLDeliver $ "n" $ ("c", "m") =>>
+    eventually when-on["n'"] when[]<- CPLDeliver $ "n" $ "m" \/
+    exists: "m": eventuallyp (
+      when-on["n"] when[]-> CPLSend $ "n" $ "m" /\
+      eventually when-on["n'"] when[]<- CPLDeliver $ "n" $ "m"
+    )
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma L39 :
+  Context
+    [:: V "c"; V "n"; V "n'"; V "m"]
+    [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
+    when-on["n'"] when[0]<- CSLDeliver $ "n" $ ("c", "m") /\
+    ("n", "c") \notin (FRight $ ("Fs" $ "n'")) =>>
+    eventually when-on["n'"] when[]<- CPLDeliver $ "n" $ "m"
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma L40 :
+  Context
+    [:: V "c"; V "n"; V "n'"; V "m"]
+    [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
+    when-self /\ "Fn" = "n'" /\ ("n", "c") \in (FRight $ ("Fs" $ "n'")) =>>
+    exists: "m": eventuallyp (
+      when-on["n"] ((0, CSLSend $ "n'" $ ("c", "m")) \in "Fors") /\
+      when-self /\
+      eventually when-on["n'"] when[]<- CPLDeliver $ "n" $ "m"
+    )
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma L41 :
+  Context
+    [:: V "c"; V "n"; V "n'"; V "m"]
+    [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
+    when-self /\ ("n", "c") \in (FRight $ ("Fs" $ "n'")) =>>
+    exists: "m": eventuallyp (
+      when-on["n'"] when[0]<- CSLDeliver $ "n" $ ("c", "m") /\
+      (CPLDeliver $ "n" $ "m") \in "Fois"
+    )
+  }.
+Proof.
+Admitted. (* TODO *)
+
 (* Reliable delivery
  * If a correct node n sends a message m to a correct node n', then n' will
  * eventually deliver m.
@@ -165,6 +241,50 @@ Theorem PL_1 : Context [:: V "n"; V "n'"; V "m"] [::] |- perfect_link, {A:
   when-on["n"] when[]-> CPLSend $ "n'" $ "m" ~>
   when-on["n'"] when[]<- CPLDeliver $ "n" $ "m"
 }.
+Proof.
+  (* Introduce context *)
+  set C := perfect_link.
+  d_ifc; d_splitp.
+Admitted. (* TODO *)
+
+(* Lemmas used in proving PL_2 *)
+
+Lemma L42 :
+  Context
+    [:: V "n"; V "n'"; V "m"]
+    [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
+    self (
+      "Fn" = "n" /\ (CPLDeliver $ "n'" $ "m") \in "Fois" =>>
+      always^ ("Fn" = "n" -> (CPLDeliver $ "n'" $ "m") \notin "Fois") /\
+      alwaysp^ ("Fn" = "n" -> (CPLDeliver $ "n'" $ "m") \notin "Fois")
+    )
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma L43 :
+  Context
+    [:: V "c"; V "n"; V "n'"; V "m"]
+    [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
+    self (
+      ("n'", "c") \in (FRight $ ("Fs" $ "n")) /\
+      eventuallyp when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c", "m") =>>
+      "Fn" = "n" -> (CPLDeliver $ "n'" $ "m") \notin "Fois"
+    )
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma L44 :
+  Context
+    [:: V "c'"; V "c"; V "n"; V "n'"; V "m"]
+    [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
+    self (
+      when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c", "m") /\
+      eventuallyp when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c'", "m") =>>
+      "c" = "c'"
+    )
+  }.
 Proof.
 Admitted. (* TODO *)
 
