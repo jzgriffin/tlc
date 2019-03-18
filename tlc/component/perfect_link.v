@@ -12,6 +12,7 @@ Require Import mathcomp.ssreflect.ssreflect.
 Require Import tlc.component.component.
 Require Import tlc.component.stubborn_link.
 Require Import tlc.logic.all_logic.
+Require Import tlc.operation.orientation.
 Require Import tlc.semantics.all_semantics.
 Require Import tlc.syntax.all_syntax.
 
@@ -309,4 +310,99 @@ Theorem PL_3 : Context [:: V "n"; V "n'"; V "m"] [::] |- perfect_link, {A:
   when-on["n'"] when[]-> CPLSend $ "n" $ "m"
 }.
 Proof.
+  (* By OI' *)
+  d_have {A:
+    when-on["n"] when[]<- CPLDeliver $ "n'" $ "m" =>>
+    eventuallyp^ (when-on["n"]
+      ((CPLDeliver $ "n'" $ "m") \in "Fois") /\ when-self)
+  }.
+  {
+    (* Instantiate OI' *)
+    eapply DSCut; first by apply DPOI'.
+    by d_forallp "n"; d_forallp {t: CPLDeliver $ "n'" $ "m"}; d_head.
+  }
+
+  (* By InvL *)
+  d_have {A:
+    when-on["n"] (CPLDeliver $ "n'" $ "m" \in "Fois") /\ when-self =>>
+    exists: "c": when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c", "m")
+  }.
+  {
+    d_clear. (* Clean up the context *)
+
+    (* Instantiate InvL *)
+    eapply DSCut; first by apply DPInvL with (A := {A:
+        when-on["n"] (CPLDeliver $ "n'" $ "m" \in "Fois") ->
+        exists: "c": when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c", "m")
+      }); first by repeat constructor.
+
+    (* Prove for requests *)
+    d_ifp.
+      admit.
+
+    (* Prove for indications *)
+    d_ifp.
+      admit.
+
+    (* Prove for periodics *)
+    d_ifp.
+      admit.
+
+    eapply DARewriteIffPL; first by apply DSMergeIf with
+      (Ap1 := {A: when-self})
+      (Ap2 := {A: when-on["n"] (CPLDeliver $ "n'" $ "m" \in "Fois")})
+      (Ac := {A: exists: "c":
+        when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c", "m")}).
+    by eapply DARewriteIffPL; first by apply DSAndCommutative with
+      (Acl := {A: when-self})
+      (Acr := {A: when-on["n"] (CPLDeliver $ "n'" $ "m" \in "Fois")}).
+  }
+
+  (* By Lemma 96 on (1) and (2) *)
+  d_have {A:
+    when-on["n"] when[]<- CPLDeliver $ "n'" $ "m" <~
+    exists: "c": when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c", "m")
+  }.
+  {
+    admit.
+  }
+
+  (* By OR' *)
+  d_have {A:
+    forall: "c":
+    when-on["n'"] when[0]-> CSLSend $ "n" $ ("c", "m") =>>
+    eventuallyp (
+      when-on["n'"] ((0, CSLSend $ "n" $ ("c", "m")) \in "Fors") /\
+      when-self
+    )
+  }.
+  {
+    do 3 d_clear. (* Clean up the context *)
+
+    admit.
+  }
+
+  (* By InvL *)
+  d_have {A:
+    forall: "c":
+    when-on["n'"] ((0, CSLSend $ "n" $ ("c", "m")) \in "Fors") /\ when-self =>>
+    when-on["n'"] when[]-> CPLSend $ "n" $ ("c", "m")
+  }.
+  {
+    do 4 d_clear. (* Clean up the context *)
+
+    admit.
+  }
+
+  (* By Lemma 96 on (4) and (5) *)
+  d_have {A:
+    forall: "c":
+    when-on["n'"] when[0]-> CSLSend $ "n" $ ("c", "m") <~
+    when-on["n'"] when[]-> CPLSend $ "n" $ "m"
+  }.
+  {
+    admit.
+  }
+
+  (* From Lemma 85 on (3), PL_SL_2, and (6) *)
 Admitted. (* TODO *)
