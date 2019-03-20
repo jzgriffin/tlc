@@ -78,7 +78,8 @@ Definition stubborn_link :=
     let n' := {t: #(1, 0)} in
     let s := {t: #(0, 0)} in
     (* End scoped parameters *)
-    (s, (fun: let: (#, #) := #0 in: (flc, CFLSend $ #0 $ #1)) <$> s, [])
+    (s, (fun: let: (#, #) := #(0, 0) in:
+      (flc, CFLSend $ #(0, 0) $ #(0, 1))) <$> s, [])
   }.
 
 (* Specification *)
@@ -86,10 +87,10 @@ Definition stubborn_link :=
 (* Stubborn delivery
  * If a correct node n sends a message m to a correct node n', then n'
  * delivers m infinitely often *)
-Theorem SL_1 : Context [:: V "n"; V "n'"; V "m"] [::] |- stubborn_link, {A:
+Theorem SL_1 : Context [:: V "m"; V "n'"; V "n"] [::] |- stubborn_link, {A:
   correct "n" /\ correct "n'" ->
-  when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>>
-  always eventually when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"
+  on "n", event []-> CSLSend $ "n'" $ "m" =>>
+  always eventually on "n'", event []<- CSLDeliver $ "n" $ "m"
 }.
 Proof.
   (* Introduce context *)
@@ -98,25 +99,17 @@ Proof.
 
   (* By IR *)
   d_have {A:
-    when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>>
-    when-self /\ ("n'", "m") \in ("Fs'" $ "n")
+    on "n", event []-> CSLSend $ "n'" $ "m" =>>
+    self-event /\ ("n'", "m") \in ("Fs'" $ "n")
   }.
   {
     (* Instantiate IR *)
-    eapply DSCut; first by apply DPIR.
-    d_forallp {t: CSLSend $ "n'" $ "m"}; d_evalp.
+    d_use DPIR; d_forallp {t: CSLSend $ "n'" $ "m"}; d_evalp.
 
-    set t1l := {t: "Fs'" $ "Fn"}.
-      set t2l := {t: "Fors"};
-      set t3l := {t: "Fois"};
-      set t1r := {t: ("Fs" $ "Fn") \union [("n'", "m")]};
-      set t2r := {t: [(0, CFLSend $ "n'" $ "m")]};
-      set t3r := {t: []};
-      d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
-      d_destructpairp t1l t2l t1r t2r;
-      rewrite_assertion_any;
-      rewrite /t1l /t2l /t3l /t1r /t2r /t3r;
-      clear t1l t2l t3l t1r t2r t3r.
+    d_destructtuplep
+      {t: "Fs'" $ "Fn"} {t: "Fors"} {t: "Fois"}
+      {t: ("Fs" $ "Fn") \union [("n'", "m")]}
+        {t: [(0, CFLSend $ "n'" $ "m")]} {t: []}.
 
     d_have {A: ("Fs'" $ "Fn" = "Fs" $ "Fn" \union [("n'", "m")] /\
       "Fors" = [(0, CFLSend $ "n'" $ "m")]) /\ "Fois" = [] ->
@@ -127,34 +120,33 @@ Proof.
         d_forallp {t: [("n'", "m")]};
         d_forallp {t: ("n'", "m")}.
       by d_ifp; first by by d_right; eapply DAPIn.
-    d_swap; eapply DARewriteIfP; first by d_head. rewrite_assertion_pos.
+    d_swap; eapply DARewriteIfP; first by d_head.
+    rewrite_assertion_pos.
 
-    eapply DSCut.
-      apply DSIfAndSplit with
-        (Ap := {A: when[]-> CSLSend $ "n'" $ "m"})
-        (Acl := {A: when-self})
-        (Acr := {A: ("n'", "m") \in "Fs'" $ "Fn"}).
-      d_splitp; d_swap; d_clear; d_ifp.
-      d_splitc.
-      - eapply DSCut; first by apply DPWhenTopRequestSelf.
-        by d_forallp {t: CSLSend $ "n'" $ "m"}; d_splitp.
-      - by d_splitp.
+    eapply DSCut; first by apply DSIfAndSplit with
+      (Ap := {A: event []-> CSLSend $ "n'" $ "m"})
+      (Acl := {A: self-event})
+      (Acr := {A: ("n'", "m") \in "Fs'" $ "Fn"}).
+    d_splitp; d_swap; d_clear; d_ifp.
+      d_splitc; last by d_splitp.
+      d_use DPTopRequestSelf.
+      by d_forallp {t: CSLSend $ "n'" $ "m"}; d_splitp.
 
     do 4 (d_swap; d_clear). (* Clean up the context *)
-    d_have {A: when-on["n"] when[]-> CSLSend $ "n'" $ "m" -> when-self /\
+    d_have {A: on "n", event []-> CSLSend $ "n'" $ "m" -> self-event /\
       ("n'", "m") \in "Fs'" $ "n"}.
       d_ifc; d_splitp; d_rotate 2.
       d_ifp; first by d_swap.
       by d_subst.
 
-    by d_have {A: when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>> when-self /\
+    by d_have {A: on "n", event []-> CSLSend $ "n'" $ "m" =>> self-event /\
       ("n'", "m") \in "Fs'" $ "n"}; first by apply DTGeneralization.
   }
 
   (* By InvS'' *)
   d_have {A:
-    when-self /\ ("n'", "m") \in ("Fs'" $ "n") =>>
-    always^ (when-self -> ("n'", "m") \in ("Fs" $ "n"))
+    self-event /\ ("n'", "m") \in ("Fs'" $ "n") =>>
+    always^ (self-event -> ("n'", "m") \in ("Fs" $ "n"))
   }.
   {
     (* Instantiate InvS'' *)
@@ -165,30 +157,29 @@ Proof.
     (* Prove property for requests *)
     d_ifp.
       d_forallc "s"; d_forallc "e"; d_ifc.
-      eapply DARewriteIffPL.
-        eapply DSCut; first by apply DAPConcatIn.
-        by d_forallp {t: ("n'", "m")}; d_forallp "s".
+      eapply DARewriteIffPL; first by
+        d_use DAPConcatIn; d_forallp {t: ("n'", "m")}; d_forallp "s".
       rewrite_assertion_any.
 
       d_existsp "sl"; d_existsp "sr"; d_evalc.
       d_destructc (fun t => {A: ("n'", "m") \in
-        match: t with: {{(#, %, %) -> #0}}}).
+        match: t with: {{(#, %, %) -> #(0, 0)}}}).
       d_forallc "?n"; d_forallc "?m".
       d_ifc; d_substc; d_evalc.
 
-      eapply DSCut; first by apply DAPInUnion.
+      d_use DAPInUnion.
       d_forallp {t: "sl" ++ [("n'", "m")] ++ "sr"};
         d_forallp {t: [("?m", "?n")]};
         d_forallp {t: ("n'", "m")}.
       d_ifp.
         d_left.
-        eapply DSCut; first by apply DAPInConcat.
+        d_use DAPInConcat.
         d_forallp {t: "sl"};
           d_forallp {t: [("n'", "m")] ++ "sr"};
           d_forallp {t: ("n'", "m")}.
         d_ifp.
           d_right.
-          eapply DSCut; first by apply DAPInConcat.
+          d_use DAPInConcat.
           d_forallp {t: [("n'", "m")]};
             d_forallp {t: "sr"};
             d_forallp {t: ("n'", "m")}.
@@ -202,7 +193,7 @@ Proof.
     d_ifp.
       d_forallc "s"; d_forallc "i"; d_forallc "e"; d_ifc; d_evalc.
       d_destructc (fun t => {A: ("n'", "m") \in
-        match: t with: {{(#, %, %) -> #0}}}).
+        match: t with: {{(#, %, %) -> #(0, 0)}}}).
       d_forallc "?n"; d_forallc "?m".
       by d_ifc; d_substc; d_evalc; d_clear.
 
@@ -215,8 +206,8 @@ Proof.
 
   (* From (2) and (3) *)
   d_have {A:
-    when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>>
-    always^ (when-self -> ("n'", "m") \in ("Fs" $ "n"))
+    on "n", event []-> CSLSend $ "n'" $ "m" =>>
+    always^ (self-event -> ("n'", "m") \in ("Fs" $ "n"))
   }.
   {
     by d_rotate 1; eapply DARewriteEntailsP;
@@ -225,17 +216,17 @@ Proof.
 
   (* By APerSA *)
   d_have {A:
-    correct "n" -> (when-self -> ("n'", "m") \in ("Fs" $ "n")) =>>
-    always eventually when-on["n"]
-      (when-self /\ (0, CFLSend $ "n'" $ "m") \in "Fors")
+    correct "n" -> (self-event -> ("n'", "m") \in ("Fs" $ "n")) =>>
+    always eventually on "n",
+      (self-event /\ (0, CFLSend $ "n'" $ "m") \in "Fors")
   }.
   {
     d_ifc; d_clear.
 
     (* Instantiate APerSA *)
     set S := fun ts => {A: ("n'", "m") \in ts}.
-    set A := {A: when-on["n"]
-      (when-self /\ (0, CFLSend $ "n'" $ "m") \in "Fors")}.
+    set A := {A: on "n",
+      (self-event /\ (0, CFLSend $ "n'" $ "m") \in "Fors")}.
     eapply DSCut; first by apply DPAPerSA with (S := S) (A := A);
       first by repeat constructor.
     d_forallp "n".
@@ -243,25 +234,19 @@ Proof.
     d_ifp.
       d_ifc; do 3 (d_splitp; d_swap).
       d_evalp.
-      set tf := {t: fun: match: #0 with:
-        {{(#, #) -> CPair $ 0 $ (CFLSend $ #0 $ #1)}}};
-        set t1l := {t: "Fs'" $ "n"};
-        set t2l := {t: "Fors"};
-        set t3l := {t: "Fois"};
-        set t1r := {t: ("Fs" $ "n")};
-        set t2r := {t: FMap $ tf $ t1r};
-        set t3r := {t: []};
-        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
-        d_destructpairp t1l t2l t1r t2r;
-        rewrite_assertion_any;
-        rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
-        clear t1l t2l t3l t1r t2r t3r;
+      set tf := {t: fun:
+          match: #(0, 0) with:
+          {{ (#, #) -> (0, CFLSend $ #(0, 0) $ #(0, 1)) }}
+        };
+        d_destructtuplep
+          {t: "Fs'" $ "n"} {t: "Fors"} {t: "Fois"}
+          {t: ("Fs" $ "n")} {t: FMap $ tf $ ("Fs" $ "n")} {t: []};
         do 2 d_splitp.
 
       d_splitc; first by d_assumption.
       d_splitc; first by d_assumption.
       d_substc.
-      eapply DSCut; first by apply DAPInMap.
+      d_use DAPInMap.
       d_forallp tf; d_forallp {t: ("n'", "m")};
         d_forallp {t: "Fs" $ "n"}.
       d_splitp; d_swap; d_clear; d_ifp; first by d_rotate 3; d_head.
@@ -272,37 +257,37 @@ Proof.
 
   (* From (4) and (5) *)
   d_have {A:
-    when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>>
-    always^ eventually when-on["n"]
-      (when-self /\ (0, CFLSend $ "n'" $ "m") \in "Fors")
+    on "n", event []-> CSLSend $ "n'" $ "m" =>>
+    always^ eventually on "n",
+      (self-event /\ (0, CFLSend $ "n'" $ "m") \in "Fors")
   }.
   {
     d_ifp; first by d_assumption.
     d_rotate 1; eapply DARewriteEntailsP; first by d_rotate 4; d_head.
     rewrite_assertion_pos.
-    by eapply DARewriteCongruentCR; first by eapply DTL119 with (A := {A:
-      eventually when-on["n"]
-        (when-self /\ (0, CFLSend $ "n'" $ "m") \in "Fors")
+    by eapply DARewriteCongruentCR; first by apply DTL119 with (A := {A:
+      eventually on "n",
+        (self-event /\ (0, CFLSend $ "n'" $ "m") \in "Fors")
       }).
   }
 
   (* From OR *)
   (* NOTE: send_fl(n, m) should be send_fl(n', m) *)
   d_have {A:
-    when-on["n"] (when-self /\ (0, CFLSend $ "n'" $ "m") \in "Fors") =>>
-    eventually^ when-on["n"] when[0]-> CFLSend $ "n'" $ "m"
+    on "n", (self-event /\ (0, CFLSend $ "n'" $ "m") \in "Fors") =>>
+    eventually^ on "n", event [0]-> CFLSend $ "n'" $ "m"
   }.
   {
     (* Instantiate OR *)
-    eapply DSCut; first by apply DPOR.
-    by d_forallp "n"; d_forallp 0; d_forallp {t: CFLSend $ "n'" $ "m"}.
+    by d_use DPOR;
+      d_forallp "n"; d_forallp 0; d_forallp {t: CFLSend $ "n'" $ "m"}.
   }
 
   (* From (6) and (7) *)
   (* NOTE: send_fl(n, m) should be send_fl(n', m) *)
   d_have {A:
-    when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>>
-    always^ eventually eventually^ when-on["n"] when[0]-> CFLSend $ "n'" $ "m"
+    on "n", event []-> CSLSend $ "n'" $ "m" =>>
+    always^ eventually eventually^ on "n", event [0]-> CFLSend $ "n'" $ "m"
   }.
   {
     by d_rotate 1; eapply DARewriteEntailsP;
@@ -312,23 +297,23 @@ Proof.
   (* From lemma 120 on (8) *)
   (* NOTE: Lemma 84 does not apply here; must use new lemma 120 instead *)
   d_have {A:
-    when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>>
-      always^ eventually^ when-on["n"] when[0]-> CFLSend $ "n'" $ "m"
+    on "n", event []-> CSLSend $ "n'" $ "m" =>>
+      always^ eventually^ on "n", event [0]-> CFLSend $ "n'" $ "m"
   }.
   {
-    by eapply DARewriteEntailsP; first by eapply DTL120_3 with (A := {A:
-      when-on["n"] when[0]-> CFLSend $ "n'" $ "m"}).
+    by eapply DARewriteEntailsP; first by apply DTL120_3 with (A := {A:
+      on "n", event [0]-> CFLSend $ "n'" $ "m"}).
   }
 
   (* By rule FLoss on (1) and (9) *)
   d_have {A:
-    when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>>
-    always^ eventually^ when-on["n'"] when[0]<- CFLDeliver $ "n" $ "m"
+    on "n", event []-> CSLSend $ "n'" $ "m" =>>
+    always^ eventually^ on "n'", event [0]<- CFLDeliver $ "n" $ "m"
   }.
   {
     (* Instantiate FLoss *)
-    eapply DSCut; first by apply DPFLoss with
-      (tn := "n") (tn' := "n'") (tm := "m") (ti := 0).
+    d_use DPFLoss.
+    d_forallp "n"; d_forallp "n'"; d_forallp "m"; d_forallp 0.
     d_ifp; first by d_assumption.
 
     by d_rotate 1; eapply DARewriteIfP;
@@ -337,8 +322,8 @@ Proof.
 
   (* From rule IIOI *)
   d_have {A:
-    when-on["n'"] when[0]<- CFLDeliver $ "n" $ "m" =>>
-    eventually^ when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"
+    on "n'", event [0]<- CFLDeliver $ "n" $ "m" =>>
+    eventually^ on "n'", event []<- CSLDeliver $ "n" $ "m"
   }.
   {
     (* Instantiate IIOI *)
@@ -350,14 +335,14 @@ Proof.
       by d_evalc; eapply DAPIn.
 
     by eapply DARewriteIffCR; first by eapply DSAndElimination with (A :=
-      {A: when-on[ "n'"] when[ 0 ]<- CFLDeliver $ "n" $ "m"}).
+      {A: on  "n'", event [ 0 ]<- CFLDeliver $ "n" $ "m"}).
   }
 
   (* From (10) and (11) *)
   d_have {A:
-    when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>>
+    on "n", event []-> CSLSend $ "n'" $ "m" =>>
     always^ eventually^ eventually^
-      when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"
+      on "n'", event []<- CSLDeliver $ "n" $ "m"
   }.
   {
     by d_rotate 1; eapply DARewriteEntailsP;
@@ -367,60 +352,56 @@ Proof.
   (* From lemma 84 and (12) *)
   (* NOTE: Lemma 84 does not apply here; must use new lemma 120 instead *)
   d_have {A:
-    when-on["n"] when[]-> CSLSend $ "n'" $ "m" =>>
+    on "n", event []-> CSLSend $ "n'" $ "m" =>>
     always^ eventually^
-      when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"
+      on "n'", event []<- CSLDeliver $ "n" $ "m"
   }.
   {
-    by eapply DARewriteEntailsP; first by eapply DTL120_2 with (A := {A:
-      when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"}).
+    by eapply DARewriteEntailsP; first by apply DTL120_2 with (A := {A:
+      on "n'", event []<- CSLDeliver $ "n" $ "m"}).
   }
 
-  eapply DARewriteIfP; first by eapply DTL121 with (A := {A:
-    when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"}).
-  eapply DARewriteIfP; first by eapply DTL122 with (A := {A:
-    when-on["n'"] when[]<- CSLDeliver $ "n" $ "m"}).
-
-  by [].
+  eapply DARewriteIfP; first by apply DTL121 with (A := {A:
+    on "n'", event []<- CSLDeliver $ "n" $ "m"}).
+  by eapply DARewriteIfP; first by apply DTL122 with (A := {A:
+    on "n'", event []<- CSLDeliver $ "n" $ "m"}).
 Qed.
 
 (* No-forge
  * If a node n delivers a message m with sender n', then m was previously sent
  * to n by n' *)
-Theorem SL_2 : Context [:: V "n"; V "n'"; V "m"] [::] |- stubborn_link, {A:
-  when-on["n"] when[]<- {t: CSLDeliver $ "n'" $ "m"} <~
-  when-on["n'"] when[]-> {t: CSLSend $ "n" $ "m"}
+Theorem SL_2 : Context [:: V "m"; V "n'"; V "n"] [::] |- stubborn_link, {A:
+  on "n", event []<- {t: CSLDeliver $ "n'" $ "m"} <~
+  on "n'", event []-> {t: CSLSend $ "n" $ "m"}
 }.
 Proof.
   pose C := stubborn_link; rewrite -/C.
 
   (* By OI' *)
   d_have {A:
-    when-on["n"] when[]<- CSLDeliver $ "n'" $ "m" =>>
-    eventuallyp (when-on["n"] (CSLDeliver $ "n'" $ "m" \in "Fois") /\
-      when-self)
+    on "n", event []<- CSLDeliver $ "n'" $ "m" =>>
+    eventuallyp (self-event /\ on "n", (CSLDeliver $ "n'" $ "m" \in "Fois"))
   }.
   {
     (* Instantiate OI' *)
-    eapply DSCut; first by apply DPOI'.
-    d_forallp "n"; d_forallp {t: CSLDeliver $ "n'" $ "m"}.
+    d_use DPOI'; d_forallp "n"; d_forallp {t: CSLDeliver $ "n'" $ "m"}.
 
     by eapply DARewriteIfP; first by apply DTL123 with (A := {A:
-      when-on["n"] (CSLDeliver $ "n'" $ "m" \in "Fois") /\ when-self}).
+      self-event /\ on "n", (CSLDeliver $ "n'" $ "m" \in "Fois")}).
   }
 
   (* By InvL *)
   d_have {A:
-    when-on["n"] (CSLDeliver $ "n'" $ "m" \in "Fois") /\ when-self =>>
-    when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m"
+    self-event /\ on "n", (CSLDeliver $ "n'" $ "m" \in "Fois") =>>
+    on "n", event [0]<- CFLDeliver $ "n'" $ "m"
   }.
   {
     d_clear. (* Clean up the context *)
 
     (* Instantiate InvL *)
     eapply DSCut; first by apply DPInvL with (A := {A:
-        when-on["n"] (CSLDeliver $ "n'" $ "m" \in "Fois") ->
-        when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m"
+        on "n", (CSLDeliver $ "n'" $ "m" \in "Fois") ->
+        on "n", event [0]<- CFLDeliver $ "n'" $ "m"
       }); first by repeat constructor.
 
     (* Prove for requests *)
@@ -431,17 +412,10 @@ Proof.
       d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
       d_forallp "m"; d_forallp "n'"; d_splitp; d_swap.
       d_substp; d_evalp.
-      set t1l := {t: "Fs'" $ "Fn"};
-        set t2l := {t: "Fors"};
-        set t3l := {t: "Fois"};
-        set t1r := {t: ("Fs" $ "Fn") \union [("n'", "m")]};
-        set t2r := {t: [(0, CFLSend $ "n'" $ "m")]};
-        set t3r := {t: []};
-        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
-        d_destructpairp t1l t2l t1r t2r;
-        rewrite_assertion_any;
-        rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
-        clear t1l t2l t3l t1r t2r t3r;
+      d_destructtuplep
+        {t: "Fs'" $ "Fn"} {t: "Fors"} {t: "Fois"}
+        {t: ("Fs" $ "Fn") \union [("n'", "m")]}
+          {t: [(0, CFLSend $ "n'" $ "m")]} {t: []};
         do 2 d_splitp.
       do 2 d_clear; do 2 (d_swap; d_clear). (* Clean up the context *)
 
@@ -463,17 +437,9 @@ Proof.
       d_ifc; d_splitp; d_swap; d_evalp.
       d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
       d_forallp "m"; d_forallp "n'"; d_splitp; d_swap; d_subst; d_evalp.
-      set t1l := {t: "Fs'" $ "Fn"};
-        set t2l := {t: "Fors"};
-        set t3l := {t: "Fois"};
-        set t1r := {t: ("Fs" $ "Fn")};
-        set t2r := {t: []};
-        set t3r := {t: [CSLDeliver $ "n'" $ "m"]};
-        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
-        d_destructpairp t1l t2l t1r t2r;
-        rewrite_assertion_any;
-        rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
-        clear t1l t2l t3l t1r t2r t3r;
+      d_destructtuplep
+        {t: "Fs'" $ "Fn"} {t: "Fors"} {t: "Fois"}
+        {t: "Fs" $ "Fn"} {t: []} {t: [CSLDeliver $ "n'" $ "m"]};
         do 2 d_splitp.
       d_ifc; d_splitp.
       d_splitc; first by d_head; d_clear.
@@ -490,18 +456,13 @@ Proof.
     d_ifp.
       (* Obtain the first contradictory premise *)
       d_ifc; d_splitp; d_swap; d_evalp.
-      set t1l := {t: "Fs'" $ "Fn"};
-        set t2l := {t: "Fors"};
-        set t3l := {t: "Fois"};
-        set t1r := {t: ("Fs" $ "Fn")};
-        set t2r := {t: FMap $ (fun: match: #0 with: {{
-          (#, #) -> CPair $ 0 $ (CFLSend $ #0 $ #1)}}) $ ("Fs" $ "Fn")};
-        set t3r := {t: []};
-        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
-        d_destructpairp t1l t2l t1r t2r;
-        rewrite_assertion_any;
-        rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
-        clear t1l t2l t3l t1r t2r t3r;
+      d_destructtuplep
+        {t: "Fs'" $ "Fn"} {t: "Fors"} {t: "Fois"}
+        {t: "Fs" $ "Fn"}
+          {t: (fun: match: #(0, 0) with:
+            {{ (#, #) -> (0, CFLSend $ #(0, 0) $ #(0, 1)) }}) <$>
+            ("Fs" $ "Fn")}
+          {t: []};
         do 2 d_splitp.
       do 2 d_clear; (d_swap; d_clear). (* Clean up the context *)
 
@@ -517,19 +478,16 @@ Proof.
       rewrite_assertion_any; d_swap; d_clear.
       by d_ifp; first by d_head; d_false.
 
-    eapply DARewriteIffPL; first by apply DSMergeIf with
-      (Ap1 := {A: when-self})
-      (Ap2 := {A: when-on["n"] (CSLDeliver $ "n'" $ "m" \in "Fois")})
-      (Ac := {A: when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m"}).
-    by eapply DARewriteIffPL; first by apply DSAndCommutative with
-      (Acl := {A: when-self})
-      (Acr := {A: when-on["n"] (CSLDeliver $ "n'" $ "m" \in "Fois")}).
+    by eapply DARewriteIffPL; first by apply DSMergeIf with
+      (Ap1 := {A: self-event})
+      (Ap2 := {A: on "n", (CSLDeliver $ "n'" $ "m" \in "Fois")})
+      (Ac := {A: on "n", event [0]<- CFLDeliver $ "n'" $ "m"}).
   }
 
   (* From (1) and (2) *)
   d_have {A:
-    when-on["n"] when[]<- CSLDeliver $ "n'" $ "m" <~
-    when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m"
+    on "n", event []<- CSLDeliver $ "n'" $ "m" <~
+    on "n", event [0]<- CFLDeliver $ "n'" $ "m"
   }.
   {
     by d_rotate 1; eapply DARewriteEntailsP; first by d_head.
@@ -537,18 +495,19 @@ Proof.
 
   (* By NForge *)
   d_have {A:
-    when-on["n"] when[0]<- CFLDeliver $ "n'" $ "m" <~
-    when-on["n'"] when[0]-> CFLSend $ "n" $ "m"
+    on "n", event [0]<- CFLDeliver $ "n'" $ "m" <~
+    on "n'", event [0]-> CFLSend $ "n" $ "m"
   }.
   {
     (* Instantiate NForge *)
-    by apply (DPNForge _ _ "n'" "n" "m" 0).
+    by d_use DPNForge;
+      d_forallp "n'"; d_forallp "n"; d_forallp "m"; d_forallp 0.
   }
 
   (* By lemma 85 on (3) and (4) *)
   d_have {A:
-    when-on["n"] when[]<- CSLDeliver $ "n'" $ "m" <~
-    when-on["n'"] when[0]-> CFLSend $ "n" $ "m"
+    on "n", event []<- CSLDeliver $ "n'" $ "m" <~
+    on "n'", event [0]-> CFLSend $ "n" $ "m"
   }.
   {
     eapply DTL85.
@@ -558,32 +517,31 @@ Proof.
 
   (* By OR' *)
   d_have {A:
-    when-on["n'"] when[0]-> CFLSend $ "n" $ "m" =>>
-    eventuallyp (when-on["n'"]
-      ((0, CFLSend $ "n" $ "m") \in "Fors") /\ when-self)
+    on "n'", event [0]-> CFLSend $ "n" $ "m" =>>
+    eventuallyp (self-event /\ on "n'",
+      ((0, CFLSend $ "n" $ "m") \in "Fors"))
   }.
   {
     (* Instantiate OR' *)
-    eapply DSCut; first by apply DPOR'.
-    d_forallp "n'"; d_forallp 0; d_forallp {t: CFLSend $ "n" $ "m"}.
+    d_use DPOR';
+      d_forallp "n'"; d_forallp 0; d_forallp {t: CFLSend $ "n" $ "m"}.
 
-    by eapply DARewriteIfP; first by apply DTL123 with
-        (A := {A: (when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors")) /\
-          when-self}).
+    by eapply DARewriteIfP; first by apply DTL123 with (A := {A:
+      self-event /\ on "n'", ((0, CFLSend $ "n" $ "m") \in "Fors")}).
   }
 
   (* By InvSA *)
   d_have {A:
-    when-on["n'"] (("n", "m") \in "Fs" $ "n'") /\ when-self =>>
-    eventuallyp^ when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+    self-event /\ on "n'", (("n", "m") \in "Fs" $ "n'") =>>
+    eventuallyp^ on "n'", event []-> CSLSend $ "n" $ "m"
   }.
   {
     do 6 d_clear. (* Clean up the context *)
 
     (* Instantiate InvSA *)
     eapply DSCut; first by apply DPInvSA with
-      (S := fun ts => {A: when-on["n'"] (("n", "m") \in ts)})
-      (A := {A: when[]-> CSLSend $ "n" $ "m"});
+      (S := fun ts => {A: on "n'", (("n", "m") \in ts)})
+      (A := {A: event []-> CSLSend $ "n" $ "m"});
       first by repeat constructor.
     d_forallp "n'".
 
@@ -624,17 +582,10 @@ Proof.
       d_destructpairp "i" "e" 0 {t: CFLDeliver $ "n" $ "m"}.
       rewrite_assertion_any; d_splitp; d_rotate 2; d_substp; d_evalp.
 
-      set t1l := {t: "Fs" $ "n'"};
-        set t2l : term := {t: []};
-        set t3l := {t: [CSLDeliver $ "n" $ "m"]};
-        set t1r := {t: "Fs'" $ "n'"};
-        set t2r : term := "Fors";
-        set t3r : term := "Fois".
-        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r; d_splitp.
-        d_destructpairp t1l t2l t1r t2r; d_splitp.
-      rewrite_assertion_any;
-        rewrite /t1l /t2l /t3l /t1r /t2r /t3r;
-        clear t1l t2l t3r t1r t2r t3r.
+      d_destructtuplep
+        {t: "Fs" $ "n'"} {t: []} {t: [CSLDeliver $ "n" $ "m"]}
+        {t: "Fs'" $ "n'"} {t: "Fors"} {t: "Fois"};
+        do 2 d_splitp.
       d_rotate 3; d_substp; d_evalp; d_swap; d_clear; d_swap; d_substp.
       by d_notp; d_splitc; first by eapply DAPEqual.
 
@@ -651,18 +602,18 @@ Proof.
 
   (* By InvL *)
   d_have {A:
-    when-on["n'"] (("n", "m") \in "Fs'" $ "n'") /\ when-self =>>
-    (when-on["n'"] ((("n", "m") \in "Fs" $ "n'")) /\ when-self \/
-      when-on["n'"] when[]-> CSLSend $ "n" $ "m")
+    self-event /\ on "n'", (("n", "m") \in "Fs'" $ "n'") =>>
+    (self-event /\ on "n'", ((("n", "m") \in "Fs" $ "n'")) \/
+      on "n'", event []-> CSLSend $ "n" $ "m")
   }.
   {
     do 7 d_clear. (* Clean up the context *)
 
     (* Instantiate InvL *)
     eapply DSCut; first by apply DPInvL with (A := {A:
-        when-on["n'"] (("n", "m") \in "Fs'" $ "n'") ->
-        (when-on["n'"] (("n", "m") \in "Fs" $ "n'") \/
-          when-on["n'"] when[]-> CSLSend $ "n" $ "m")});
+        on "n'", (("n", "m") \in "Fs'" $ "n'") ->
+        (on "n'", (("n", "m") \in "Fs" $ "n'") \/
+          on "n'", event []-> CSLSend $ "n" $ "m")});
       first by repeat constructor.
 
     (* Prove for requests *)
@@ -691,10 +642,10 @@ Proof.
       d_splitc; first by eapply DAPEqual.
 
       d_rotate 3; d_substp; d_evalp.
-      d_destructpairp {t: ("Fs'" $ "n'", "Fors")} "Fois"
-        {t: ("Fs" $ "n'", [])} {t: [CSLDeliver $ "n" $ "m"]}; d_splitp.
-      d_destructpairp {t: "Fs'" $ "n'"} "Fors"
-        {t: "Fs" $ "n'"} {t: []}; d_splitp.
+      d_destructtuplep
+        {t: "Fs'" $ "n'"} {t: "Fors"} {t: "Fois"}
+        {t: "Fs" $ "n'"} {t: []} {t: [CSLDeliver $ "n" $ "m"]};
+        do 2 d_splitp.
       by d_rotate 7; d_substp.
 
     (* Prove for periodics *)
@@ -706,54 +657,59 @@ Proof.
       d_splitc; first by eapply DAPEqual.
 
       d_rotate 2; d_substp.
-      set t := {t: FMap $
-        (fun: match: #0 with: {{(#, #) -> CPair $ 0 $ (CFLSend $ #0 $ #1)}}) $
-        ("Fs" $ "n'")}.
-      d_destructpairp {t: ("Fs'" $ "n'", "Fors")} {t: "Fois"}
-        {t: ("Fs" $ "n'", t)} {t: []}; d_splitp;
-        d_destructpairp {t: "Fs'" $ "n'"} "Fors" {t: "Fs" $ "n'"} t; d_splitp;
-        rewrite {}/t.
+      set t := {t:
+        (fun: match: #(0, 0) with:
+          {{ (#, #) -> (0, CFLSend $ #(0, 0) $ #(0, 1)) }}) <$>
+          ("Fs" $ "n'")}.
+      d_destructtuplep
+        {t: "Fs'" $ "n'"} {t: "Fors"} {t: "Fois"}
+        {t: "Fs" $ "n'"} {t: t} {t: []};
+        do 2 d_splitp.
       by d_rotate 7; d_substp.
 
     eapply DARewriteIffPL; first by apply DSMergeIf with
-      (Ap1 := {A: when-self})
-      (Ap2 := {A: when-on["n'"] (("n", "m") \in "Fs'" $ "n'")})
-      (Ac := {A: when-on["n'"] ((("n", "m") \in "Fs" $ "n'")) \/
-        when-on["n'"] when[]-> CSLSend $ "n" $ "m"}).
-    eapply DARewriteIffPL; first by apply DSAndCommutative with
-      (Acl := {A: when-self})
-      (Acr := {A: when-on["n'"] (("n", "m") \in "Fs'" $ "n'")}).
+      (Ap1 := {A: self-event})
+      (Ap2 := {A: on "n'", (("n", "m") \in "Fs'" $ "n'")})
+      (Ac := {A: on "n'", ((("n", "m") \in "Fs" $ "n'")) \/
+        on "n'", event []-> CSLSend $ "n" $ "m"}).
     eapply DARewriteIffPL; first by apply DSIfAndIntroduce with
-      (Apl := {A: when-on["n'"] (("n", "m") \in "Fs'" $ "n'")})
-      (Apr := {A: when-self})
-      (Ac := {A: when-on["n'"] (("n", "m") \in "Fs" $ "n'") \/
-        when-on["n'"] when[]-> CSLSend $ "n" $ "m"}).
+      (Apl := {A: self-event})
+      (Apr := {A: on "n'", (("n", "m") \in "Fs'" $ "n'")})
+      (Ac := {A: on "n'", (("n", "m") \in "Fs" $ "n'") \/
+        on "n'", event []-> CSLSend $ "n" $ "m"}).
     eapply DARewriteIffPL; first by apply DSOrDistributesAnd with
-      (Al := {A: when-on["n'"] (("n", "m") \in "Fs" $ "n'")})
-      (Ar := {A: when-on["n'"] when[]-> CSLSend $ "n" $ "m"})
-      (A := {A: when-self}).
-    eapply DARewriteIffPL; first by apply DSAndAssociative with
-      (Al := {A: "Fn" = "n'"})
-      (Am := {A: when[]-> CSLSend $ "n" $ "m"})
-      (Ar := {A: when-self}).
-    eapply DARewriteIffPL.
-      eapply DSCut; first by apply DPWhenTopRequestSelfEliminate.
+      (Al := {A: on "n'", (("n", "m") \in "Fs" $ "n'")})
+      (Ar := {A: on "n'", event []-> CSLSend $ "n" $ "m"})
+      (A := {A: self-event}).
+    eapply DARewriteIffPL; first by apply DSAndCommutative with
+      (Acl := {A: "Fn" = "n'"})
+      (Acr := {A: event []-> CSLSend $ "n" $ "m"}).
+    eapply DARewriteIffPR; first by apply DSAndAssociative with
+      (Al := {A: self-event})
+      (Am := {A: event []-> CSLSend $ "n" $ "m"})
+      (Ar := {A: "Fn" = "n'"}).
+    eapply DARewriteIffPL; first by apply DSAndCommutative with
+      (Acl := {A: self-event})
+      (Acr := {A: event []-> CSLSend $ "n" $ "m"}).
+    eapply DARewriteIffPL; first by d_use DPTopRequestSelfEliminate;
       d_forallp {t: CSLSend $ "n" $ "m"}; d_head.
-    by [].
+    by eapply DARewriteIffPL; first by apply DSAndCommutative with
+      (Acl := {A: event []-> CSLSend $ "n" $ "m"})
+      (Acr := {A: "Fn" = "n'"}).
   }
 
   (* By InvL *)
   d_have {A:
-    when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors") /\ when-self =>>
-    when-on["n'"] (("n", "m") \in "Fs'" $ "n'") /\ when-self
+    self-event /\ on "n'", ((0, CFLSend $ "n" $ "m") \in "Fors") =>>
+    self-event /\ on "n'", (("n", "m") \in "Fs'" $ "n'")
   }.
   {
     do 7 d_clear. (* Clean up the context *)
 
     (* Instantiate InvL *)
     eapply DSCut; first by apply DPInvL with (A := {A:
-        when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors") ->
-        when-on["n'"] (("n", "m") \in "Fs'" $ "n'")
+        on "n'", ((0, CFLSend $ "n" $ "m") \in "Fors") ->
+        on "n'", (("n", "m") \in "Fs'" $ "n'")
       }); first by repeat constructor.
 
     (* Prove for requests *)
@@ -764,21 +720,13 @@ Proof.
       d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
       d_forallp "m"; d_forallp "n"; d_splitp; d_swap.
       d_substp; d_evalp.
-      set t1l := {t: "Fs'" $ "Fn"};
-        set t2l := {t: "Fors"};
-        set t3l := {t: "Fois"};
-        set t1r := {t: ("Fs" $ "Fn") \union [("n", "m")]};
-        set t2r := {t: [(0, CFLSend $ "n" $ "m")]};
-        set t3r := {t: []};
-        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
-        d_destructpairp t1l t2l t1r t2r;
-        rewrite_assertion_any;
-        rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
-        clear t1l t2l t3l t1r t2r t3r;
+      d_destructtuplep {t: "Fs'" $ "Fn"} {t: "Fors"} {t: "Fois"}
+        {t: ("Fs" $ "Fn") \union [("n", "m")]}
+          {t: [(0, CFLSend $ "n" $ "m")]} {t: []};
         do 2 d_splitp.
       d_ifc; d_splitp; d_splitc; first by d_head.
       d_swap; d_clear; d_swap; d_subst.
-      eapply DSCut; first by apply DAPInUnion.
+      d_use DAPInUnion.
       d_forallp {t: "Fs" $ "n'"};
         d_forallp {t: [("n", "m")]};
         d_forallp {t: ("n", "m")}.
@@ -792,17 +740,8 @@ Proof.
       d_destructp (fun t => {A: ("Fs'" $ "Fn", "Fors", "Fois") = t}).
       d_forallp "m"; d_forallp "n"; d_splitp; d_swap.
       d_substp; d_evalp.
-      set t1l := {t: "Fs'" $ "Fn"};
-        set t2l := {t: "Fors"};
-        set t3l := {t: "Fois"};
-        set t1r := {t: ("Fs" $ "Fn")};
-        set t2r := {t: []};
-        set t3r := {t: [CSLDeliver $ "n" $ "m"]};
-        d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
-        d_destructpairp t1l t2l t1r t2r;
-        rewrite_assertion_any;
-        rewrite /t1l /t2l /t3l /t1r /t2r /t3r /t1r;
-        clear t1l t2l t3l t1r t2r t3r;
+      d_destructtuplep {t: "Fs'" $ "Fn"} {t: "Fors"} {t: "Fois"}
+        {t: "Fs" $ "Fn"} {t: []} {t: [CSLDeliver $ "n" $ "m"]};
         do 2 d_splitp.
       d_clear; do 3 (d_swap; d_clear). (* Clean up the context *)
 
@@ -810,9 +749,8 @@ Proof.
       d_ifc; d_splitp; d_clear; d_substp.
 
       (* Prove the contradiction *)
-      eapply DSCut; first by eapply DAPInNil.
-      d_forallp {t: (0, CFLSend $ "n" $ "m")}.
-      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
+      d_use DAPInNil; d_forallp {t: (0, CFLSend $ "n" $ "m")}.
+      eapply DSCut; first by apply DSNotImpliesFalse with (Ac := {A:
         (0, CFLSend $ "n" $ "m") \in CNil}).
       d_swap; eapply DARewriteIffPL; first by d_head.
       rewrite_assertion_any; d_swap; d_clear.
@@ -821,53 +759,43 @@ Proof.
     (* Prove for periodics *)
     d_ifp.
       d_ifc; d_splitp; d_swap; d_evalp.
-      set tf := {t: fun: match: #0 with: {{(#, #) -> (0, CFLSend $ #0 $ #1)}}}.
-      set ts := {t: FMap $ tf $ ("Fs" $ "Fn")};
-      d_destructpairp {t: ("Fs'" $ "Fn", "Fors")} "Fois"
-        {t: ("Fs" $ "Fn", ts)} {t: []}; d_splitp;
-      d_destructpairp {t: "Fs'" $ "Fn"} "Fors"
-        {t: "Fs" $ "Fn"} ts; d_splitp;
-        rewrite {}/ts.
+      set tf := {t: fun: match: #(0, 0) with:
+        {{ (#, #) -> (0, CFLSend $ #(0, 0) $ #(0, 1)) }}}.
+      d_destructtuplep {t: "Fs'" $ "Fn"} {t: "Fors"} {t: "Fois"}
+        {t: "Fs" $ "Fn"} {t: tf <$> ("Fs" $ "Fn")} {t: []};
+        do 2 d_splitp.
       d_ifc; d_splitp; d_splitc; first by d_head.
       d_swap; d_substp; d_rotate 2; d_subst; d_rotate 5.
-      eapply DSCut; first by apply DAPInMap.
-      d_forallp tf; d_forallp {t: ("n", "m")}; d_forallp {t: "Fs" $ "Fn"}.
+      d_use DAPInMap;
+        d_forallp tf; d_forallp {t: ("n", "m")}; d_forallp {t: "Fs" $ "Fn"}.
       d_splitp; d_clear; d_evalp; d_ifp; first by d_head.
       by d_substp.
 
     eapply DARewriteIffPL; first by apply DSMergeIf with
-      (Ap1 := {A: when-self})
-      (Ap2 := {A: when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors")})
-      (Ac := {A: when-on["n'"] (("n", "m") \in "Fs'" $ "n'")}).
-    eapply DARewriteIffPL; first by apply DSAndCommutative with
-      (Acl := {A: when-self})
-      (Acr := {A: when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors")}).
+      (Ap1 := {A: self-event})
+      (Ap2 := {A: on "n'", ((0, CFLSend $ "n" $ "m") \in "Fors")})
+      (Ac := {A: on "n'", (("n", "m") \in "Fs'" $ "n'")}).
     by eapply DARewriteIffPL; first by apply DSIfAndIntroduce with
-      (Apl := {A: when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors")})
-      (Apr := {A: when-self})
-      (Ac := {A: when-on["n'"] (("n", "m") \in "Fs'" $ "n'")}).
+      (Apl := {A: self-event})
+      (Apr := {A: on "n'", ((0, CFLSend $ "n" $ "m") \in "Fors")})
+      (Ac := {A: on "n'", (("n", "m") \in "Fs'" $ "n'")}).
   }
 
   (* By (8) and (9) *)
   d_have {A:
-    when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors") /\ when-self =>>
-    (when-on["n'"] (("n", "m") \in "Fs" $ "n'")) /\ when-self \/
-      when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+    self-event /\ on "n'", ((0, CFLSend $ "n" $ "m") \in "Fors") =>>
+    (self-event /\ on "n'", (("n", "m") \in "Fs" $ "n'")) \/
+      on "n'", event []-> CSLSend $ "n" $ "m"
   }.
   {
-    eapply DARewriteIffPL; first by eapply DSCut;
-      first by apply DSIfAndIntroduce with
-        (Apl := {A: when-on["n'"] ((0, CFLSend $ "n" $ "m") \in "Fors")})
-        (Apr := {A: when-self})
-        (Ac := {A: when-on["n'"] (("n", "m") \in "Fs'" $ "n'")}).
     by eapply DARewriteEntailsP; first by d_head.
   }
 
   (* By (6) and (10) *)
   d_have {A:
-    when-on["n'"] when[0]-> CFLSend $ "n" $ "m" <~
-    (when-on["n'"] (("n", "m") \in "Fs" $ "n'")) /\ when-self \/
-    when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+    on "n'", event [0]-> CFLSend $ "n" $ "m" <~
+    self-event /\ on "n'", (("n", "m") \in "Fs" $ "n'") \/
+    on "n'", event []-> CSLSend $ "n" $ "m"
   }.
   {
     by d_rotate 4; eapply DARewriteEntailsP; first by d_rotate 5; d_head.
@@ -875,23 +803,22 @@ Proof.
 
   (* By (7) and (11) *)
   d_have {A:
-    when-on["n'"] when[0]-> CFLSend $ "n" $ "m" <~
-    when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+    on "n'", event [0]-> CFLSend $ "n" $ "m" <~
+    on "n'", event []-> CSLSend $ "n" $ "m"
   }.
   {
     eapply DARewriteEntailsP; first by d_rotate 3; d_head.
     eapply DARewriteIffPL; first by apply DSOrCommutative with
-      (Acl := {A: eventuallyp^ when-on["n'"] when[]-> CSLSend $ "n" $ "m"})
-      (Acr := {A: when-on["n'"] when[]-> CSLSend $ "n" $ "m"}).
-    by eapply DARewriteCongruentCL;
-      first by apply DTL83_1 with
-      (A := {A: when-on["n'"] when[]-> CSLSend $ "n" $ "m"}).
+      (Acl := {A: eventuallyp^ on "n'", event []-> CSLSend $ "n" $ "m"})
+      (Acr := {A: on "n'", event []-> CSLSend $ "n" $ "m"}).
+    by eapply DARewriteCongruentCL; first by apply DTL83_1 with
+      (A := {A: on "n'", event []-> CSLSend $ "n" $ "m"}).
   }
 
   (* From (5) and (12) *)
   d_have {A:
-    when-on["n"] when[]<- CSLDeliver $ "n'" $ "m" <~
-    eventuallyp when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+    on "n", event []<- CSLDeliver $ "n'" $ "m" <~
+    eventuallyp on "n'", event []-> CSLSend $ "n" $ "m"
   }.
   {
     by d_rotate 7; eapply DARewriteEntailsP;
@@ -901,13 +828,12 @@ Proof.
   (* By lemma 83 on (9) *)
   (* NOTE: This line is missing from the paper proof *)
   d_have {A:
-    when-on["n"] when[]<- CSLDeliver $ "n'" $ "m" <~
-    when-on["n'"] when[]-> CSLSend $ "n" $ "m"
+    on "n", event []<- CSLDeliver $ "n'" $ "m" <~
+    on "n'", event []-> CSLSend $ "n" $ "m"
   }.
   {
-    by eapply DARewriteCongruentCL;
-      first by apply DTL83_1 with
-      (A := {A: when-on["n'"] when[]-> CSLSend $ "n" $ "m"}).
+    by eapply DARewriteCongruentCL; first by apply DTL83_1 with
+      (A := {A: on "n'", event []-> CSLSend $ "n" $ "m"}).
   }
 
   by [].
@@ -916,7 +842,6 @@ Qed.
 (* Top invariants for properties *)
 Definition SL_1_TI : top_invariant (derives_assertion SL_1).
 Proof.
-  rewrite /derives_assertion /top_invariant.
   apply LIA, LAEntails.
     by apply LAAnd; apply LACorrect.
   apply LAEntails.

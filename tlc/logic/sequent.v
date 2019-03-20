@@ -192,14 +192,14 @@ Proof.
 Qed.
 
 Lemma DSIfAndIntroduce C ctx Apl Apr Ac :
-  ctx |- C, {A: (Apl /\ Apr -> Ac) <-> (Apl /\ Apr -> Ac /\ Apr)}.
+  ctx |- C, {A: (Apl /\ Apr -> Ac) <-> (Apl /\ Apr -> Apl /\ Ac)}.
 Proof.
   case: ctx => Delta Gamma.
   d_splitc; d_ifc; d_ifc.
   - d_splitc.
+    + by d_splitp; d_head.
     + by d_swap; d_ifp.
-    + by d_splitp; d_swap.
-  - d_swap; d_ifp; first by d_head. by d_splitp.
+  - d_swap; d_ifp; first by d_head. by d_splitp; d_swap.
 Qed.
 
 Lemma DSIfAndEliminate C ctx Ap Acl Acr :
@@ -211,16 +211,16 @@ Proof.
 Qed.
 
 Lemma DSOrDistributesAnd C ctx Al Ar A :
-  ctx |- C, {A: (Al \/ Ar) /\ A <-> (Al /\ A) \/ (Ar /\ A)}.
+  ctx |- C, {A: A /\ (Al \/ Ar) <-> (A /\ Al) \/ (A /\ Ar)}.
 Proof.
   case: ctx => Delta Gamma.
   d_splitc; d_ifc.
-  - d_splitp; d_orp.
-    + by d_left; d_splitc; [d_head | d_clear; d_head].
-    + by d_right; d_splitc; [d_head | d_clear; d_head].
+  - d_splitp; d_swap; d_orp.
+    + by d_left; d_splitc; [d_clear; d_head | d_head].
+    + by d_right; d_splitc; [d_clear; d_head | d_head].
   - d_splitc.
-    + by d_orp; d_splitp; [d_left | d_right]; d_head.
-    + by d_orp; d_splitp; d_clear; d_head.
+    + by d_orp; d_splitp; d_head.
+    + by d_orp; d_splitp; d_clear; [d_left | d_right].
 Qed.
 
 Lemma DSAndAssociative C ctx Al Am Ar :

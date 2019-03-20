@@ -256,84 +256,90 @@ Section derives.
     ctx |- {A: (forall: v: next A) <=> (next forall: v: A)}
   (* Program logic *)
   | DPNode ctx :
-    ctx |- {A: always ("n" \in "Nodes")}
+    ctx |- {A:
+      forall: "?n":
+      always ("?n" \in "Nodes")
+    }
   | DPIR ctx :
     ctx |- {A:
-      forall: "e":
-      when[]-> "e" =>>
-      (("Fs'" $ "Fn", "Fors", "Fois") =
-        request C $ "Fn" $ ("Fs" $ "Fn") $ "e")
+      forall: "?e":
+      event []-> "?e" =>>
+      ("Fs'" $ "Fn", "Fors", "Fois") =
+        request C $ "Fn" $ ("Fs" $ "Fn") $ "?e"
     }
   | DPII ctx :
     ctx |- {A:
-      forall: "i", "e":
-      when["i"]<- "e" =>>
-      (("Fs'" $ "Fn", "Fors", "Fois") =
-        indication C $ "Fn" $ ("Fs" $ "Fn") $ ("i", "e"))
+      forall: "?i", "?e":
+      event ["?i"]<- "?e" =>>
+      ("Fs'" $ "Fn", "Fors", "Fois") =
+        indication C $ "Fn" $ ("Fs" $ "Fn") $ ("?i", "?e")
     }
   | DPPe ctx :
     ctx |- {A:
-      when[]~> PE =>>
-      (("Fs'" $ "Fn", "Fors", "Fois") =
-        periodic C $ "Fn" $ ("Fs" $ "Fn"))
+      event []~> PE =>>
+      ("Fs'" $ "Fn", "Fors", "Fois") =
+        periodic C $ "Fn" $ ("Fs" $ "Fn")
     }
   | DPOR ctx :
     ctx |- {A:
-      forall: "n", "i", "e":
-      when-on["n"] (when-self /\ ("i", "e") \in "Fors") =>>
-      eventually^ when-on["n"] when["i"]-> "e"
+      forall: "?n", "?i", "?e":
+      on "?n", (self-event /\ ("?i", "?e") \in "Fors") =>>
+      eventually^ on "?n", event ["?i"]-> "?e"
     }
   | DPOI ctx :
     ctx |- {A:
-      forall: "n", "e":
-      when-on["n"] ("e" \in "Fois" /\ when-self) =>>
-      eventually^ when-on["n"] when[]<- "e"
+      forall: "?n", "?e":
+      on "?n", (self-event /\ "?e" \in "Fois") =>>
+      eventually^ on "?n", event []<- "?e"
     }
   | DPOR' ctx :
     ctx |- {A:
-      forall: "n", "i", "e":
-      when-on["n"] when["i"]-> "e" =>>
-      eventuallyp^ (when-on["n"] (("i", "e") \in "Fors") /\ when-self)
+      forall: "?n", "?i", "?e":
+      on "?n", event ["?i"]-> "?e" =>>
+      eventuallyp^ (self-event /\ on "?n", (("?i", "?e") \in "Fors"))
     }
   | DPOI' ctx :
     ctx |- {A:
-      forall: "n", "e":
-      when-on["n"] when[]<- "e" =>>
-      eventuallyp^ (when-on["n"] ("e" \in "Fois") /\ when-self)
+      forall: "?n", "?e":
+      on "?n", event []<- "?e" =>>
+      eventuallyp^ (self-event /\ on "?n", ("?e" \in "Fois"))
     }
   | DPInit ctx :
-    ctx |- {A: self ("Fs" = fun: initialize C $ #0)}
+    ctx |- {A: self ("Fs" = fun: initialize C $ #(0, 0))}
   | DPPostPre ctx :
-    ctx |- {A: forall: "s": self ("Fs'" = "s" <=> next ("Fs" = "s"))}
+    ctx |- {A: forall: "?s": self ("Fs'" = "?s" <=> next ("Fs" = "?s"))}
   | DPSEq ctx :
-    ctx |- {A: forall: "n": "Fn" <> "n" =>> "Fs'" $ "n" = "Fs" $ "n"}
+    ctx |- {A: forall: "?n": "Fn" <> "?n" =>> "Fs'" $ "?n" = "Fs" $ "?n"}
   | DPASelf ctx :
-    ctx |- {A: self always when-self}
+    ctx |- {A: self always self-event}
   | DPSInv ctx A :
     self_invariant A ->
-    ctx |- {A: self A <-> restrict_assertion {A: when-self} A}
+    ctx |- {A: self A <-> restrict_assertion {A: self-event} A}
   | DPCSet ctx :
-    ctx |- {A: forall: "n": correct "n" <-> "n" \in "Correct"}
+    ctx |- {A: forall: "?n": correct "?n" <-> "?n" \in "Correct"}
   | DPAPer ctx :
     ctx |- {A:
-      forall: "n":
-      correct "n" -> always eventually when-on["n"] when[]~> PE
+      forall: "?n":
+      correct "?n" -> always eventually on "?n", event []~> PE
     }
-  | DPFLoss ctx tn tn' tm ti :
+  | DPFLoss ctx :
     ctx |- {A:
-      correct tn' ->
-      always^ eventually^ when-on[tn] when[ti]-> CFLSend $ tn' $ tm ->
-      always^ eventually^ when-on[tn'] when[ti]<- CFLDeliver $ tn $ tm
+      forall: "?n", "?n'", "?m", "?i":
+      correct "?n'" ->
+      always^ eventually^ on "?n", event ["?i"]-> CFLSend $ "?n'" $ "?m" ->
+      always^ eventually^ on "?n'", event ["?i"]<- CFLDeliver $ "?n" $ "?m"
     }
-  | DPFDup ctx tn tn' tm ti :
+  | DPFDup ctx :
     ctx |- {A:
-      always eventually when-on[tn'] when[ti]<- CFLDeliver $ tn $ tm ->
-      always eventually when-on[tn] when[ti]-> CFLSend $ tn' $ tm
+      forall: "?n", "?n'", "?m", "?i":
+      always eventually on "?n'", event ["?i"]<- CFLDeliver $ "?n" $ "?m" ->
+      always eventually on "?n", event ["?i"]-> CFLSend $ "?n'" $ "?m"
     }
-  | DPNForge ctx tn tn' tm ti :
+  | DPNForge ctx :
     ctx |- {A:
-      when-on[tn'] when[ti]<- CFLDeliver $ tn $ tm =>>
-      eventuallyp when-on[tn] when[ti]-> CFLSend $ tn' $ tm
+      forall: "?n", "?n'", "?m", "?i":
+      on "?n'", event ["?i"]<- CFLDeliver $ "?n" $ "?m" =>>
+      eventuallyp on "?n", event ["?i"]-> CFLSend $ "?n'" $ "?m"
     }
   (* TODO: UniOR *)
   (* TODO: UniOI *)
@@ -381,6 +387,11 @@ Tactic Notation "d_destructpairp"
   eapply DARewriteIffPR; first by eapply DSCut;
     first by apply (DADestructPair _ _ tll trl tlr trr);
   rewrite_assertion_any.
+Tactic Notation "d_destructtuplep"
+  constr(t1l) constr(t2l) constr(t3l) constr(t1r) constr(t2r) constr(t3r) :=
+  d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
+  d_destructpairp t1l t2l t1r t2r;
+  rewrite_assertion_any.
 
 (* Sequent logic tactics *)
 Tactic Notation "d_false" := apply DSFalse.
@@ -393,6 +404,8 @@ Ltac d_have Ap :=
     apply (@DSCut C Delta Gamma Ap Ac)
   | _ => fail
   end.
+Ltac d_use L :=
+  eapply DSCut; first by apply L.
 Tactic Notation "d_notp" := apply DSNotP.
 Tactic Notation "d_notc" := apply DSNotC.
 Tactic Notation "d_orp" := apply DSOrP.

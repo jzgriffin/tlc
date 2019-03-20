@@ -25,11 +25,11 @@ Lemma DPIROI C ctx (S : term -> assertion) :
     (
       forall: "s":
       S "s" /\
-      "e'" \in let: (%, %, #) := request C $ "n" $ "s" $ "e" in: #0
+      "e'" \in let: (%, %, #) := request C $ "n" $ "s" $ "e" in: #(0, 0)
     ) ->
     (
-      when-on["n"] when[]-> "e" /\ S {t: "Fs" $ "n"} =>>
-      eventually when-on["n"] when[]<- "e'"
+      on "n", event []-> "e" /\ S {t: "Fs" $ "n"} =>>
+      eventually on "n", event []<- "e'"
     )
   }.
 Proof.
@@ -41,11 +41,11 @@ Lemma DPIIOI C ctx (S : term -> assertion) :
     (
       forall: "s":
       S "s" /\
-      "e'" \in let: (%, %, #) := indication C $ "n" $ "s" $ ("i", "e") in: #0
+      "e'" \in let: (%, %, #) := indication C $ "n" $ "s" $ ("i", "e") in: #(0, 0)
     ) ->
     (
-      when-on["n"] when["i"]<- "e" /\ S {t: "Fs" $ "n"} =>>
-      eventually^ when-on["n"] when[]<- "e'"
+      on "n", event ["i"]<- "e" /\ S {t: "Fs" $ "n"} =>>
+      eventually^ on "n", event []<- "e'"
     )
   }.
 Proof.
@@ -56,26 +56,26 @@ Lemma DPInvL C ctx A :
   ctx |- C, {A:
     (
       forall: "e":
-      when[]-> "e" /\
+      event []-> "e" /\
       ("Fs'" $ "Fn", "Fors", "Fois") =
         request C $ "Fn" $ ("Fs" $ "Fn") $ "e" ->
       A
     ) ->
     (
       forall: "i", "e":
-      when["i"]<- "e" /\
+      event ["i"]<- "e" /\
       ("Fs'" $ "Fn", "Fors", "Fois") =
         indication C $ "Fn" $ ("Fs" $ "Fn") $ ("i", "e") ->
       A
     ) ->
     (
-      when[]~> PE /\
+      event []~> PE /\
       ("Fs'" $ "Fn", "Fors", "Fois") =
         periodic C $ "Fn" $ ("Fs" $ "Fn") ->
       A
     ) ->
     (
-      when-self =>> A
+      self-event =>> A
     )
   }.
 Proof.
@@ -87,21 +87,21 @@ Lemma DPInvS'' C ctx (S : term -> assertion) :
     (
       forall: "s", "e":
       S "s" ->
-      S {t: let: (#, %, %) := request C $ "n" $ "s" $ "e" in: #0}
+      S {t: let: (#, %, %) := request C $ "n" $ "s" $ "e" in: #(0, 0)}
     ) ->
     (
       forall: "s", "i", "e":
       S "s" ->
-      S {t: let: (#, %, %) := indication C $ "n" $ "s" $ ("i", "e") in: #0}
+      S {t: let: (#, %, %) := indication C $ "n" $ "s" $ ("i", "e") in: #(0, 0)}
     ) ->
     (
       forall: "s":
       S "s" ->
-      S {t: let: (#, %, %) := periodic C $ "n" $ "s" in: #0}
+      S {t: let: (#, %, %) := periodic C $ "n" $ "s" in: #(0, 0)}
     ) ->
     (
-      when-self /\ S {t: "Fs'" $ "n"} =>>
-      always^ (when-self -> S {t: "Fs" $ "n"})
+      self-event /\ S {t: "Fs'" $ "n"} =>>
+      always^ (self-event -> S {t: "Fs" $ "n"})
     )
   }.
 Proof.
@@ -114,27 +114,29 @@ Lemma DPInvSA C ctx (S : term -> assertion) A :
     ~(S {t: initialize C $ "?n"}) ->
     (
       forall: "?e":
-      when-on["?n"] when[]-> "?e" /\
+      on "?n", event []-> "?e" /\
       ~(S {t: "Fs" $ "?n"}) /\
-      S {t: let: (#, %, %) := request C $ "?n" $ ("Fs" $ "?n") $ "?e" in: #0} ->
+      S {t: let: (#, %, %) :=
+        request C $ "?n" $ ("Fs" $ "?n") $ "?e" in: #(0, 0)} ->
       A
     ) ->
     (
       forall: "?i", "?e":
-      when-on["?n"] when["?i"]<-"?e" /\
+      on "?n", event ["?i"]<-"?e" /\
       ~(S {t: "Fs" $ "?n"}) /\
       S {t: let: (#, %, %) :=
-        indication C $ "?n" $ ("Fs" $ "?n") $ ("?i", "?e") in: #0} ->
+        indication C $ "?n" $ ("Fs" $ "?n") $ ("?i", "?e") in: #(0, 0)} ->
       A
     ) ->
     (
-      when-on["?n"] when[]~> PE /\
+      on "?n", event []~> PE /\
       ~(S {t: "Fs" $ "?n"}) /\
-      S {t: let: (#, %, %) := periodic C $ "?n" $ ("Fs" $ "?n") in: #0} ->
+      S {t: let: (#, %, %) :=
+        periodic C $ "?n" $ ("Fs" $ "?n") in: #(0, 0)} ->
       A
     ) ->
     (
-      (S {t: "Fs" $ "?n"} /\ when-self) =>> eventuallyp^ when-on["?n"] A
+      (self-event /\ S {t: "Fs" $ "?n"}) =>> eventuallyp^ on "?n", A
     )
   }.
 Proof.
@@ -146,14 +148,14 @@ Lemma DPAPerSA C ctx (S : term -> assertion) A :
     forall: "n":
     (
       "Fn" = "n" /\
-      when-self /\
+      self-event /\
       S {t: "Fs" $ "n"} /\
       ("Fs'" $ "n", "Fors", "Fois") = periodic C $ "n" $ ("Fs" $ "n") ->
       A
     ) ->
     (
       correct "n" ->
-      (when-self -> S {t: "Fs" $ "n"}) =>>
+      (self-event -> S {t: "Fs" $ "n"}) =>>
       always eventually A
     )
   }.
@@ -170,18 +172,18 @@ Lemma DPLower :
 Proof.
 Admitted. (* TODO *)
 
-Lemma DPWhenTopRequestSelf C ctx :
+Lemma DPTopRequestSelf C ctx :
   ctx |- C, {A:
     forall: "e":
-    when[]-> "e" =>> when-self
+    event []-> "e" =>> self-event
   }.
 Proof.
 Admitted. (* TODO *)
 
-Lemma DPWhenTopRequestSelfEliminate C ctx :
+Lemma DPTopRequestSelfEliminate C ctx :
   ctx |- C, {A:
     forall: "e":
-    when[]-> "e" /\ when-self <-> when[]-> "e"
+    event []-> "e" /\ self-event <-> event []-> "e"
   }.
 Proof.
   case: ctx => Delta Gamma.

@@ -161,35 +161,35 @@ Definition PL_SL_2 := DPLower SL_2 perfect_link 0 SL_2_TI.
 
 Lemma L37_1 :
   Context
-    [:: V "m'"; V "c"; V "n"; V "n'"; V "m"]
+    [:: V "m'"; V "c"; V "m"; V "n'"; V "n"]
     [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
-    when-self /\ when-on["n"] ((0, CSLSend $ "n'" $ ("c", "m")) \in "Fors") =>>
-    always^ ~(when-self /\
-      when-on["n"] ((0, CSLSend $ "n'" $ ("c", "m'")) \in "Fors"))
+    self-event /\ on "n", ((0, CSLSend $ "n'" $ ("c", "m")) \in "Fors") =>>
+    always^ ~(self-event /\
+      on "n", ((0, CSLSend $ "n'" $ ("c", "m'")) \in "Fors"))
   }.
 Proof.
 Admitted. (* TODO *)
 
 Lemma L37_2 :
   Context
-    [:: V "m'"; V "c"; V "n"; V "n'"; V "m"]
+    [:: V "m'"; V "c"; V "m"; V "n'"; V "n"]
     [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
-    when-self /\ when-on["n"] ((0, CSLSend $ "n'" $ ("c", "m")) \in "Fors") =>>
-    alwaysp^ ~(when-self /\
-      when-on["n"] ((0, CSLSend $ "n'" $ ("c", "m'")) \in "Fors"))
+    self-event /\ on "n", ((0, CSLSend $ "n'" $ ("c", "m")) \in "Fors") =>>
+    alwaysp^ ~(self-event /\
+      on "n", ((0, CSLSend $ "n'" $ ("c", "m'")) \in "Fors"))
   }.
 Proof.
 Admitted. (* TODO *)
 
 Lemma L38 :
   Context
-    [:: V "c"; V "n"; V "n'"; V "m"]
+    [:: V "c"; V "m"; V "n'"; V "n"]
     [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
-    when-on["n'"] when[0]<- CSLDeliver $ "n" $ ("c", "m") =>>
-    eventually when-on["n'"] when[]<- CPLDeliver $ "n" $ "m" \/
+    on "n'", event [0]<- CSLDeliver $ "n" $ ("c", "m") =>>
+    eventually on "n'", event []<- CPLDeliver $ "n" $ "m" \/
     exists: "m": eventuallyp (
-      when-on["n"] when[]-> CPLSend $ "n" $ "m" /\
-      eventually when-on["n'"] when[]<- CPLDeliver $ "n" $ "m"
+      on "n", event []-> CPLSend $ "n" $ "m" /\
+      eventually on "n'", event []<- CPLDeliver $ "n" $ "m"
     )
   }.
 Proof.
@@ -197,24 +197,24 @@ Admitted. (* TODO *)
 
 Lemma L39 :
   Context
-    [:: V "c"; V "n"; V "n'"; V "m"]
+    [:: V "c"; V "m"; V "n'"; V "n"]
     [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
-    when-on["n'"] when[0]<- CSLDeliver $ "n" $ ("c", "m") /\
+    on "n'", event [0]<- CSLDeliver $ "n" $ ("c", "m") /\
     ("n", "c") \notin (FRight $ ("Fs" $ "n'")) =>>
-    eventually when-on["n'"] when[]<- CPLDeliver $ "n" $ "m"
+    eventually on "n'", event []<- CPLDeliver $ "n" $ "m"
   }.
 Proof.
 Admitted. (* TODO *)
 
 Lemma L40 :
   Context
-    [:: V "c"; V "n"; V "n'"; V "m"]
+    [:: V "c"; V "m"; V "n'"; V "n"]
     [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
-    when-self /\ "Fn" = "n'" /\ ("n", "c") \in (FRight $ ("Fs" $ "n'")) =>>
+    self-event /\ "Fn" = "n'" /\ ("n", "c") \in (FRight $ ("Fs" $ "n'")) =>>
     exists: "m": eventuallyp (
-      when-on["n"] ((0, CSLSend $ "n'" $ ("c", "m")) \in "Fors") /\
-      when-self /\
-      eventually when-on["n'"] when[]<- CPLDeliver $ "n" $ "m"
+      on "n", ((0, CSLSend $ "n'" $ ("c", "m")) \in "Fors") /\
+      self-event /\
+      eventually on "n'", event []<- CPLDeliver $ "n" $ "m"
     )
   }.
 Proof.
@@ -222,11 +222,11 @@ Admitted. (* TODO *)
 
 Lemma L41 :
   Context
-    [:: V "c"; V "n"; V "n'"; V "m"]
+    [:: V "c"; V "m"; V "n'"; V "n"]
     [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
-    when-self /\ ("n", "c") \in (FRight $ ("Fs" $ "n'")) =>>
+    self-event /\ ("n", "c") \in (FRight $ ("Fs" $ "n'")) =>>
     exists: "m": eventuallyp (
-      when-on["n'"] when[0]<- CSLDeliver $ "n" $ ("c", "m") /\
+      on "n'", event [0]<- CSLDeliver $ "n" $ ("c", "m") /\
       (CPLDeliver $ "n" $ "m") \in "Fois"
     )
   }.
@@ -237,10 +237,10 @@ Admitted. (* TODO *)
  * If a correct node n sends a message m to a correct node n', then n' will
  * eventually deliver m.
  *)
-Theorem PL_1 : Context [:: V "n"; V "n'"; V "m"] [::] |- perfect_link, {A:
+Theorem PL_1 : Context [:: V "m"; V "n'"; V "n"] [::] |- perfect_link, {A:
   correct "n" /\ correct "n'" ->
-  when-on["n"] when[]-> CPLSend $ "n'" $ "m" ~>
-  when-on["n'"] when[]<- CPLDeliver $ "n" $ "m"
+  on "n", event []-> CPLSend $ "n'" $ "m" ~>
+  on "n'", event []<- CPLDeliver $ "n" $ "m"
 }.
 Proof.
   (* Introduce context *)
@@ -252,7 +252,7 @@ Admitted. (* TODO *)
 
 Lemma L42 :
   Context
-    [:: V "n"; V "n'"; V "m"]
+    [:: V "m"; V "n'"; V "n"]
     [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
     self (
       "Fn" = "n" /\ (CPLDeliver $ "n'" $ "m") \in "Fois" =>>
@@ -265,11 +265,11 @@ Admitted. (* TODO *)
 
 Lemma L43 :
   Context
-    [:: V "c"; V "n"; V "n'"; V "m"]
+    [:: V "c"; V "m"; V "n'"; V "n"]
     [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
     self (
       ("n'", "c") \in (FRight $ ("Fs" $ "n")) /\
-      eventuallyp when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c", "m") =>>
+      eventuallyp on "n", event [0]<- CSLDeliver $ "n'" $ ("c", "m") =>>
       "Fn" = "n" -> (CPLDeliver $ "n'" $ "m") \notin "Fois"
     )
   }.
@@ -278,11 +278,11 @@ Admitted. (* TODO *)
 
 Lemma L44 :
   Context
-    [:: V "c'"; V "c"; V "n"; V "n'"; V "m"]
+    [:: V "c'"; V "c"; V "m"; V "n'"; V "n"]
     [:: {A: correct "n"}; {A: correct "n'"}] |- perfect_link, {A:
     self (
-      when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c", "m") /\
-      eventuallyp when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c'", "m") =>>
+      on "n", event [0]<- CSLDeliver $ "n'" $ ("c", "m") /\
+      eventuallyp on "n", event [0]<- CSLDeliver $ "n'" $ ("c'", "m") =>>
       "c" = "c'"
     )
   }.
@@ -292,11 +292,11 @@ Admitted. (* TODO *)
 (* No-duplication
  * If a message is sent at most once, it will be delivered at most once.
  *)
-Theorem PL_2 : Context [:: V "n"; V "n'"; V "m"] [::] |- perfect_link, {A:
-  (when-on["n'"] when[]-> CPLSend $ "n" $ "m" =>>
-    alwaysp^ ~when-on["n'"] when[]-> CPLSend $ "n" $ "m") ->
-  (when-on["n"] when[]<- CPLDeliver $ "n'" $ "m" =>>
-    alwaysp^ ~when-on["n"] when[]<- CPLDeliver $ "n'" $ "m")
+Theorem PL_2 : Context [:: V "m"; V "n'"; V "n"] [::] |- perfect_link, {A:
+  (on "n'", event []-> CPLSend $ "n" $ "m" =>>
+    alwaysp^ ~on "n'", event []-> CPLSend $ "n" $ "m") ->
+  (on "n", event []<- CPLDeliver $ "n'" $ "m" =>>
+    alwaysp^ ~on "n", event []<- CPLDeliver $ "n'" $ "m")
 }.
 Proof.
 Admitted. (* TODO *)
@@ -305,36 +305,36 @@ Admitted. (* TODO *)
  * If a node n delivers a message m with sender n', then m was previously sent
  * to n by node n'.
  *)
-Theorem PL_3 : Context [:: V "n"; V "n'"; V "m"] [::] |- perfect_link, {A:
-  when-on["n"] when[]<- CPLDeliver $ "n'" $ "m" <~
-  when-on["n'"] when[]-> CPLSend $ "n" $ "m"
+Theorem PL_3 : Context [:: V "m"; V "n'"; V "n"] [::] |- perfect_link, {A:
+  on "n", event []<- CPLDeliver $ "n'" $ "m" <~
+  on "n'", event []-> CPLSend $ "n" $ "m"
 }.
 Proof.
   (* By OI' *)
   d_have {A:
-    when-on["n"] when[]<- CPLDeliver $ "n'" $ "m" =>>
-    eventuallyp^ (when-on["n"]
-      ((CPLDeliver $ "n'" $ "m") \in "Fois") /\ when-self)
+    on "n", event []<- CPLDeliver $ "n'" $ "m" =>>
+    eventuallyp^ (self-event /\ on "n",
+      (CPLDeliver $ "n'" $ "m" \in "Fois"))
   }.
   {
     (* Instantiate OI' *)
-    eapply DSCut; first by apply DPOI'.
-    by d_forallp "n"; d_forallp {t: CPLDeliver $ "n'" $ "m"}; d_head.
+    by d_use DPOI'; d_forallp "n"; d_forallp {t: CPLDeliver $ "n'" $ "m"}.
   }
 
   (* By InvL *)
   d_have {A:
-    when-on["n"] (CPLDeliver $ "n'" $ "m" \in "Fois") /\ when-self =>>
-    exists: "c": when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c", "m")
+    self-event /\ on "n", (CPLDeliver $ "n'" $ "m" \in "Fois") =>>
+    exists: "c": on "n", event [0]<- CSLDeliver $ "n'" $ ("c", "m")
   }.
   {
     d_clear. (* Clean up the context *)
 
     (* Instantiate InvL *)
-    eapply DSCut; first by apply DPInvL with (A := {A:
-        when-on["n"] (CPLDeliver $ "n'" $ "m" \in "Fois") ->
-        exists: "c": when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c", "m")
-      }); first by repeat constructor.
+    eapply DSCut; first by apply DPInvL with
+      (A := {A:
+          on "n", (CPLDeliver $ "n'" $ "m" \in "Fois") ->
+          exists: "c": on "n", event [0]<- CSLDeliver $ "n'" $ ("c", "m")
+        }); first by repeat constructor.
 
     (* Prove for requests *)
     d_ifp.
@@ -348,20 +348,17 @@ Proof.
     d_ifp.
       admit.
 
-    eapply DARewriteIffPL; first by apply DSMergeIf with
-      (Ap1 := {A: when-self})
-      (Ap2 := {A: when-on["n"] (CPLDeliver $ "n'" $ "m" \in "Fois")})
+    by eapply DARewriteIffPL; first by apply DSMergeIf with
+      (Ap1 := {A: self-event})
+      (Ap2 := {A: on "n", (CPLDeliver $ "n'" $ "m" \in "Fois")})
       (Ac := {A: exists: "c":
-        when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c", "m")}).
-    by eapply DARewriteIffPL; first by apply DSAndCommutative with
-      (Acl := {A: when-self})
-      (Acr := {A: when-on["n"] (CPLDeliver $ "n'" $ "m" \in "Fois")}).
+        on "n", event [0]<- CSLDeliver $ "n'" $ ("c", "m")}).
   }
 
   (* By Lemma 96 on (1) and (2) *)
   d_have {A:
-    when-on["n"] when[]<- CPLDeliver $ "n'" $ "m" <~
-    exists: "c": when-on["n"] when[0]<- CSLDeliver $ "n'" $ ("c", "m")
+    on "n", event []<- CPLDeliver $ "n'" $ "m" <~
+    exists: "c": on "n", event [0]<- CSLDeliver $ "n'" $ ("c", "m")
   }.
   {
     admit.
@@ -370,11 +367,9 @@ Proof.
   (* By OR' *)
   d_have {A:
     forall: "c":
-    when-on["n'"] when[0]-> CSLSend $ "n" $ ("c", "m") =>>
-    eventuallyp (
-      when-on["n'"] ((0, CSLSend $ "n" $ ("c", "m")) \in "Fors") /\
-      when-self
-    )
+    on "n'", event [0]-> CSLSend $ "n" $ ("c", "m") =>>
+    eventuallyp (self-event /\
+      on "n'", ((0, CSLSend $ "n" $ ("c", "m")) \in "Fors"))
   }.
   {
     do 3 d_clear. (* Clean up the context *)
@@ -385,8 +380,8 @@ Proof.
   (* By InvL *)
   d_have {A:
     forall: "c":
-    when-on["n'"] ((0, CSLSend $ "n" $ ("c", "m")) \in "Fors") /\ when-self =>>
-    when-on["n'"] when[]-> CPLSend $ "n" $ ("c", "m")
+    self-event /\ on "n'", ((0, CSLSend $ "n" $ ("c", "m")) \in "Fors") =>>
+    on "n'", event []-> CPLSend $ "n" $ ("c", "m")
   }.
   {
     do 4 d_clear. (* Clean up the context *)
@@ -397,8 +392,8 @@ Proof.
   (* By Lemma 96 on (4) and (5) *)
   d_have {A:
     forall: "c":
-    when-on["n'"] when[0]-> CSLSend $ "n" $ ("c", "m") <~
-    when-on["n'"] when[]-> CPLSend $ "n" $ "m"
+    on "n'", event [0]-> CSLSend $ "n" $ ("c", "m") <~
+    on "n'", event []-> CPLSend $ "n" $ "m"
   }.
   {
     admit.

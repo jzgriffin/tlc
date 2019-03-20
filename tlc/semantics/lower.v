@@ -18,4 +18,4 @@ Unset Printing Implicit Defensive.
  *)
 Definition lower_assertion (i : nat) A (TI : top_invariant A) :=
   restrict_assertion {A: "Fd" <<< [i]}
-    (projT1 (push_assertion i (location_invariant_assertion TI))).
+    (push_assertion i (location_invariant_assertion TI)).

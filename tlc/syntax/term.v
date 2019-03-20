@@ -175,10 +175,10 @@ Notation "{cs: cs }" := (cs%cases)
   (at level 0, cs at level 100, no associativity, only parsing).
 
 (* Constructor notations *)
-Notation "# j" := (TParameter (P 0 j))
-  (at level 0, no associativity, format "'#' j") : term_scope.
 Notation "#( i , j )" := (TParameter (P i j))
   (at level 0, no associativity, format "'#(' i ','  j ')'") : term_scope.
+Notation "? v" := (TVariable v)
+  (at level 0, no associativity, format "'?' v") : term_scope.
 Notation "tf $ ta" := (TApplication tf ta)
   (at level 10, left associativity) : term_scope.
 Notation "fun: tb" := (TAbstraction tb)
@@ -207,38 +207,40 @@ Notation "if: ta then: ti else: te" := (TIf ta ti te)
     te at level 100) : term_scope.
 
 (* Pair constructor notations *)
-Definition TPair tl tr := {t: CPair $ tl $ tr}.
+Notation TPair tl tr := {t: CPair $ tl $ tr}.
 Notation "( t1 , t2 , .. , tn )" :=
-  {t: TPair (.. (TPair t1 t2) ..) tn} : term_scope.
+  {t: CPair $ (.. (CPair $ t1 $ t2) ..) $ tn}
+  : term_scope.
 
 (* List constructor notations *)
-Definition TNil := TConstructor CNil.
+Notation TNil := {t: TConstructor CNil}.
 Notation "[ ]" := TNil : term_scope.
-Definition TCons t ts := {t: CCons $ t $ ts}.
+Notation TCons t ts := {t: CCons $ t $ ts}.
 Notation "t :: ts" := (TCons t ts) : term_scope.
-Notation "[ t1 , .. , tn ]" := {t: t1 :: (.. (tn :: []) ..)}
+Notation "[ t1 , .. , tn ]" :=
+  {t: CCons $ t1 $ (.. (CCons $ tn $ CNil) ..)}
   : term_scope.
 
 (* Function notations *)
 (* Generic *)
-Definition TEqual tl tr := {t: FEqual $ tl $ tr}.
+Notation TEqual tl tr := {t: FEqual $ tl $ tr}.
 Notation "tl = tr" := (TEqual tl tr) : term_scope.
 (* Boolean *)
-Definition TNot t := {t: FNot $ t}.
+Notation TNot t := {t: FNot $ t}.
 Notation "~ t" := (TNot t) : term_scope.
-Definition TOr tl tr := {t: FOr $ tl $ tr}.
+Notation TOr tl tr := {t: FOr $ tl $ tr}.
 Notation "tl \/ tr" := (TOr tl tr) : term_scope.
 (* Natural *)
-Definition TSucc t := {t: FSucc $ t}.
+Notation TSucc t := {t: FSucc $ t}.
 Notation "t .+1" := (TSucc t) : term_scope.
-Definition TAdd tl tr := {t: FAdd $ tl $ tr}.
+Notation TAdd tl tr := {t: FAdd $ tl $ tr}.
 Notation "tl + tr" := (TAdd tl tr) : term_scope.
 (* List *)
-Definition TConcat tsl tsr := {t: FConcat $ tsl $ tsr}.
+Notation TConcat tsl tsr := {t: FConcat $ tsl $ tsr}.
 Notation "tsl ++ tsr" := (TConcat tsl tsr) : term_scope.
-Definition TUnion tsl tsr := {t: FUnion $ tsl $ tsr}.
+Notation TUnion tsl tsr := {t: FUnion $ tsl $ tsr}.
 Notation "tsl \union tsr" := (TUnion tsl tsr) : term_scope.
-Definition TMap tf ts := {t: FMap $ tf $ ts}.
+Notation TMap tf ts := {t: FMap $ tf $ ts}.
 Notation "tf <$> ts" := (TMap tf ts) : term_scope.
 
 (* List conversion *)
@@ -249,24 +251,24 @@ Fixpoint TList ts :=
   end.
 
 (* Derived generic functions *)
-Definition FNotEqual := {t: fun: fun: ~(#(1, 0) = #0)}.
-Definition TNotEqual tl tr := {t: FNotEqual $ tl $ tr}.
+Notation FNotEqual := {t: fun: fun: ~(#(1, 0) = #(0, 0))}.
+Notation TNotEqual tl tr := {t: FNotEqual $ tl $ tr}.
 Notation "tl <> tr" := (TNotEqual tl tr) : term_scope.
 
 (* Derived Boolean functions *)
-Definition FAnd := {t: fun: fun: ~(~#(1, 0) \/ ~#0)}.
-Definition TAnd tl tr := {t: FAnd $ tl $ tr}.
+Notation FAnd := {t: fun: fun: ~(~#(1, 0) \/ ~#(0, 0))}.
+Notation TAnd tl tr := {t: FAnd $ tl $ tr}.
 Notation "tl /\ tr" := (TAnd tl tr) : term_scope.
 
 (* Derived pair functions *)
-Definition FLeft := {t: fun: match: #0 with: {{ (#, %) -> #0 }}}.
-Definition FRight := {t: fun: match: #0 with: {{ (%, #) -> #0 }}}.
+Notation FLeft := {t: fun: match: #(0, 0) with: {{ (#, %) -> #(0, 0) }}}.
+Notation FRight := {t: fun: match: #(0, 0) with: {{ (%, #) -> #(0, 0) }}}.
 
 (* Derived list functions *)
-Definition FMember := {t: fun: fun: (FCount $ #(1, 0) $ #0) <> 0}.
-Definition TMember t ts := {t: FMember $ t $ ts}.
+Notation FMember := {t: fun: fun: (FCount $ #(1, 0) $ #(0, 0)) <> 0}.
+Notation TMember t ts := {t: FMember $ t $ ts}.
 Notation "t \in ts" := (TMember t ts) : term_scope.
 
 (* Derived predicates *)
-Definition FCorrect := {t: fun: #0 \in "Correct"}.
-Definition TCorrect tn := {t: FCorrect $ tn}.
+Notation FCorrect := {t: fun: #(0, 0) \in "Correct"}.
+Notation TCorrect tn := {t: FCorrect $ tn}.

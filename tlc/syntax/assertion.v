@@ -131,7 +131,8 @@ Notation "{A: A }" := (A%assertion)
   (at level 0, A at level 100, no associativity, only parsing).
 
 (* Constructor notations *)
-Notation "# p" := (APredicate p) : assertion_scope.
+Notation "# p" := (APredicate p)
+  (at level 0, no associativity, format "'#' p") : assertion_scope.
 Notation "~ A" := (ANot A) : assertion_scope.
 Notation "Al /\ Ar" := (AAnd Al Ar) : assertion_scope.
 Notation "forall: v1 , .. , vn : A" := (AForAll v1 (.. (AForAll vn A) ..))
@@ -213,38 +214,45 @@ Notation "Al <~ Ar" := (APrecededBy Al Ar)
   (at level 90, right associativity) : assertion_scope.
 
 (* Component syntactic sugar *)
-Definition AWhenOn tn A := {A: "Fn" = tn /\ A}.
-Notation "when-on[ tn ] A" := (AWhenOn tn A)
-  (at level 60, right associativity) : assertion_scope.
-Definition AWhenTopRequest te :=
+Definition AOn tn A := {A: "Fn" = tn /\ A}.
+Notation "'on' tn , A" := (AOn tn A)
+  (at level 60, right associativity, format "'on'  tn ,  A")
+  : assertion_scope.
+Definition ATopRequest te :=
   {A: "Fd" = [] /\ "Fo" = ORequest /\ "Fe" = te}.
-Notation "when[]-> te" := (AWhenTopRequest te)
-  (at level 60, no associativity) : assertion_scope.
-Definition AWhenTopIndication te :=
+Notation "'event' []-> te" := (ATopRequest te)
+  (at level 60, no associativity, format "'event'  []->  te")
+  : assertion_scope.
+Definition ATopIndication te :=
   {A: "Fd" = [] /\ "Fo" = OIndication /\ "Fe" = te}.
-Notation "when[]<- te" := (AWhenTopIndication te)
-  (at level 60, no associativity) : assertion_scope.
-Definition AWhenTopPeriodic te :=
+Notation "'event' []<- te" := (ATopIndication te)
+  (at level 60, no associativity, format "'event'  []<-  te")
+  : assertion_scope.
+Definition ATopPeriodic te :=
   {A: "Fd" = [] /\ "Fo" = OPeriodic /\ "Fe" = te}.
-Notation "when[]~> te" := (AWhenTopPeriodic te)
-  (at level 60, no associativity) : assertion_scope.
-Definition AWhenSubRequest ti te :=
+Notation "'event' []~> te" := (ATopPeriodic te)
+  (at level 60, no associativity, format "'event'  []~>  te")
+  : assertion_scope.
+Definition ASubRequest ti te :=
   {A: "Fd" = [ti] /\ "Fo" = ORequest /\ "Fe" = te}.
-Notation "when[ ti ]-> te" := (AWhenSubRequest ti te)
-  (at level 60, no associativity) : assertion_scope.
-Definition AWhenSubIndication ti te :=
+Notation "'event' [ ti ]-> te" := (ASubRequest ti te)
+  (at level 60, no associativity, format "'event'  [ ti ]->  te")
+  : assertion_scope.
+Definition ASubIndication ti te :=
   {A: "Fd" = [ti] /\ "Fo" = OIndication /\ "Fe" = te}.
-Notation "when[ ti ]<- te" := (AWhenSubIndication ti te)
-  (at level 60, no associativity) : assertion_scope.
-Definition AWhenSubPeriodic ti te :=
+Notation "'event' [ ti ]<- te" := (ASubIndication ti te)
+  (at level 60, no associativity, format "'event'  [ ti ]<-  te")
+  : assertion_scope.
+Definition ASubPeriodic ti te :=
   {A: "Fd" = [ti] /\ "Fo" = OPeriodic /\ "Fe" = te}.
-Notation "when[ ti ]~> te" := (AWhenSubPeriodic ti te)
-  (at level 60, no associativity) : assertion_scope.
-Definition AWhenSelf :=
+Notation "'event' [ ti ]~> te" := (ASubPeriodic ti te)
+  (at level 60, no associativity, format "'event'  [ ti ]~>  te")
+  : assertion_scope.
+Definition ASelfEvent :=
   {A: (exists: "i": "Fd" = ["i"] /\ "Fo" = OIndication) \/
     ("Fd" = [] /\ "Fo" = ORequest) \/
     ("Fd" = [] /\ "Fo" = OPeriodic)}.
-Notation "when-self" := (AWhenSelf)
+Notation "self-event" := (ASelfEvent)
   (at level 60, no associativity) : assertion_scope.
 
 (* Derived predicate notations *)
@@ -286,7 +294,7 @@ Definition non_temporal_assertion_t :=
 Inductive location_assertion : seq nat -> assertion -> Type :=
 | LAEventOn d tn d' to te :
   extension d' d ->
-  location_assertion d {A: when-on[tn]
+  location_assertion d {A: on tn,
     ("Fd" = (TList [seq TLiteral (LNatural i) | i <- d']) /\
       "Fo" = to /\ "Fe" = te)}
 | LACorrect d tn :
@@ -453,11 +461,11 @@ Definition top_invariant_t :=
  *)
 Inductive self_invariant : assertion -> Type :=
 | SITopRequestOn tn te :
-  self_invariant {A: when-on[tn] when[]-> te}
+  self_invariant {A: on tn, event []-> te}
 | SITopPeriodicOn tn te :
-  self_invariant {A: when-on[tn] when[]~> te}
+  self_invariant {A: on tn, event []~> te}
 | SISubIndicationOn tn ti te :
-  self_invariant {A: when-on[tn] when[ti]<- te}
+  self_invariant {A: on tn, event [ti]<- te}
 | SICorrect tn :
   self_invariant {A: correct tn}
 | SINot A :
