@@ -154,8 +154,115 @@ Definition perfect_link :=
 (* Specification *)
 
 (* Lowered stubborn link properties *)
-Definition PL_SL_1 := DPLower SL_1 perfect_link 0 SL_1_TI.
-Definition PL_SL_2 := DPLower SL_2 perfect_link 0 SL_2_TI.
+Definition PL_SL_1 :
+  Context [::] [::] |- perfect_link, {A:
+    forall: "n", "n'", "m":
+    correct "n" /\ correct "n'" ->
+    on "n", event [0]-> CSLSend $ "n'" $ "m" =>>
+    always eventually on "n'", event [0]<- CSLDeliver $ "n" $ "m"
+  }.
+Proof.
+  d_forallc "n"; d_forallc "n'"; d_forallc "m".
+
+  (* Use the lowering specification on SL_1 *)
+  eapply DSCut; first by apply: DPLower SL_1 perfect_link 0 SL_1_TA.
+  rewrite /lower_assertion /=.
+
+  eapply DARewriteEntailsP; first by apply DTL124 with
+    (Ap := {A: "Fd" <<< [0]})
+    (Ac := {A: eventually on "n'", event [0]<- CSLDeliver $ "n" $ "m"}).
+  eapply DARewriteEntailsP; first by apply DTL124 with
+    (Ap := {A: "Fd" <<< [0]})
+    (Ac := {A:
+      on "n", event [0]-> CSLSend $ "n'" $ "m" ->
+      "Fd" <<< [0] ~>
+      on "n'", event [0]<- CSLDeliver $ "n" $ "m"}).
+  eapply DARewriteIffPL; first by apply DSMergeIf with
+    (Ap1 := {A: "Fd" <<< [0]})
+    (Ap2 := {A: on "n", event [0]-> CSLSend $ "n'" $ "m"})
+    (Ac := {A:
+      "Fd" <<< [0] ~>
+      on "n'", event [0]<- CSLDeliver $ "n" $ "m"
+    }).
+  eapply DARewriteIfP; first by apply DT1 with
+    (A := {A:
+      "Fd" <<< [0] ->
+      eventually on "n'", event [0]<- CSLDeliver $ "n" $ "m"}).
+
+  d_have {A:
+    "Fd" <<< [0] /\ on "n", event [0]-> CSLSend $ "n'" $ "m" <->
+    on "n", event [0]-> CSLSend $ "n'" $ "m"
+  }.
+  {
+    d_splitc; d_ifc.
+    - by d_splitp; d_swap; d_head.
+    - d_splitc.
+      + by d_splitp; d_swap; d_splitp; d_substc; eapply DAPExtension.
+      + by d_head.
+  }
+
+  d_swap; eapply DARewriteIffPL; first by (d_head); d_swap.
+
+  eapply DARewriteIffPL; first by apply DSMergeIf with
+    (Ap1 := {A: on "n", event [0]-> CSLSend $ "n'" $ "m"})
+    (Ap2 := {A: "Fd" <<< [0]})
+    (Ac := {A:
+      eventually on "n'", event [0]<- CSLDeliver $ "n" $ "m"
+    }).
+  eapply DARewriteIffPL; first by apply DSAndCommutative with
+    (Acl := {A: on "n", event [0]-> CSLSend $ "n'" $ "m"})
+    (Acr := {A: "Fd" <<< CCons $ 0 $ CNil}).
+  eapply DARewriteIffPL; first by d_head.
+  rewrite_assertion_any.
+
+  by eapply DARewriteEntailsC; first by apply DTL80 with
+    (A := {A: eventually on "n'", event [0]<- CSLDeliver $ "n" $ "m"}).
+Qed.
+
+Definition PL_SL_2 :
+  Context [::] [::] |- perfect_link, {A:
+    forall: "n", "n'", "m":
+    on "n", event [0]<- CSLDeliver $ "n'" $ "m" <~
+    on "n'", event [0]-> CSLSend $ "n" $ "m"
+  }.
+Proof.
+  d_forallc "n"; d_forallc "n'"; d_forallc "m".
+
+  (* Use the lowering specification on SL_2 *)
+  eapply DSCut; first by apply: DPLower SL_2 perfect_link 0 SL_2_TA.
+  rewrite /lower_assertion /=.
+
+  eapply DARewriteEntailsP; first by apply DTL124 with
+    (Ap := {A: "Fd" <<< [0]})
+    (Ac := {A: on "n", event [0]<- CSLDeliver $ "n'" $ "m" ->
+      eventuallyp on "n'", event [0]-> CSLSend $ "n" $ "m"}).
+  eapply DARewriteEntailsP; first by apply DTL125 with
+    (Ap := {A: "Fd" <<< [0]})
+    (Ac := {A: on "n", event [0]<- CSLDeliver $ "n'" $ "m" ->
+      eventuallyp on "n'", event [0]-> CSLSend $ "n" $ "m"}).
+  eapply DARewriteIffPL; first by apply DSMergeIf with
+    (Ap1 := {A: "Fd" <<< [0]})
+    (Ap2 := {A: on "n", event [0]<- CSLDeliver $ "n'" $ "m"})
+    (Ac := {A: eventuallyp on "n'", event [0]-> CSLSend $ "n" $ "m"}).
+
+  d_have {A:
+    "Fd" <<< [0] /\ on "n", event [0]<- CSLDeliver $ "n'" $ "m" <->
+    on "n", event [0]<- CSLDeliver $ "n'" $ "m"
+  }.
+  {
+    d_splitc; d_ifc.
+    - by d_splitp; d_swap; d_head.
+    - d_splitc.
+      + by d_splitp; d_swap; d_splitp; d_substc; eapply DAPExtension.
+      + by d_head.
+  }
+
+  d_swap; eapply DARewriteIffPL; first by d_head.
+
+  by eapply DARewriteEntailsP; first by apply DTL80 with
+    (A := {A: on "n", event [0]<- CSLDeliver $ "n'" $ "m" <~
+      on "n'", event [0]-> CSLSend $ "n" $ "m"}).
+Qed.
 
 (* Lemmas used in proving PL_1 *)
 
