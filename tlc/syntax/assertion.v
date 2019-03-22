@@ -279,10 +279,6 @@ Inductive non_temporal_assertion : assertion -> Type :=
   non_temporal_assertion A ->
   non_temporal_assertion {A: forall: v: A}.
 
-(* Sigma type for non-temporal assertions *)
-Definition non_temporal_assertion_t :=
-  {A : assertion & non_temporal_assertion A}.
-
 (* Forms of assertions at a particular location
  * Location assertions are restricted to specific forms of atomic assertions
  * and any compositions of those assertions, excluding the next, previous, and
@@ -292,10 +288,9 @@ Definition non_temporal_assertion_t :=
  * assertion is made.
  *)
 Inductive location_assertion : seq nat -> assertion -> Type :=
-| LAEventOn d tn d' to te :
-  extension d' d ->
+| LAEventOn d tn dp to te :
   location_assertion d {A: on tn,
-    ("Fd" = (TList [seq TLiteral (LNatural i) | i <- d']) /\
+    ("Fd" = (TList [seq TLiteral (LNatural i) | i <- dp ++ d]) /\
       "Fo" = to /\ "Fe" = te)}
 | LACorrect d tn :
   location_assertion d {A: correct tn}
@@ -327,21 +322,21 @@ Lemma LAOr d Al Ar :
   location_assertion d Al ->
   location_assertion d Ar ->
   location_assertion d {A: Al \/ Ar}.
-Proof. move=> LAl LAr; by repeat constructor. Qed.
+Proof. move=> LAl LAr; by repeat constructor. Defined.
 Hint Resolve LAOr.
 
 Lemma LAIf d Al Ar :
   location_assertion d Al ->
   location_assertion d Ar ->
   location_assertion d {A: Al -> Ar}.
-Proof. move=> LAl LAr; by repeat constructor. Qed.
+Proof. move=> LAl LAr; by repeat constructor. Defined.
 Hint Resolve LAIf.
 
 Lemma LAIff d Al Ar :
   location_assertion d Al ->
   location_assertion d Ar ->
   location_assertion d {A: Al <-> Ar}.
-Proof. move=> LAl LAr; by repeat constructor. Qed.
+Proof. move=> LAl LAr; by repeat constructor. Defined.
 Hint Resolve LAIff.
 
 Lemma LAExists d v A :
@@ -354,26 +349,26 @@ Hint Resolve LAExists.
 Lemma LAEventually d A :
   location_assertion d A ->
   location_assertion d {A: eventually A}.
-Proof. move=> LA; by repeat constructor. Qed.
+Proof. move=> LA; by repeat constructor. Defined.
 Hint Resolve LAEventually.
 
 Lemma LAAlways d A :
   location_assertion d A ->
   location_assertion d {A: always A}.
-Proof. move=> LA; by repeat constructor. Qed.
+Proof. move=> LA; by repeat constructor. Defined.
 Hint Resolve LAAlways.
 
 (* Derived reflexive past temporal operators *)
 Lemma LAEventuallyP d A :
   location_assertion d A ->
   location_assertion d {A: eventuallyp A}.
-Proof. move=> LA; by repeat constructor. Qed.
+Proof. move=> LA; by repeat constructor. Defined.
 Hint Resolve LAEventuallyP.
 
 Lemma LAAlwaysP d A :
   location_assertion d A ->
   location_assertion d {A: alwaysp A}.
-Proof. move=> LA; by repeat constructor. Qed.
+Proof. move=> LA; by repeat constructor. Defined.
 Hint Resolve LAAlwaysP.
 
 (* Additional temporal operators *)
@@ -381,33 +376,29 @@ Lemma LAEntails d Al Ar :
   location_assertion d Al ->
   location_assertion d Ar ->
   location_assertion d {A: Al =>> Ar}.
-Proof. move=> LAl LAr; by repeat constructor. Qed.
+Proof. move=> LAl LAr; by repeat constructor. Defined.
 Hint Resolve LAEntails.
 
 Lemma LACongruent d Al Ar :
   location_assertion d Al ->
   location_assertion d Ar ->
   location_assertion d {A: Al <=> Ar}.
-Proof. move=> LAl LAr; by repeat constructor. Qed.
+Proof. move=> LAl LAr; by repeat constructor. Defined.
 Hint Resolve LACongruent.
 
 Lemma LAFollowedBy d Al Ar :
   location_assertion d Al ->
   location_assertion d Ar ->
   location_assertion d {A: Al ~> Ar}.
-Proof. move=> LAl LAr; by repeat constructor. Qed.
+Proof. move=> LAl LAr; by repeat constructor. Defined.
 Hint Resolve LAFollowedBy.
 
 Lemma LAPrecededBy d Al Ar :
   location_assertion d Al ->
   location_assertion d Ar ->
   location_assertion d {A: Al <~ Ar}.
-Proof. move=> LAl LAr; by repeat constructor. Qed.
+Proof. move=> LAl LAr; by repeat constructor. Defined.
 Hint Resolve LAPrecededBy.
-
-(* Sigma type for location assertions *)
-Definition location_assertion_t d :=
-  {A : assertion & location_assertion d A}.
 
 (* Forms of assertions on the top component
  * Top assertions are simply location assertions specialized for the empty
@@ -415,41 +406,28 @@ Definition location_assertion_t d :=
  *)
 Definition top_assertion := location_assertion [::].
 
-(* Sigma type for top assertions *)
-Definition top_assertion_t :=
-  {A : assertion & top_assertion A}.
-
 (* Forms of assertions that are invariants at a particular location
  * Location invariants are location assertions in which the outermost operator
  * is the always-in-the-future operator.
  *)
 Inductive location_invariant : seq nat -> assertion -> Type :=
-| LIA d A:
-  location_assertion d {A: always A} ->
-  location_invariant d A.
-
-(* Sigma type for location invariants *)
-Definition location_invariant_t d :=
-  {A : assertion & location_invariant d A}.
+| LIA d A :
+  location_assertion d A ->
+  location_invariant d {A: always A}.
 
 (* Every location invariant is also a location assertion *)
 Lemma location_invariant_assertion d A :
   location_invariant d A ->
-  location_assertion d {A: always A}.
+  location_assertion d A.
 Proof.
-  move=> LI.
-  by inversion LI; subst.
-Qed.
+  by case=> d' A' LA'; apply: LAAlways.
+Defined.
 
 (* Forms of assertions that are invariants on the top component
  * Top invariants are simply location invariants specialized for the empty
  * distinct location.
  *)
 Definition top_invariant := location_invariant [::].
-
-(* Sigma type for top invariants *)
-Definition top_invariant_t :=
-  {A : assertion & top_invariant A}.
 
 (* Forms of assertions that are self invariants
  * Self invariants are restricted to specific forms of atomic assertions and
@@ -490,7 +468,3 @@ Inductive self_invariant : assertion -> Type :=
 | SIEventuallyP' A :
   self_invariant A ->
   self_invariant {A: eventuallyp^ A}.
-
-(* Sigma type for self invariants *)
-Definition self_invariant_t :=
-  {A : assertion & self_invariant A}.

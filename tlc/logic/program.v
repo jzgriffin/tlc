@@ -167,8 +167,8 @@ Admitted. (* TODO *)
 Lemma DPLower :
   forall C' Delta A,
   Context Delta [::] |- C', A ->
-  forall C i (TI : top_invariant A),
-  Context Delta [::] |- C, lower_assertion i TI.
+  forall C i (TA : top_assertion A),
+  Context Delta [::] |- C, lower_assertion i TA.
 Proof.
 Admitted. (* TODO *)
 

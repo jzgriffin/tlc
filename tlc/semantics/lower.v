@@ -16,6 +16,5 @@ Unset Printing Implicit Defensive.
 (* Implements component lowering by first pushing an assertion then
  * restricting it.
  *)
-Definition lower_assertion (i : nat) A (TI : top_invariant A) :=
-  restrict_assertion {A: "Fd" <<< [i]}
-    (push_assertion i (location_invariant_assertion TI)).
+Definition lower_assertion (i : nat) A (TA : top_assertion A) :=
+  restrict_assertion {A: "Fd" <<< [i]} (push_assertion i TA).
