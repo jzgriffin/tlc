@@ -16,6 +16,7 @@ Require Import tlc.semantics.all_semantics.
 Require Import tlc.syntax.all_syntax.
 Require Import tlc.utility.result.
 Require Import tlc.utility.seq.
+Require Import tlc.utility.set.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -153,6 +154,16 @@ Section derives.
   | DADestructPair ctx tll trl tlr trr :
     (* Proves the injective equality of two pairs *)
     ctx |- {A: (tll = tlr /\ trl = trr) <-> ((tll, trl) = (tlr, trr))}
+  (* Variable context *)
+  | DAExchangeV v1 v2 Delta Gamma Ac :
+    Context (v1 :: v2 :: Delta) Gamma |- Ac ->
+    Context (v2 :: v1 :: Delta) Gamma |- Ac
+  | DAThinV v Delta Gamma Ac :
+    v \in Delta ->
+    v \notin big_union [seq assertion_free A | A <- Gamma] ->
+    v \notin assertion_free Ac ->
+    Context (rem v Delta) Gamma |- Ac ->
+    Context Delta Gamma |- Ac
   (* Sequent logic *)
   | DSFalse Delta Gamma A :
     (* Proves that any assertion is true when false is assumed *)
@@ -392,6 +403,9 @@ Tactic Notation "d_destructtuplep"
   d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
   d_destructpairp t1l t2l t1r t2r;
   rewrite_assertion_any.
+Tactic Notation "d_swapv" := apply DAExchangeV.
+Tactic Notation "d_clearv" constr(x) :=
+  eapply DAThinV with (v := x); [ by [] | by [] | by [] | ].
 
 (* Sequent logic tactics *)
 Tactic Notation "d_false" := apply DSFalse.
