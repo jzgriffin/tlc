@@ -358,3 +358,13 @@ Proof.
   case: ctx => Delta Gamma.
   by d_ifc; d_right.
 Qed.
+
+Lemma DTL124 C ctx Ap Ac :
+  ctx |- C, {A: (Ac /\ always^ (Ap -> Ac)) =>> (Ap =>> Ac)}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL125 C ctx Ap Ac :
+  ctx |- C, {A: (Ap -> (Ap =>> Ac)) =>> (Ap =>> Ac)}.
+Proof.
+Admitted. (* TODO *)
