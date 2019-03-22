@@ -506,5 +506,20 @@ Proof.
     admit.
   }
 
+  (* By PL_SL_2 *)
+  d_have {A:
+    forall: "c":
+    on "n", event [0]<- CSLDeliver $ "n'" $ ("c", "m") <~
+    on "n'", event [0]-> CSLSend $ "n" $ ("c", "m")
+  }.
+  {
+    do 6 d_clear. (* Clean up the context *)
+    d_have (derives_assertion PL_SL_2); first by
+      d_clearv "n"; d_clearv "n'"; d_clearv "m";
+      apply PL_SL_2.
+    by d_forallc "c";
+      d_forallp "n"; d_forallp "n'"; d_forallp {t: ("c", "m")}.
+  }
+
   (* From Lemma 85 on (3), PL_SL_2, and (6) *)
 Admitted. (* TODO *)
