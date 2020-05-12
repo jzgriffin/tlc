@@ -165,6 +165,10 @@ Notation "ts' <<< ts" := (AExtension ts' ts)
 Notation ACorrect tn := {A: # (PCorrect tn)}.
 Notation "'correct' tn" := (ACorrect tn)
   (at level 0, no associativity) : assertion_scope.
+Notation AGe tl tr := {A: # (PGe tl tr)}.
+Notation "tl >= tr" := (AGe tl tr) : assertion_scope.
+Notation ALe tl tr := {A: # (PLe tl tr)}.
+Notation "tl <= tr" := (ALe tl tr) : assertion_scope.
 
 (* Derived first-order operators *)
 Notation AOr Al Ar := {A: ~(~Al /\ ~Ar)}.

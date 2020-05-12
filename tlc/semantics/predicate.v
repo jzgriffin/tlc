@@ -25,6 +25,8 @@ Definition substitute_predicate (e : equivalents) p :=
   match p with
   | PFalse => p
   | PEqual tl tr => PEqual (tl /t/ e) (tr /t/ e)
+  | PGe tl tr => PGe (tl /t/ e) (tr /t/ e)
+  | PLe tl tr => PLe (tl /t/ e) (tr /t/ e)
   | PIn t ts => PIn (t /t/ e) (ts /t/ e)
   | PExtension ts' ts => PExtension (ts' /t/ e) (ts /t/ e)
   | PCorrect tn => PCorrect (tn /t/ e)
@@ -43,6 +45,8 @@ Fixpoint predicate_free p :=
   match p with
   | PFalse => [::]
   | PEqual tl tr => term_free tl \union term_free tr
+  | PGe tl tr => term_free tl \union term_free tr
+  | PLe tl tr => term_free tl \union term_free tr
   | PIn t ts => term_free t \union term_free ts
   | PExtension ts' ts => term_free ts' \union term_free ts
   | PCorrect tn => term_free tn
@@ -57,6 +61,14 @@ Fixpoint evaluate_predicate p :=
     tl <- [[t tl]];
     tr <- [[t tr]];
     pure (PEqual tl tr)
+  | PGe tl tr =>
+    tl <- [[t tl]];
+    tr <- [[t tr]];
+    pure (PGe tl tr)
+  | PLe tl tr =>
+    tl <- [[t tl]];
+    tr <- [[t tr]];
+    pure (PLe tl tr)
   | PIn t ts =>
     t <- [[t t]];
     ts <- [[t ts]];

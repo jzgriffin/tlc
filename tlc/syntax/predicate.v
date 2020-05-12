@@ -17,6 +17,8 @@ Unset Printing Implicit Defensive.
 Inductive predicate :=
 | PFalse
 | PEqual (tl tr : term) (* tl and tr are syntactically equal *)
+| PGe (tl tr : term) (* tl is greater than or equal to tr *)
+| PLe (tl tr : term) (* tl is less than or equal to tr *)
 | PIn (t ts : term) (* t is a member of ts *)
 | PExtension (ts' ts : term) (* ts' is an extension of ts *)
 | PCorrect (tn : term). (* tn is a correct node *)
@@ -31,6 +33,10 @@ Section eq.
     | PFalse, _ => false
     | PEqual tll trl, PEqual tlr trr => (tll == tlr) && (trl == trr)
     | PEqual _ _, _ => false
+    | PGe tll trl, PGe tlr trr => (tll == tlr) && (trl == trr)
+    | PGe _ _, _ => false
+    | PLe tll trl, PLe tlr trr => (tll == tlr) && (trl == trr)
+    | PLe _ _, _ => false
     | PIn tl tsl, PIn tr tsr => (tl == tr) && (tsl == tsr)
     | PIn _ _, _ => false
     | PExtension ts'l tsl, PExtension ts'r tsr =>
@@ -43,14 +49,24 @@ Section eq.
   (* Boolean equality reflection *)
   Lemma predicate_eqP : Equality.axiom predicate_eq.
   Proof.
-    elim=> [| tll trl | tl tsl | ts'l tsl | tnl]
-      [| tlr trr | tr tsr | ts'r tsr | tnr] //=;
+    elim=> [| tll trl | tll trl | tll trl | tl tsl | ts'l tsl | tnl]
+      [| tlr trr | tlr trr | tlr trr | tr tsr | ts'r tsr | tnr] //=;
       try by constructor.
     - case H: (tll == tlr); move/eqP: H => H //=; subst;
         last by constructor; move=> [].
       case H: (trl == trr); move/eqP: H => H //=; subst;
         last by constructor; move=> [].
-      by constructor.
+        by constructor.
+    - case H: (tll == tlr); move/eqP: H => H //=; subst;
+        last by constructor; move=> [].
+      case H: (trl == trr); move/eqP: H => H //=; subst;
+        last by constructor; move=> [].
+        by constructor.
+    - case H: (tll == tlr); move/eqP: H => H //=; subst;
+        last by constructor; move=> [].
+      case H: (trl == trr); move/eqP: H => H //=; subst;
+        last by constructor; move=> [].
+        by constructor.
     - case H: (tl == tr); move/eqP: H => H //=; subst;
         last by constructor; move=> [].
       case H: (tsl == tsr); move/eqP: H => H //=; subst;
