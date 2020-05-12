@@ -73,7 +73,7 @@ Section derives.
   | DARewriteIfC ctx Arp Arc Ac :
     (* Rewrites an implication within the conclusion *)
     ctx |- {A: Arp -> Arc} ->
-    ctx |- rewrite_assertion_pos Arp Arc Ac ->
+    ctx |- rewrite_assertion_pos Arc Arp Ac ->
     ctx |- Ac
   (* Bicondition rewriting *)
   | DARewriteIffPL Delta Gamma Arp Arc Ap Ac :
@@ -105,7 +105,7 @@ Section derives.
   | DARewriteEntailsC ctx Arp Arc Ac :
     (* Rewrites a strong implication within the conclusion *)
     ctx |- {A: Arp =>> Arc} ->
-    ctx |- rewrite_assertion_pos Arp Arc Ac ->
+    ctx |- rewrite_assertion_pos Arc Arp Ac ->
     ctx |- Ac
   (* Bicondition rewriting *)
   | DARewriteCongruentPL Delta Gamma Arp Arc Ap Ac :
@@ -138,6 +138,11 @@ Section derives.
     lift_list ts = Success ts' ->
     t \in ts' ->
     ctx |- {A: t \in ts}
+  | DAPListOcc ctx t ts c ts':
+    (* Proves that there are c occurrences of t in ts *)
+    lift_list ts = Success ts' ->
+    count_mem t ts' = c ->
+    ctx |- {A: (FCount $ t $ ts) = c}
   | DAPExtension ctx ts' ts'_l ts ts_l :
     (* Proves that ts' is an extension of ts *)
     lift_list ts' = Success ts'_l ->
@@ -203,6 +208,9 @@ Section derives.
   | DSAndP Delta Gamma Apl Apr Ac :
     Context Delta (Apl :: Apr :: Gamma) |- Ac ->
     Context Delta ({A: Apl /\ Apr} :: Gamma) |- Ac
+  | DSEqualEvent Delta Gamma Event Apl1 Apr1 Apl2 Apr2 Ac :
+    Context Delta ({A: Apl1 = Apl2 /\ Apr1 = Apr2} :: Gamma) |- Ac ->
+    Context Delta ({A: (Event $ Apl1 $ Apr1 = Event $ Apl2 $ Apr2)} :: Gamma) |- Ac
   | DSAndC ctx Acl Acr :
     ctx |- Acl ->
     ctx |- Acr ->
@@ -261,6 +269,7 @@ Section derives.
     ctx |- {A: A =>> previous^ next A}
   (* Temporal logic rules *)
   | DTGeneralization ctx A :
+    non_temporal_assertion A ->
     ctx |- A ->
     ctx |- {A: always A}
   | DT18 ctx v A :
@@ -323,9 +332,10 @@ Section derives.
     ctx |- {A: forall: "?n": "Fn" <> "?n" =>> "Fs'" $ "?n" = "Fs" $ "?n"}
   | DPASelf ctx :
     ctx |- {A: self always self-event}
-  | DPSInv ctx A :
-    self_invariant A ->
-    ctx |- {A: self A <-> restrict_assertion {A: self-event} A}
+  | DPSInv_1 ctx A :
+    ctx |- {A: self A -> restrict_assertion {A: self-event} A}
+  | DPSInv_2 ctx A :
+    ctx |- {A: restrict_assertion {A: self-event} A -> self A}
   | DPCSet ctx :
     ctx |- {A: forall: "?n": correct "?n" <-> "?n" \in "Correct"}
   | DPAPer ctx :
@@ -353,7 +363,15 @@ Section derives.
       eventuallyp on "?n", event ["?i"]-> CFLSend $ "?n'" $ "?m"
     }
   (* TODO: UniOR *)
-  (* TODO: UniOI *)
+  | DPUniOI ctx :
+    ctx |- {A:
+      forall: "?n", "?ois", "?e":
+      (((FOcc $ "?ois" $ "?e") <= 1) /\
+       always^ (self-event /\ "Fn" = "?n" -> ("?e" \notin "?ois")) /\
+       alwaysp^ (self-event /\ "Fn" = "?n" -> "?e" \notin "?ois")) =>>
+      (on "?n", event[]<- "?e") =>>
+      alwaysp^ (~ (on "?n", event[]<- "?e")) /\ always^ (~ (on "?n", event[]<- "?e"))
+    }
   where "ctx |- A" := (derives ctx A).
 
 End derives.

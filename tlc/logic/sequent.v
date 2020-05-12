@@ -54,6 +54,16 @@ Proof.
   (* Provable by DSThin *)
 Admitted. (* TODO *)
 
+(* Modus ponens in the premise *)
+Lemma DSModusPonensP C Delta Gamma App Apc Ac :
+  Context Delta Gamma |- C, App ->
+  Context Delta (Apc :: Gamma) |- C, Ac ->
+  Context Delta ({A: App -> Apc} :: Gamma) |- C, Ac.
+Proof.
+  move=> H1 H2.
+  by d_ifp; [apply H1 | apply H2].
+Qed.
+
 (* Modus ponens in the conclusion *)
 Lemma DSModusPonensC C ctx Ap Ac :
   ctx |- C, Ap ->
@@ -223,6 +233,35 @@ Proof.
     + by d_orp; d_splitp; d_clear; [d_left | d_right].
 Qed.
 
+Lemma DSOrDistributesAnd3 C ctx A1 A2 A3 A :
+  ctx |- C, {A:
+    A /\ (A1 \/ A2 \/ A3) <->
+    (A /\ A1) \/ (A /\ A2) \/ (A /\ A3)
+  }.
+Proof.
+  case: ctx => Delta Gamma.
+  d_splitc. d_ifc.
+  d_splitp. d_swap. d_orp.
+  d_left. d_splitc. d_swap; first by d_head. d_head.
+  d_right. d_orp. d_left. d_splitc. d_swap; first by d_head. d_head.
+  d_right. d_splitc. d_swap; first by d_head. d_head.
+
+  d_ifc. d_orp. d_splitc. d_splitp; first by d_head.
+  d_left. d_splitp. d_swap. d_head.
+  d_orp. d_splitc. d_splitp. d_head.
+  d_right. d_left. d_splitp; d_swap. d_head.
+  d_splitc. d_splitp. d_head.
+  d_right. d_right. d_splitp; d_swap. d_head.
+Qed.
+
+Lemma DSOrDistributesAnd4 C ctx A1 A2 A3 A4 A :
+  ctx |- C, {A:
+    A /\ (A1 \/ A2 \/ A3 \/ A4) <->
+    (A /\ A1) \/ (A /\ A2) \/ (A /\ A3) \/ (A /\ A4)
+  }.
+Proof.
+Admitted. (* TODO *)
+
 Lemma DSAndAssociative C ctx Al Am Ar :
   ctx |- C, {A: (Al /\ Am) /\ Ar <-> Al /\ (Am /\ Ar)}.
 Proof.
@@ -239,3 +278,19 @@ Proof.
       * by d_head.
     + by d_clear; d_head.
 Qed.
+
+Lemma DSExistsDistributesOr C ctx A1 A2 m:
+  ctx |- C, {A:
+    (exists: m: (A1 \/ A2)) <->
+    (exists: m: A1) \/ (exists: m: A2)
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DSExistsDistributesOr3 C ctx A1 A2 A3 m:
+  ctx |- C, {A:
+    (exists: m: (A1 \/ A2 \/ A3)) <->
+    ((exists: m: A1) \/ (exists: m: A2) \/ (exists: m: A3))
+  }.
+Proof.
+Admitted. (* TODO *)

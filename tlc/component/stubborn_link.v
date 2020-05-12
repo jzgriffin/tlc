@@ -139,8 +139,11 @@ Proof.
       d_ifp; first by d_swap.
       by d_subst.
 
-    by d_have {A: on "n", event []-> CSLSend $ "n'" $ "m" =>> self-event /\
-      ("n'", "m") \in "Fs'" $ "n"}; first by apply DTGeneralization.
+    d_have {A: on "n", event []-> CSLSend $ "n'" $ "m" =>> self-event /\
+      ("n'", "m") \in "Fs'" $ "n"}.
+    d_substc.
+    apply DTGeneralization; first by repeat constructor.
+    d_head. d_head.
   }
 
   (* By InvS'' *)
@@ -574,7 +577,7 @@ Proof.
       d_forallc "i"; d_forallc "e".
       d_ifc; d_splitp; d_splitp; do 2 (d_swap; d_splitp).
       d_rotate 4; do 2 (d_splitp; d_swap); d_subst.
-      d_evalp; d_destructp (fun t => {A: ("n", "m") \in t}).
+      d_evalp. d_splitp. d_swap. d_destructp (fun t => {A: ("n", "m") \in t}).
       d_forallp "Fois"; d_forallp "Fors"; d_forallp {t: "Fs'" $ "n'"}; d_splitp.
       d_destructp (fun t => {A: t = ("Fs'" $ "n'", "Fors", "Fois")}).
       d_forallp "m"; d_forallp "n"; d_splitp.
@@ -593,11 +596,15 @@ Proof.
     d_ifp.
       d_ifc; d_splitp; d_splitp; do 2 (d_swap; d_splitp).
       d_rotate 4; do 2 (d_splitp; d_swap); d_subst.
-      d_evalp; d_rotate 2; d_substp.
-      d_notp; d_splitc; first by eapply DAPEqual.
-      by do 4 d_clear.
-
-    by d_head.
+      d_evalp; d_rotate 2; d_substp. d_evalp.
+      d_destructtuplep
+        {t: "Fs'" $ "n'"} {t: "Fors"} {t: "Fois"}
+        {t: "Fs" $ "n'"} {t: (FMap $ (fun: match: P 0 0 with: {{(#, #) -> CPair $ 0 $ (CFLSend $ (P 0 0) $ (P 0 1))}}) $ ("Fs" $ "n'"))} {t: CNil};
+        do 2 d_splitp. d_rotate 8.
+      d_notp. d_rotate 7. d_subst. d_splitc; first by eapply DAPEqual.
+      d_splitp. d_swap.
+      d_head.
+      d_head.
   }
 
   (* By InvL *)

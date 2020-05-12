@@ -8,7 +8,6 @@
   locally bound.
 - Ensure the freshness of variable names in the DS{ForAll,Exists}{P,C}
   rules.
-- Prove PL_{1,2,3} theorems.
 - Make the assertion "exists:" notation variadic like the "forall:"
   notation.  Basing the notation on the forall notation produces scope
   errors.

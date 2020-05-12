@@ -472,3 +472,9 @@ Inductive self_invariant : assertion -> Type :=
 | SIEventuallyP' A :
   self_invariant A ->
   self_invariant {A: eventuallyp^ A}.
+
+(* Forms of assertions that are rigid predicates
+ *)
+Inductive rigid_predicate : assertion -> Type :=
+| RPEqual ta tb :
+  rigid_predicate {A: ta = tb}.

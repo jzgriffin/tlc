@@ -35,6 +35,43 @@ Lemma DAPInNil C ctx :
 Proof.
 Admitted. (* TODO *)
 
+(* Element not in the list *)
+Lemma DAPNotInCons C ctx :
+  ctx |- C, {A:
+    forall: "t", "ta", "ts":
+    ~("t" \in CCons $ "ta" $ "ts") <->
+    ("t" <> "ta") /\ ~("t" \in "ts")
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DAPNotEqualToSucc C ctx :
+  ctx |- C, {A:
+    forall: "c":
+    "c" = FSucc $ "c" ->
+    AFalse
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DAPInEliminateTrue C ctx :
+  ctx |- C, {A:
+    forall: "t", "ts":
+    "t" \in "ts" = true <->
+    AIn "t" "ts"
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DAPInEliminateFalse C ctx :
+  ctx |- C, {A:
+    forall: "t", "ts":
+    "t" \in "ts" = false <->
+    ~ AIn "t" "ts"
+  }.
+Proof.
+Admitted. (* TODO *)
+
 (* If t is in tsl or tsr, then t is in the concatenation of tsl and tsr *)
 Lemma DAPInConcat C ctx :
   ctx |- C, {A:
@@ -71,6 +108,31 @@ Lemma DAPConcatIn C ctx :
     forall: "t", "ts":
     "t" \in "ts" <->
     exists: "tsl": exists: "tsr": "ts" = "tsl" ++ ["t"] ++ "tsr"
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DAPInOcc C ctx :
+  ctx |- C, {A:
+    forall: "t", "ts":
+    "t" \in "ts" <->
+    FOcc $ "ts" $ "t" >= 1
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DAPEqualToGE C ctx :
+  ctx |- C, {A:
+    forall: "t", "c":
+    "t" = "c" -> "t" >= "c"
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DAPEqualToLe C ctx :
+  ctx |- C, {A:
+   forall: "t", "c":
+    "t" = "c" -> "t" <= "c"
   }.
 Proof.
 Admitted. (* TODO *)

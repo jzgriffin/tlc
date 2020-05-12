@@ -81,6 +81,87 @@ Lemma DPInvL C ctx A :
 Proof.
 Admitted. (* TODO *)
 
+Lemma DPInvLSE C ctx A :
+  non_temporal_assertion A ->
+  ctx |- C, {A:
+    (
+      forall: "e":
+      event []-> "e" /\
+      ("Fs'" $ "Fn", "Fors", "Fois") =
+        request C $ "Fn" $ ("Fs" $ "Fn") $ "e" ->
+      A
+    ) ->
+    (
+      forall: "i", "e":
+      event ["i"]<- "e" /\
+      ("Fs'" $ "Fn", "Fors", "Fois") =
+        indication C $ "Fn" $ ("Fs" $ "Fn") $ ("i", "e") ->
+      A
+    ) ->
+    (
+      event []~> PE /\
+      ("Fs'" $ "Fn", "Fors", "Fois") =
+        periodic C $ "Fn" $ ("Fs" $ "Fn") ->
+      A
+    ) ->
+    (
+      self (always A)
+    )
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DPInvS C ctx (S : term -> assertion) :
+  ctx |- C, {A:
+    forall: "n":
+    (
+      forall: "s", "e":
+      S "s" ->
+      S {t: let: (#, %, %) := request C $ "n" $ "s" $ "e" in: #(0, 0)}
+    ) ->
+    (
+      forall: "s", "i", "e":
+      S "s" ->
+      S {t: let: (#, %, %) := indication C $ "n" $ "s" $ ("i", "e") in: #(0, 0)}
+    ) ->
+    (
+      forall: "s":
+      S "s" ->
+      S {t: let: (#, %, %) := periodic C $ "n" $ "s" in: #(0, 0)}
+    ) ->
+    (
+      self-event /\ S {t: "Fs" $ "n"} =>>
+                      self-event =>> S {t: "Fs" $ "n"}
+    )
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DPInvSSe C ctx (S : term -> assertion) :
+  ctx |- C, {A:
+    forall: "n":
+    (
+      forall: "s", "e":
+      S "s" ->
+      S {t: let: (#, %, %) := request C $ "n" $ "s" $ "e" in: #(0, 0)}
+    ) ->
+    (
+      forall: "s", "i", "e":
+      S "s" ->
+      S {t: let: (#, %, %) := indication C $ "n" $ "s" $ ("i", "e") in: #(0, 0)}
+    ) ->
+    (
+      forall: "s":
+      S "s" ->
+      S {t: let: (#, %, %) := periodic C $ "n" $ "s" in: #(0, 0)}
+    ) ->
+    (
+      self ((S {t: "Fs" $ "n"}) =>> always (S {t: "Fs" $ "n"}))
+    )
+  }.
+Proof.
+Admitted. (* TODO *)
+
 Lemma DPInvS'' C ctx (S : term -> assertion) :
   ctx |- C, {A:
     forall: "n":
@@ -123,6 +204,8 @@ Lemma DPInvSA C ctx (S : term -> assertion) A :
     (
       forall: "?i", "?e":
       on "?n", event ["?i"]<-"?e" /\
+      (("Fs'" $ "Fn", "Fors", "Fois") =
+        indication C $ "Fn" $ ("Fs" $ "Fn") $ ("?i", "?e")) /\
       ~(S {t: "Fs" $ "?n"}) /\
       S {t: let: (#, %, %) :=
         indication C $ "?n" $ ("Fs" $ "?n") $ ("?i", "?e") in: #(0, 0)} ->
@@ -130,9 +213,9 @@ Lemma DPInvSA C ctx (S : term -> assertion) A :
     ) ->
     (
       on "?n", event []~> PE /\
+      (("Fs'" $ "Fn", "Fors", "Fois") = periodic C $ "Fn" $ ("Fs" $ "Fn")) /\
       ~(S {t: "Fs" $ "?n"}) /\
-      S {t: let: (#, %, %) :=
-        periodic C $ "?n" $ ("Fs" $ "?n") in: #(0, 0)} ->
+      S {t: "Fs'" $ "Fn"} ->
       A
     ) ->
     (
@@ -194,3 +277,55 @@ Proof.
     + by d_clear; d_clear; d_head.
     + by d_head.
 Qed.
+
+Lemma DPSecondIndicationSelf C ctx :
+  ctx |- C, {A: forall: "e": event [0]<- "e" =>> self-event}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DPSecondIndicationSelfEliminate C ctx :
+  ctx |- C, {A:
+    forall: "e":
+    event [0]<- "e" /\ self-event <-> event [0]<- "e"
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DPASA C ctx (S : term -> assertion) A A':
+  non_temporal_assertion A ->
+  ctx |- C, {A:
+    forall: "n":
+    (self-event /\ A =>> S {t: "Fs'" $ "n"}) ->
+    (self-event /\ S {t: "Fs" $ "n"} =>> (self-event =>> A')) ->
+    (self-event /\ A =>> always^ (self-event -> A'))
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DPASASe C ctx (S : term -> assertion) A A':
+  ctx |- C, {A:
+    forall: "n":
+    self (A =>> S {t: "Fs'" $ "n"}) ->
+    self (S {t: "Fs" $ "n"} =>> (always A')) ->
+    self (A =>> always^ (A'))
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DPInvSe C ctx (S : term -> assertion) A :
+  ctx |- C, {A:
+    (
+      self (forall: "e": event []-> "e" =>> A)
+    ) ->
+    (
+      self (forall: "i", "e": event ["i"]<- "e" =>> A)
+    ) ->
+    (
+      self (event []~> PE =>> A)
+    ) ->
+    (
+      self (always (A))
+    )
+  }.
+Proof.
+Admitted. (* TODO *)

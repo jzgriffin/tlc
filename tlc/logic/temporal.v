@@ -124,6 +124,14 @@ Lemma DTL96_1 C ctx A1 A2 A3 :
 Proof.
 Admitted. (* TODO *)
 
+Lemma DTL96_1_b C ctx A1 A2 A3 :
+  ctx |- C, {A:
+     (A1 =>> A2) /\ (A2 =>> eventually A3) ->
+     A1 =>> eventually A3
+  }.
+Proof.
+Admitted. (* TODO *)
+
 Lemma DTL96_2 C ctx A1 A2 A3 :
   ctx |- C, {A:
     (A1 =>> eventuallyp A2) /\ (A2 =>> A3) ->
@@ -168,7 +176,6 @@ Admitted. (* TODO *)
 Lemma DTL102_1 C ctx A1 A2 :
   ctx |- C, {A:
     eventually A1 /\ eventually A2 =>>
-    (A1 <-> A2) \/
       eventually (A1 /\ eventually A2) \/
       eventually (A2 /\ eventually A1)
   }.
@@ -178,7 +185,6 @@ Admitted. (* TODO *)
 Lemma DTL102_2 C ctx A1 A2 :
   ctx |- C, {A:
     eventuallyp A1 /\ eventuallyp A2 =>>
-    (A1 <-> A2) \/
       eventuallyp (A1 /\ eventuallyp A2) \/
       eventuallyp (A2 /\ eventuallyp A1)
   }.
@@ -210,6 +216,15 @@ Admitted. (* TODO *)
 
 Lemma DTL105_1 C ctx A :
   ctx |- C, {A: (A =>> always^ ~A) -> A =>> alwaysp^ ~A}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL105_1_generalization C ctx A A' x x' :
+  ctx |- C, {A:
+     (forall: x: A <-> forall: x': A') ->
+     ((forall: x: forall: x': A =>> (always^ ~A')) ->
+     (forall: x: forall: x': A =>> (alwaysp^ ~A')))
+  }.
 Proof.
 Admitted. (* TODO *)
 
@@ -256,6 +271,13 @@ Lemma DTL109_3 C ctx A :
 Proof.
 Admitted. (* TODO *)
 
+Lemma DTL109_3_a C ctx A :
+  ctx |- C, {A:
+    eventually eventuallyp A =>> eventually^ A \/ A \/ eventuallyp^ A
+  }.
+Proof.
+Admitted. (* TODO *)
+
 Lemma DTL109_4 C ctx A :
   ctx |- C, {A:
     eventually eventuallyp^ A =>> eventually A \/ eventuallyp A
@@ -283,7 +305,12 @@ Proof.
 Admitted. (* TODO *)
 
 Lemma DTL114 C ctx A :
-  ctx |- C, {A: ~eventuallyp^ A =>> alwaysp^ ~A}.
+  ctx |- C, {A: ~eventuallyp^ A <=> alwaysp^ ~A}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL114_1 C ctx A :
+  ctx |- C, {A: ~eventually^ A <=> always^ ~A}.
 Proof.
 Admitted. (* TODO *)
 
@@ -366,5 +393,86 @@ Admitted. (* TODO *)
 
 Lemma DTL125 C ctx Ap Ac :
   ctx |- C, {A: (Ap -> (Ap =>> Ac)) =>> (Ap =>> Ac)}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL126 C ctx A B :
+  ctx |- C, {A:
+    eventuallyp (eventuallyp A /\ eventually B) ->
+    eventuallyp (A /\ eventually B)
+  }.
+Proof.
+  (* Provable by DTL102_3 and DTL83_1 *)
+Admitted. (* TODO *)
+
+(* Distribution properties, FD1 and FD2 *)
+Lemma DTL127_1 C ctx A B :
+  ctx |- C, {A: eventually (A \/ B) <=> (eventually A) \/ (eventually B)}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL127_2 C ctx A m:
+  ctx |- C, {A: eventually (exists: m: A) <=> (exists: m: eventually A)}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL127_3 C ctx A m:
+  ctx |- C, {A: eventuallyp (exists: m: A) <=> (exists: m: eventuallyp A)}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL127_4 C ctx A B :
+  ctx |- C, {A: eventually (A /\ B) =>> (eventually A) /\ (eventually B)}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL127_5 C ctx A B :
+  ctx |- C, {A: eventuallyp (A /\ B) =>> (eventuallyp A) /\ (eventuallyp B)}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL128_1 C ctx A B :
+  ctx |- C, {A: always (A /\ B) <=> (always A) /\ (always B)}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL128_2 C ctx A :
+  ctx |- C, {A: always (forall: "?n": A) <=> (forall: "?n": always A)}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL128_3 C ctx A B :
+  ctx |- C, {A: always^ (A /\ B) <=> (always^ A) /\ (always^ B)}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL129 C ctx A :
+  ctx |- C, {A: A -> self A}.
+Proof.
+Admitted. (* TODO *)
+
+(* Distribution properties of self *)
+Lemma DTL130 C ctx A B :
+  ctx |- C, {A: self (A /\ B) <-> self A /\ self B}.
+Proof.
+Admitted. (* TODO *)
+
+(* Self distributes over if *)
+Lemma DTL131 C ctx A B :
+  ctx |- C, {A: self (A -> B) -> (self A -> self B)}.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL132 C ctx A1 B1 A2 B2 :
+  ctx |- C, {A:
+    ((A1 =>> B1) /\ (A2 =>> B2)) ->
+    ((A1 /\ A2) =>> (B1 /\ B2))
+  }.
+Proof.
+Admitted. (* TODO *)
+
+Lemma DTL133 C ctx P :
+  rigid_predicate P ->
+  ctx |-C, {A: eventuallyp P -> P}.
 Proof.
 Admitted. (* TODO *)
