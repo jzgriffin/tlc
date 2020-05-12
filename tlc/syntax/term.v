@@ -268,6 +268,7 @@ Notation FRight := {t: fun: match: #(0, 0) with: {{ (%, #) -> #(0, 0) }}}.
 Notation FMember := {t: fun: fun: (FCount $ #(1, 0) $ #(0, 0)) <> 0}.
 Notation TMember t ts := {t: FMember $ t $ ts}.
 Notation "t \in ts" := (TMember t ts) : term_scope.
+Notation FOcc := {t: fun: fun: (FCount $ #(0, 0) $ #(1, 0))}.
 
 (* Derived predicates *)
 Notation FCorrect := {t: fun: #(0, 0) \in "Correct"}.
