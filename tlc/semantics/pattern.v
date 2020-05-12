@@ -168,7 +168,7 @@ Fixpoint destruct_match P ta cs
   | TCCons c TCNil =>
     {A: dc ta c (P (TMatch ta cs))}
   | TCCons c cs' =>
-    {A: (dc ta c (P (TMatch ta cs))) /\ destruct_match P ta cs' dc}
+    {A: (dc ta c (P (TMatch ta cs))) \/ destruct_match P ta cs' dc}
   end.
 
 (* Destructs a match into an assertion for use in the premise *)
