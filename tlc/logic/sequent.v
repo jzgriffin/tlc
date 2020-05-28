@@ -293,13 +293,17 @@ Proof.
     + by d_clear; d_head.
 Qed.
 
-Lemma DSExistsDistributesOr C ctx A1 A2 m:
+Lemma DSExistsDistributesOr C ctx A1 A2 x :
   ctx |- C, {A:
-    (exists: m: (A1 \/ A2)) <->
-    (exists: m: A1) \/ (exists: m: A2)
+    (exists: x: (A1 \/ A2)) <->
+    (exists: x: A1) \/ (exists: x: A2)
   }.
 Proof.
-Admitted. (* TODO *)
+  case: ctx => Delta Gamma.
+  d_splitc; d_ifc.
+  - by d_existsp "x"; d_orp; [d_left | d_right]; d_existsc "x".
+  - by d_orp; d_existsp "x"; d_existsc "x"; [d_left | d_right].
+Qed.
 
 Lemma DSExistsDistributesOr3 C ctx A1 A2 A3 m:
   ctx |- C, {A:
