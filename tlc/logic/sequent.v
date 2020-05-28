@@ -260,7 +260,21 @@ Lemma DSOrDistributesAnd4 C ctx A1 A2 A3 A4 A :
     (A /\ A1) \/ (A /\ A2) \/ (A /\ A3) \/ (A /\ A4)
   }.
 Proof.
-Admitted. (* TODO *)
+  case: ctx => Delta Gamma.
+  d_splitc; d_ifc.
+  - d_splitp; d_swap.
+    d_orp; first by d_left; d_splitc; [d_clear; d_head | d_head].
+    d_orp; first by d_right; d_left; d_splitc; [d_clear; d_head | d_head].
+    d_orp; first by d_right; d_right; d_left; d_splitc; [d_clear; d_head | d_head].
+    d_right; d_right; d_right; d_splitc; [d_clear; d_head | d_head].
+  - d_splitc; d_orp.
+    + by d_splitp.
+    + by d_orp; [d_splitp | d_orp; d_splitp].
+    + by d_splitp; d_left; by d_swap.
+    + d_orp; [| d_orp]; d_splitp; d_swap; d_right; [by d_left | d_right | d_right].
+      * by d_left.
+      * by d_right.
+Qed.
 
 Lemma DSAndAssociative C ctx Al Am Ar :
   ctx |- C, {A: (Al /\ Am) /\ Ar <-> Al /\ (Am /\ Ar)}.
