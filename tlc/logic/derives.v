@@ -182,9 +182,9 @@ Section derives.
   | DSContraction Delta Gamma Ap A2 :
     Context Delta (Ap :: Ap :: Gamma) |- A2 ->
     Context Delta (Ap :: Gamma) |- A2
-  | DSExchange Delta Gamma Ap1 Ap2 Ac :
-    Context Delta (Ap1 :: Ap2 :: Gamma) |- Ac ->
-    Context Delta (Ap2 :: Ap1 :: Gamma) |- Ac
+  | DSExchange Delta Gamma1 Gamma2 Ap1 Ap2 Ac :
+    Context Delta (Gamma1 ++ (Ap1 :: Ap2 :: Gamma2))%SEQ |- Ac ->
+    Context Delta (Gamma1 ++ (Ap2 :: Ap1 :: Gamma2))%SEQ |- Ac
   | DSCut Delta Gamma Ap Ac :
     Context Delta Gamma |- Ap ->
     Context Delta (Ap :: Gamma) |- Ac ->
@@ -429,7 +429,6 @@ Tactic Notation "d_clearv" constr(x) :=
 Tactic Notation "d_false" := apply DSFalse.
 Tactic Notation "d_head" := apply DSAxiom.
 Tactic Notation "d_clear" := apply DSThin.
-Tactic Notation "d_swap" := apply DSExchange.
 Ltac d_have Ap :=
   match goal with
   | [ |- derives ?C (Context ?Delta ?Gamma) ?Ac ] =>

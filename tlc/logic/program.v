@@ -9,6 +9,7 @@ Require Import mathcomp.ssreflect.ssreflect.
 Require Import tlc.component.component.
 Require Import tlc.logic.context.
 Require Import tlc.logic.derives.
+Require Import tlc.logic.sequent.
 Require Import tlc.operation.periodic_event.
 Require Import tlc.semantics.all_semantics.
 Require Import tlc.syntax.all_syntax.

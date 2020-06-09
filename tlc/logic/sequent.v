@@ -34,6 +34,16 @@ Qed.
 
 Tactic Notation "d_assumption" := eapply DSAssumption.
 
+(* Rule for exchanging the head assumptions *)
+Lemma DSSwap C Delta Gamma Ap1 Ap2 Ac :
+  Context Delta (Ap1 :: Ap2 :: Gamma) |- C, Ac ->
+  Context Delta (Ap2 :: Ap1 :: Gamma) |- C, Ac.
+Proof.
+  by apply DSExchange with (Gamma1 := [::]) (Gamma2 := Gamma).
+Qed.
+
+Tactic Notation "d_swap" := apply DSSwap.
+
 (* Rule for rotating the set of assumptions *)
 Lemma DSRotate C Delta Gamma n Ac :
   Context Delta (rot n Gamma) |- C, Ac ->
