@@ -24,6 +24,7 @@ Lemma DAPEqualSymmetric C ctx :
     "tl" = "tr" <-> "tr" = "tl"
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 (* No element may appear in an empty list *)
@@ -33,6 +34,7 @@ Lemma DAPInNil C ctx :
     ~("t" \in [])
   }.
 Proof.
+  (* Used in SLC & PLC *)
 Admitted. (* TODO *)
 
 (* Element not in the list *)
@@ -43,6 +45,7 @@ Lemma DAPNotInCons C ctx :
     ("t" <> "ta") /\ ~("t" \in "ts")
   }.
 Proof.
+  (* Used in SLC *)
 Admitted. (* TODO *)
 
 Lemma DAPNotEqualToSucc C ctx :
@@ -52,6 +55,7 @@ Lemma DAPNotEqualToSucc C ctx :
     AFalse
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DAPInEliminateTrue C ctx :
@@ -61,6 +65,7 @@ Lemma DAPInEliminateTrue C ctx :
     AIn "t" "ts"
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DAPInEliminateFalse C ctx :
@@ -70,6 +75,7 @@ Lemma DAPInEliminateFalse C ctx :
     ~ AIn "t" "ts"
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 (* If t is in tsl or tsr, then t is in the concatenation of tsl and tsr *)
@@ -80,6 +86,7 @@ Lemma DAPInConcat C ctx :
     "t" \in "tsl" ++ "tsr"
   }.
 Proof.
+  (* Used in SLC *)
 Admitted. (* TODO *)
 
 (* If t is in tsl or tsr, then t is in the union of tsl and tsr *)
@@ -90,6 +97,7 @@ Lemma DAPInUnion C ctx :
     "t" \in "tsl" \union "tsr"
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 (* If t is in ts, then t under mapping tf is in tf mapped over ts *)
@@ -98,6 +106,7 @@ Lemma DAPInMap C ctx : ctx |- C, {A:
   ("t" \in "ts") <-> (("f" $ "t") \in ("f" <$> "ts"))
 }.
 Proof.
+  (* Used in SLC *)
 Admitted. (* TODO *)
 
 (* t is in ts if and only if there exist two lists tsl and tsr such that ts is
@@ -110,6 +119,7 @@ Lemma DAPConcatIn C ctx :
     exists: "tsl": exists: "tsr": "ts" = "tsl" ++ ["t"] ++ "tsr"
   }.
 Proof.
+  (* Used in SLC & PLC *)
 Admitted. (* TODO *)
 
 Lemma DAPInOcc C ctx :
@@ -119,6 +129,7 @@ Lemma DAPInOcc C ctx :
     FOcc $ "ts" $ "t" >= 1
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DAPEqualToGE C ctx :
@@ -127,6 +138,7 @@ Lemma DAPEqualToGE C ctx :
     "t" = "c" -> "t" >= "c"
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DAPEqualToLe C ctx :
@@ -135,4 +147,5 @@ Lemma DAPEqualToLe C ctx :
     "t" = "c" -> "t" <= "c"
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)

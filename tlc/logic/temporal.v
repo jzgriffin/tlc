@@ -27,6 +27,7 @@ Lemma DTL77 C ctx A1 A2 A3 :
   ctx |- C, {A: A2 =>> A3} ->
   ctx |- C, {A: A1 =>> A3}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL78_1 C ctx A1 A2 :
@@ -50,6 +51,7 @@ Admitted. (* TODO *)
 Lemma DTL80 C ctx A :
   ctx |- C, {A: always A =>> A}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL81 C ctx A1 A2 :
@@ -60,6 +62,7 @@ Admitted. (* TODO *)
 Lemma DTL83_1 C ctx A :
   ctx |- C, {A: eventuallyp A <=> eventuallyp eventuallyp A}.
 Proof.
+  (* Used in SLC & PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL83_2 C ctx A :
@@ -80,6 +83,7 @@ Admitted. (* TODO *)
 Lemma DTL84 C ctx A :
   ctx |- C, {A: eventually A <=> eventually eventually A}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL85 C ctx A1 A2 A3 :
@@ -87,6 +91,7 @@ Lemma DTL85 C ctx A1 A2 A3 :
   ctx |- C, {A: A2 =>> eventuallyp A3} ->
   ctx |- C, {A: A1 =>> eventuallyp A3}.
 Proof.
+  (* Used in SLC & PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL86 C ctx A1 A2 A3 :
@@ -99,6 +104,7 @@ Admitted. (* TODO *)
 Lemma DTL87 C ctx A :
   ctx |- C, {A: A =>> eventuallyp A}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL90 C ctx A :
@@ -138,6 +144,7 @@ Lemma DTL96_2 C ctx A1 A2 A3 :
     A1 =>> eventuallyp A3
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL96_3 C ctx A1 A2 A3 :
@@ -151,11 +158,13 @@ Admitted. (* TODO *)
 Lemma DTL97 C ctx A1 A2 A3 :
   ctx |- C, {A: (A1 =>> always A2) /\ (A2 =>> A3) -> A1 =>> always A3}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL98_1 C ctx A :
   ctx |- C, {A: eventuallyp always A =>> A}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL98_2 C ctx A :
@@ -189,6 +198,7 @@ Lemma DTL102_2 C ctx A1 A2 :
       eventuallyp (A2 /\ eventuallyp A1)
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL102_3 C ctx A1 A2 :
@@ -207,16 +217,19 @@ Admitted. (* TODO *)
 Lemma DTL103_2 C ctx A :
   ctx |- C, {A: (eventuallyp A /\ alwaysp^ ~A) =>> A}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL104 C ctx A :
   ctx |- C, {A: eventuallyp A =>> always eventuallyp A}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL105_1 C ctx A :
   ctx |- C, {A: (A =>> always^ ~A) -> A =>> alwaysp^ ~A}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL105_1_generalization C ctx A A' x x' :
@@ -226,6 +239,7 @@ Lemma DTL105_1_generalization C ctx A A' x x' :
      (forall: x: forall: x': A =>> (alwaysp^ ~A')))
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL105_2 C ctx A :
@@ -276,6 +290,7 @@ Lemma DTL109_3_a C ctx A :
     eventually eventuallyp A =>> eventually^ A \/ A \/ eventuallyp^ A
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL109_4 C ctx A :
@@ -307,11 +322,13 @@ Admitted. (* TODO *)
 Lemma DTL114 C ctx A :
   ctx |- C, {A: ~eventuallyp^ A <=> alwaysp^ ~A}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL114_1 C ctx A :
   ctx |- C, {A: ~eventually^ A <=> always^ ~A}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL115 C ctx A :
@@ -345,6 +362,7 @@ Admitted. (* TODO *)
 Lemma DTL119 C ctx A :
   ctx |- C, {A: always^ always A <=> always^ A}.
 Proof.
+  (* Used in SLC *)
 Admitted. (* TODO *)
 
 Lemma DTL120_1 C ctx A :
@@ -360,6 +378,7 @@ Admitted. (* TODO *)
 Lemma DTL120_3 C ctx A :
   ctx |- C, {A: eventually eventually^ A =>> eventually^ A}.
 Proof.
+  (* Used in SLC *)
 Admitted. (* TODO *)
 
 Lemma DTL120_4 C ctx A :
@@ -377,6 +396,7 @@ Qed.
 Lemma DTL122 C ctx A :
   ctx |- C, {A: always^ eventually A -> always eventually A}.
 Proof.
+  (* Used in SLC *)
 Admitted. (* TODO *)
 
 Lemma DTL123 C ctx A :
@@ -389,11 +409,13 @@ Qed.
 Lemma DTL124 C ctx Ap Ac :
   ctx |- C, {A: (Ac /\ always^ (Ap -> Ac)) =>> (Ap =>> Ac)}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL125 C ctx Ap Ac :
   ctx |- C, {A: (Ap -> (Ap =>> Ac)) =>> (Ap =>> Ac)}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL126 C ctx A B :
@@ -409,16 +431,19 @@ Admitted. (* TODO *)
 Lemma DTL127_1 C ctx A B :
   ctx |- C, {A: eventually (A \/ B) <=> (eventually A) \/ (eventually B)}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL127_2 C ctx A m:
   ctx |- C, {A: eventually (exists: m: A) <=> (exists: m: eventually A)}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL127_3 C ctx A m:
   ctx |- C, {A: eventuallyp (exists: m: A) <=> (exists: m: eventuallyp A)}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL127_4 C ctx A B :
@@ -429,11 +454,13 @@ Admitted. (* TODO *)
 Lemma DTL127_5 C ctx A B :
   ctx |- C, {A: eventuallyp (A /\ B) =>> (eventuallyp A) /\ (eventuallyp B)}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL128_1 C ctx A B :
   ctx |- C, {A: always (A /\ B) <=> (always A) /\ (always B)}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL128_2 C ctx A :
@@ -444,23 +471,27 @@ Admitted. (* TODO *)
 Lemma DTL128_3 C ctx A B :
   ctx |- C, {A: always^ (A /\ B) <=> (always^ A) /\ (always^ B)}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL129 C ctx A :
   ctx |- C, {A: A -> self A}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 (* Distribution properties of self *)
 Lemma DTL130 C ctx A B :
   ctx |- C, {A: self (A /\ B) <-> self A /\ self B}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 (* Self distributes over if *)
 Lemma DTL131 C ctx A B :
   ctx |- C, {A: self (A -> B) -> (self A -> self B)}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL132 C ctx A1 B1 A2 B2 :
@@ -469,10 +500,12 @@ Lemma DTL132 C ctx A1 B1 A2 B2 :
     ((A1 /\ A2) =>> (B1 /\ B2))
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DTL133 C ctx P :
   rigid_predicate P ->
   ctx |-C, {A: eventuallyp P -> P}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)

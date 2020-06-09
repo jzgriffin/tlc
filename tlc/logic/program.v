@@ -50,6 +50,7 @@ Lemma DPIIOI C ctx (S : term -> assertion) :
     )
   }.
 Proof.
+  (* Used in SLC *)
 Admitted. (* TODO *)
 
 Lemma DPInvL C ctx A :
@@ -80,6 +81,7 @@ Lemma DPInvL C ctx A :
     )
   }.
 Proof.
+  (* Used in SLC & PLC *)
 Admitted. (* TODO *)
 
 Lemma DPInvLSE C ctx A :
@@ -110,6 +112,7 @@ Lemma DPInvLSE C ctx A :
     )
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DPInvS C ctx (S : term -> assertion) :
@@ -161,6 +164,7 @@ Lemma DPInvSSe C ctx (S : term -> assertion) :
     )
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DPInvS'' C ctx (S : term -> assertion) :
@@ -187,6 +191,7 @@ Lemma DPInvS'' C ctx (S : term -> assertion) :
     )
   }.
 Proof.
+  (* Used in SLC *)
 Admitted. (* TODO *)
 
 Lemma DPInvSA C ctx (S : term -> assertion) A :
@@ -224,6 +229,7 @@ Lemma DPInvSA C ctx (S : term -> assertion) A :
     )
   }.
 Proof.
+  (* Used in SLC & PLC *)
 Admitted. (* TODO *)
 
 Lemma DPAPerSA C ctx (S : term -> assertion) A :
@@ -244,6 +250,7 @@ Lemma DPAPerSA C ctx (S : term -> assertion) A :
     )
   }.
 Proof.
+  (* Used in SLC *)
 Admitted. (* TODO *)
 
 (* These rules are specific to this implementation *)
@@ -254,6 +261,7 @@ Lemma DPLower :
   forall C i (TA : top_assertion A),
   Context Delta [::] |- C, lower_assertion i TA.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DPTopRequestSelf C ctx :
@@ -262,6 +270,7 @@ Lemma DPTopRequestSelf C ctx :
     event []-> "e" =>> self-event
   }.
 Proof.
+  (* Used in SLC *)
 Admitted. (* TODO *)
 
 Lemma DPTopRequestSelfEliminate C ctx :
@@ -282,6 +291,7 @@ Qed.
 Lemma DPSecondIndicationSelf C ctx :
   ctx |- C, {A: forall: "e": event [0]<- "e" =>> self-event}.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DPSecondIndicationSelfEliminate C ctx :
@@ -301,6 +311,7 @@ Lemma DPASA C ctx (S : term -> assertion) A A':
     (self-event /\ A =>> always^ (self-event -> A'))
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DPASASe C ctx (S : term -> assertion) A A':
@@ -311,6 +322,7 @@ Lemma DPASASe C ctx (S : term -> assertion) A A':
     self (A =>> always^ (A'))
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
 
 Lemma DPInvSe C ctx (S : term -> assertion) A :
@@ -329,4 +341,5 @@ Lemma DPInvSe C ctx (S : term -> assertion) A :
     )
   }.
 Proof.
+  (* Used in PLC *)
 Admitted. (* TODO *)
