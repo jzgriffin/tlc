@@ -1708,7 +1708,7 @@ Proof.
       eapply DSExistsDistributesOr3 with (A1 := {A: A1})
                                          (A2 := {A: A2})
                                          (A3 := {A: A3})
-                                         (m := {t: "m"}).
+                                         (x := {t: "m"}).
       rewrite_assertion_any.
       d_head.
     }
