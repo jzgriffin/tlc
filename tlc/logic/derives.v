@@ -10,13 +10,10 @@ Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import tlc.component.component.
 Require Import tlc.logic.context.
-Require Import tlc.operation.orientation.
-Require Import tlc.operation.periodic_event.
 Require Import tlc.semantics.all_semantics.
 Require Import tlc.syntax.all_syntax.
 Require Import tlc.utility.result.
 Require Import tlc.utility.seq.
-Require Import tlc.utility.set.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -27,13 +24,12 @@ Section derives.
 
   Variable C : component.
 
-  (* Meaning: Assuming ctx for component C, A is true. *)
-  Reserved Notation "ctx |- A" (at level 70, no associativity).
+  (* Meaning: Within context Z for component C, A is true *)
+  Reserved Notation "Z ||- A" (at level 70, no associativity).
 
   (* These rules and axioms use the following naming convention:
    * - Every constructor begins with D, followed by one of:
    *    - A for rules/axioms specific to this implementation
-   *    - AP for rules/axioms specific to this implementation's predicates
    *    - S for rules/axioms from sequent logic
    *    - T for rules/axioms from temporal logic
    *    - P for rules/axioms from the program logic
@@ -44,417 +40,440 @@ Section derives.
    * - Program logic rules/axioms are named as in the paper
    *)
   Inductive derives : context -> assertion -> Prop :=
-  (* Evaluation rules *)
-  | DAEvaluateP Delta Gamma Ap Ap' Ac :
-    (* Replaces the head premise with its evaluation *)
-    [[A Ap]] = Success Ap' ->
-    Context Delta (Ap' :: Gamma) |- Ac ->
-    Context Delta (Ap :: Gamma) |- Ac
-  | DAEvaluateC ctx Ac Ac' :
-    (* Replaces the conclusion with its evaluation *)
-    [[A Ac]] = Success Ac' ->
-    ctx |- Ac' ->
-    ctx |- Ac
-  (* Substitution *)
-  | DASubstituteP Delta Gamma Ap Ac :
-    (* Substitutes equivalences from the tail premises within the head *)
-    Context Delta (Ap /A/ context_equivalences Gamma :: Gamma) |- Ac ->
-    Context Delta (Ap :: Gamma) |- Ac
-  | DASubstituteC ctx Ac :
-    (* Substitutes equivalences from the premises within the conclusion *)
-    ctx |- (Ac /A/ context_equivalences ctx) ->
-    ctx |- Ac
-  (* Implication rewriting *)
-  | DARewriteIfP Delta Gamma Arp Arc Ap Ac :
-    (* Rewrites an implication within the head premise *)
-    Context Delta Gamma |- {A: Arp -> Arc} ->
-    Context Delta (rewrite_assertion_pos Arp Arc Ap :: Gamma) |- Ac ->
-    Context Delta (Ap :: Gamma) |- Ac
-  | DARewriteIfC ctx Arp Arc Ac :
-    (* Rewrites an implication within the conclusion *)
-    ctx |- {A: Arp -> Arc} ->
-    ctx |- rewrite_assertion_pos Arc Arp Ac ->
-    ctx |- Ac
-  (* Bicondition rewriting *)
-  | DARewriteIffPL Delta Gamma Arp Arc Ap Ac :
-    (* Rewrites a biconditional within the head premise, from left to right *)
-    Context Delta Gamma |- {A: Arp <-> Arc} ->
-    Context Delta (rewrite_assertion_any Arp Arc Ap :: Gamma) |- Ac ->
-    Context Delta (Ap :: Gamma) |- Ac
-  | DARewriteIffCL ctx Arp Arc Ac :
-    (* Rewrites a binconditional within the conclusion, from left to right *)
-    ctx |- {A: Arp <-> Arc} ->
-    ctx |- rewrite_assertion_any Arp Arc Ac ->
-    ctx |- Ac
-  | DARewriteIffPR Delta Gamma Arp Arc Ap Ac :
-    (* Rewrites a biconditional within the head premise, from right to left *)
-    Context Delta Gamma |- {A: Arp <-> Arc} ->
-    Context Delta (rewrite_assertion_any Arc Arp Ap :: Gamma) |- Ac ->
-    Context Delta (Ap :: Gamma) |- Ac
-  | DARewriteIffCR ctx Arp Arc Ac :
-    (* Rewrites a binconditional within the conclusion, from right to left *)
-    ctx |- {A: Arp <-> Arc} ->
-    ctx |- rewrite_assertion_any Arc Arp Ac ->
-    ctx |- Ac
-  (* Implication rewriting *)
-  | DARewriteEntailsP Delta Gamma Arp Arc Ap Ac :
-    (* Rewrites a strong implication within the head premise *)
-    Context Delta Gamma |- {A: Arp =>> Arc} ->
-    Context Delta (rewrite_assertion_pos Arp Arc Ap :: Gamma) |- Ac ->
-    Context Delta (Ap :: Gamma) |- Ac
-  | DARewriteEntailsC ctx Arp Arc Ac :
-    (* Rewrites a strong implication within the conclusion *)
-    ctx |- {A: Arp =>> Arc} ->
-    ctx |- rewrite_assertion_pos Arc Arp Ac ->
-    ctx |- Ac
-  (* Bicondition rewriting *)
-  | DARewriteCongruentPL Delta Gamma Arp Arc Ap Ac :
-    (* Rewrites a congruence within the head premise, from left to right *)
-    Context Delta Gamma |- {A: Arp <=> Arc} ->
-    Context Delta (rewrite_assertion_any Arp Arc Ap :: Gamma) |- Ac ->
-    Context Delta (Ap :: Gamma) |- Ac
-  | DARewriteCongruentCL ctx Arp Arc Ac :
-    (* Rewrites a congruence within the conclusion, from left to right *)
-    ctx |- {A: Arp <=> Arc} ->
-    ctx |- rewrite_assertion_any Arp Arc Ac ->
-    ctx |- Ac
-  | DARewriteCongruentPR Delta Gamma Arp Arc Ap Ac :
-    (* Rewrites a congruence within the head premise, from right to left *)
-    Context Delta Gamma |- {A: Arp <=> Arc} ->
-    Context Delta (rewrite_assertion_any Arc Arp Ap :: Gamma) |- Ac ->
-    Context Delta (Ap :: Gamma) |- Ac
-  | DARewriteCongruentCR ctx Arp Arc Ac :
-    (* Rewrites a congruence within the conclusion, from right to left *)
-    ctx |- {A: Arp <=> Arc} ->
-    ctx |- rewrite_assertion_any Arc Arp Ac ->
-    ctx |- Ac
-  (* Predicates *)
-  | DAPEqual ctx tl tr :
-    (* Proves the equality of two terms *)
-    tl = tr ->
-    ctx |- {A: tl = tr}
-  | DAPIn ctx t ts ts' :
-    (* Proves that t is a member of list ts *)
-    lift_list ts = Success ts' ->
-    t \in ts' ->
-    ctx |- {A: t \in ts}
-  | DAPListOcc ctx t ts c ts':
-    (* Proves that there are c occurrences of t in ts *)
-    lift_list ts = Success ts' ->
-    count_mem t ts' = c ->
-    ctx |- {A: (FCount $ t $ ts) = c}
-  | DAPExtension ctx ts' ts'_l ts ts_l :
-    (* Proves that ts' is an extension of ts *)
-    lift_list ts' = Success ts'_l ->
-    lift_list ts = Success ts_l ->
-    extension ts'_l ts_l ->
-    ctx |- {A: ts' <<< ts}
-  (* Destructing *)
-  | DADestructP Delta Gamma P ta cs Ac :
-    Context Delta (destruct_matchp P ta cs :: Gamma) |- Ac ->
-    Context Delta (P (TMatch ta cs) :: Gamma) |- Ac
-  | DADestructC ctx P ta cs :
-    ctx |- destruct_matchc P ta cs ->
-    ctx |- P (TMatch ta cs)
-  | DADestructPair ctx tll trl tlr trr :
-    (* Proves the injective equality of two pairs *)
-    ctx |- {A: (tll = tlr /\ trl = trr) <-> ((tll, trl) = (tlr, trr))}
   (* Variable context *)
-  | DAExchangeV v1 v2 Delta Gamma Ac :
-    Context (v1 :: v2 :: Delta) Gamma |- Ac ->
-    Context (v2 :: v1 :: Delta) Gamma |- Ac
-  | DAThinV v Delta Gamma Ac :
-    v \in Delta ->
-    v \notin big_union [seq assertion_free A | A <- Gamma] ->
-    v \notin assertion_free Ac ->
-    Context (rem v Delta) Gamma |- Ac ->
-    Context Delta Gamma |- Ac
+  | DVThin Delta Gamma x A :
+    (* Introduce a fresh rigid variable to the context *)
+    x \notin ((context_rigids (Context Delta Gamma)) ++
+      (assertion_rigids A)) ->
+    Context Delta Gamma ||- A ->
+    Context (x :: Delta) Gamma ||- A
+  | DVContraction Delta Gamma x A :
+    Context (x :: x :: Delta) Gamma ||- A ->
+    Context (x :: Delta) Gamma ||- A
+  | DVExchange Delta1 Delta2 Gamma x1 x2 A :
+    Context (x1 :: Delta1 ++ x2 :: Delta2) Gamma ||- A ->
+    Context (x2 :: Delta1 ++ x1 :: Delta2) Gamma ||- A
+
+  (* Reduction *)
+  | DReduceEq Z t t' :
+    (* Every term is equal to its reduction *)
+    [[t t]] = Success t' ->
+    Z ||- {-A always (t = t') -}
+  | DReduceCong Z A A' :
+    (* Every assertion is congruent to its reduction *)
+    [[A A]] = Success A' ->
+    Z ||- {-A A <=> A' -}
+
+  (* Injection *)
+  | DInjection Delta Gamma v1 v2 c xs1 xs2 A :
+    term_construction v1 = Some (c, xs1) ->
+    term_construction v2 = Some (c, xs2) ->
+    size xs1 = size xs2 ->
+    Context Delta ({-A v1 = v2 -} :: Gamma) ||- A ->
+    Context Delta (foldr (fun '(x1, x2) Gamma => {-A x1 = x2 -} :: Gamma) Gamma
+      (zip xs1 xs2)) ||- A
+
+  (* Case analysis *)
+  (* TODO *)
+
   (* Sequent logic *)
   | DSFalse Delta Gamma A :
-    (* Proves that any assertion is true when false is assumed *)
-    Context Delta (AFalse :: Gamma) |- A
+    Context Delta (AFalse :: Gamma) ||- A
   | DSAxiom Delta Gamma A :
-    (* Proves that any assertion is true when it is assumed *)
-    Context Delta (A :: Gamma) |- A
-  | DSThin Delta Gamma Ap Ac :
-    Context Delta Gamma |- Ac ->
-    Context Delta (Ap :: Gamma) |- Ac
-  | DSContraction Delta Gamma Ap A2 :
-    Context Delta (Ap :: Ap :: Gamma) |- A2 ->
-    Context Delta (Ap :: Gamma) |- A2
-  | DSExchange Delta Gamma1 Gamma2 Ap1 Ap2 Ac :
-    Context Delta (Gamma1 ++ (Ap1 :: Ap2 :: Gamma2))%SEQ |- Ac ->
-    Context Delta (Gamma1 ++ (Ap2 :: Ap1 :: Gamma2))%SEQ |- Ac
-  | DSCut Delta Gamma Ap Ac :
-    Context Delta Gamma |- Ap ->
-    Context Delta (Ap :: Gamma) |- Ac ->
-    Context Delta Gamma |- Ac
-  | DSNotP Delta Gamma Ap Ac :
-    Context Delta Gamma |- Ap ->
-    Context Delta ({A: ~Ap} :: Gamma) |- Ac
-  | DSNotC Delta Gamma Ac :
-    Context Delta (Ac :: Gamma) |- AFalse ->
-    Context Delta Gamma |- {A: ~Ac}
-  | DSOrP Delta Gamma Apl Apr Ac :
-    Context Delta (Apl :: Gamma) |- Ac ->
-    Context Delta (Apr :: Gamma) |- Ac ->
-    Context Delta ({A: Apl \/ Apr} :: Gamma) |- Ac
-  | DSOrCL ctx Acl Acr :
-    ctx |- Acl ->
-    ctx |- {A: Acl \/ Acr}
-  | DSOrCR ctx Acl Acr :
-    ctx |- Acr ->
-    ctx |- {A: Acl \/ Acr}
-  | DSAndP Delta Gamma Apl Apr Ac :
-    Context Delta (Apl :: Apr :: Gamma) |- Ac ->
-    Context Delta ({A: Apl /\ Apr} :: Gamma) |- Ac
-  | DSEqualEvent Delta Gamma Event Apl1 Apr1 Apl2 Apr2 Ac :
-    Context Delta ({A: Apl1 = Apl2 /\ Apr1 = Apr2} :: Gamma) |- Ac ->
-    Context Delta ({A: (Event $ Apl1 $ Apr1 = Event $ Apl2 $ Apr2)} :: Gamma) |- Ac
-  | DSAndC ctx Acl Acr :
-    ctx |- Acl ->
-    ctx |- Acr ->
-    ctx |- {A: Acl /\ Acr}
-  | DSIfP Delta Gamma App Apc Ac :
-    Context Delta Gamma |- App ->
-    Context Delta (Apc :: Gamma) |- Ac ->
-    Context Delta ({A: App -> Apc} :: Gamma) |- Ac
-  | DSIfC Delta Gamma Acp Acc :
-    Context Delta (Acp :: Gamma) |- Acc ->
-    Context Delta Gamma |- {A: Acp -> Acc}
-  | DSForAllP Delta Gamma v t Ap Ac :
-    Context Delta (instantiate_assertion [:: (v, t)] Ap :: Gamma) |- Ac ->
-    Context Delta ({A: forall: v: Ap} :: Gamma) |- Ac
-  | DSForAllC Delta Gamma v v' Ac :
-    Context (v' :: Delta) Gamma |-
-      instantiate_assertion [:: (v, TVariable v')] Ac ->
-    Context Delta Gamma |- {A: forall: v: Ac}
-  | DSExistsP Delta Gamma v v' Ap Ac :
-    Context (v' :: Delta)
-      (instantiate_assertion [:: (v, TVariable v')] Ap :: Gamma) |- Ac ->
-    Context Delta ({A: exists: v: Ap} :: Gamma) |- Ac
-  | DSExistsC ctx v t Ac :
-    ctx |- instantiate_assertion [:: (v, t)] Ac ->
-    ctx |- {A: exists: v: Ac}
+    Context Delta (A :: Gamma) ||- A
+  | DSThin Delta Gamma H A :
+    Context Delta Gamma ||- A ->
+    Context Delta (H :: Gamma) ||- A
+  | DSContraction Delta Gamma H A :
+    Context Delta (H :: H :: Gamma) ||- A ->
+    Context Delta (H :: Gamma) ||- A
+  | DSExchange Delta Gamma1 Gamma2 H1 H2 A :
+    Context Delta (H1 :: Gamma1 ++ H2 :: Gamma2) ||- A ->
+    Context Delta (H2 :: Gamma1 ++ H1 :: Gamma2) ||- A
+  | DSCut Delta Gamma H A :
+    Context Delta Gamma ||- H ->
+    Context Delta (H :: Gamma) ||- A ->
+    Context Delta Gamma ||- A
+  | DSNotP Delta Gamma H A :
+    Context Delta Gamma ||- H ->
+    Context Delta ({-A ~H -} :: Gamma) ||- A
+  | DSNotC Delta Gamma A :
+    Context Delta (A :: Gamma) ||- AFalse ->
+    Context Delta Gamma ||- {-A ~A -}
+  | DSOrP Delta Gamma H1 H2 A :
+    Context Delta (H1 :: Gamma) ||- A ->
+    Context Delta (H2 :: Gamma) ||- A ->
+    Context Delta ({-A H1 \/ H2 -} :: Gamma) ||- A
+  | DSOrCL Delta Gamma A1 A2 :
+    Context Delta Gamma ||- A1 ->
+    Context Delta Gamma ||- {-A A1 \/ A2 -}
+  | DSOrCR Delta Gamma A1 A2 :
+    Context Delta Gamma ||- A2 ->
+    Context Delta Gamma ||- {-A A1 \/ A2 -}
+  | DSAndP Delta Gamma H1 H2 A :
+    Context Delta (H1 :: H2 :: Gamma) ||- A ->
+    Context Delta ({-A H1 /\ H2 -} :: Gamma) ||- A
+  | DSAndC Delta Gamma A1 A2 :
+    Context Delta Gamma ||- A1 ->
+    Context Delta Gamma ||- A2 ->
+    Context Delta Gamma ||- {-A A1 /\ A2 -}
+  | DSIfP Delta Gamma Hp Hc A :
+    Context Delta Gamma ||- Hp ->
+    Context Delta (Hc :: Gamma) ||- A ->
+    Context Delta ({-A Hp -> Hc -} :: Gamma) ||- A
+  | DSIfC Delta Gamma Ap Ac :
+    Context Delta (Ap :: Gamma) ||- Ac ->
+    Context Delta Gamma ||- {-A Ap -> Ac -}
+  | DSForAllP Delta Gamma t H H' A :
+    term_closed_in [::] Delta t ->
+    open_assertion [:: t] H = Success H' ->
+    Context Delta (H' :: Gamma) ||- A ->
+    Context Delta ({-A forall: H -} :: Gamma) ||- A
+  | DSForAllC Delta Gamma x A A' :
+    x \notin ((context_rigids (Context Delta Gamma)) ++
+      (assertion_rigids {-A forall: A -})) ->
+    open_assertion [:: TVariable x] A = Success A' ->
+    Context (x :: Delta) Gamma ||- A' ->
+    Context Delta Gamma ||- {-A forall: A -}
+  | DSExistsP Delta Gamma x H H' A :
+    x \notin ((context_rigids (Context Delta Gamma)) ++
+      (assertion_rigids {-A exists: A -})) ->
+    open_assertion [:: TVariable x] H = Success H' ->
+    Context (x :: Delta) (H' :: Gamma) ||- A ->
+    Context Delta ({-A exists: H -} :: Gamma) ||- A
+  | DSExistsC Delta Gamma t A A' :
+    term_closed_in [::] Delta t ->
+    open_assertion [:: t] A = Success A' ->
+    Context Delta Gamma ||- A' ->
+    Context Delta Gamma ||- {-A exists: A -}
+
   (* Temporal logic future *)
-  | DT1 ctx A :
-    ctx |- {A: always A -> A}
-  | DT2 ctx A :
-    ctx |- {A: (next ~A) <=> ~next A}
-  | DT3 ctx Al Ar :
-    ctx |- {A: (next (Al -> Ar)) <=> (next Al -> next Ar)}
-  | DT4 ctx Al Ar :
-    ctx |- {A: (always (Al -> Ar)) =>> (always Al -> always Ar)}
-  | DT5 ctx A :
-    ctx |- {A: (always A) -> always next A}
-  | DT6 ctx A :
-    ctx |- {A: (A =>> next A) -> (A =>> always A)}
+  | DT1 Delta Gamma A :
+    Context Delta Gamma ||- {-A always A -> A -}
+  | DT2 Delta Gamma A :
+    Context Delta Gamma ||- {-A (next ~A) <=> ~next A -}
+  | DT3 Delta Gamma A1 A2 :
+    Context Delta Gamma ||- {-A (next (A1 -> A2)) <=> (next A1 -> next A2) -}
+  | DT4 Delta Gamma A1 A2 :
+    Context Delta Gamma ||- {-A (always (A1 -> A2)) =>> (always A1 -> always A2) -}
+  | DT5 Delta Gamma A :
+    Context Delta Gamma ||- {-A (always A) -> always next A -}
+  | DT6 Delta Gamma A :
+    Context Delta Gamma ||- {-A (A =>> next A) -> (A =>> always A) -}
+
   (* Temporal logic past *)
-  | DT9 ctx A :
-    ctx |- {A: previous A =>> previous^ A}
-  | DT10 ctx Al Ar :
-    ctx |- {A: previous^ (Al -> Ar) <=> (previous^ Al -> previous^ Ar)}
-  | DT11 ctx Al Ar :
-    ctx |- {A: alwaysp (Al -> Ar) =>> (alwaysp Al -> alwaysp Ar)}
-  | DT12 ctx A :
-    ctx |- {A: always A -> always previous^ A}
-  | DT13 ctx A :
-    ctx |- {A: (A =>> previous^ A) -> (A =>> alwaysp A)}
-  | DT15 ctx :
-    ctx |- previous^ AFalse
+  | DT9 Delta Gamma A :
+    Context Delta Gamma ||- {-A previous A =>> previous^ A -}
+  | DT10 Delta Gamma A1 A2 :
+    Context Delta Gamma ||- {-A previous^ (A1 -> A2) <=> (previous^ A1 -> previous^ A2) -}
+  | DT11 Delta Gamma A1 A2 :
+    Context Delta Gamma ||- {-A alwaysp (A1 -> A2) =>> (alwaysp A1 -> alwaysp A2) -}
+  | DT12 Delta Gamma A :
+    Context Delta Gamma ||- {-A always A -> always previous^ A -}
+  | DT13 Delta Gamma A :
+    Context Delta Gamma ||- {-A (A =>> previous^ A) -> (A =>> alwaysp A) -}
+  | DT15 Delta Gamma :
+    Context Delta Gamma ||- previous^ AFalse
+
   (* Temporal logic mixed *)
-  | DT16 ctx A :
-    ctx |- {A: A =>> next previous A}
-  | DT17 ctx A :
-    ctx |- {A: A =>> previous^ next A}
+  | DT16 Delta Gamma A :
+    Context Delta Gamma ||- {-A A =>> next previous A -}
+  | DT17 Delta Gamma A :
+    Context Delta Gamma ||- {-A A =>> previous^ next A -}
+
   (* Temporal logic rules *)
-  | DTGeneralization ctx A :
+  | DTGeneralization Delta Gamma A :
     non_temporal_assertion A ->
-    ctx |- A ->
-    ctx |- {A: always A}
-  | DT18 ctx v A :
-    ctx |- {A: (forall: v: next A) <=> (next forall: v: A)}
+    Context Delta Gamma ||- A ->
+    Context Delta Gamma ||- {-A always A -}
+  | DT18 Delta Gamma A :
+    Context Delta Gamma ||- {-A (forall: next A) <=> (next forall: A) -}
+
   (* Program logic *)
-  | DPNode ctx :
-    ctx |- {A:
-      forall: "?n":
-      always ("?n" \in "Nodes")
-    }
-  | DPIR ctx :
-    ctx |- {A:
-      forall: "?e":
-      event []-> "?e" =>>
-      ("Fs'" $ "Fn", "Fors", "Fois") =
-        request C $ "Fn" $ ("Fs" $ "Fn") $ "?e"
-    }
-  | DPII ctx :
-    ctx |- {A:
-      forall: "?i", "?e":
-      event ["?i"]<- "?e" =>>
-      ("Fs'" $ "Fn", "Fors", "Fois") =
-        indication C $ "Fn" $ ("Fs" $ "Fn") $ ("?i", "?e")
-    }
-  | DPPe ctx :
-    ctx |- {A:
-      event []~> PE =>>
-      ("Fs'" $ "Fn", "Fors", "Fois") =
-        periodic C $ "Fn" $ ("Fs" $ "Fn")
-    }
-  | DPOR ctx :
-    ctx |- {A:
-      forall: "?n", "?i", "?e":
-      on "?n", (self-event /\ ("?i", "?e") \in "Fors") =>>
-      eventually^ on "?n", event ["?i"]-> "?e"
-    }
-  | DPOI ctx :
-    ctx |- {A:
-      forall: "?n", "?e":
-      on "?n", (self-event /\ "?e" \in "Fois") =>>
-      eventually^ on "?n", event []<- "?e"
-    }
-  | DPOR' ctx :
-    ctx |- {A:
-      forall: "?n", "?i", "?e":
-      on "?n", event ["?i"]-> "?e" =>>
-      eventuallyp^ (self-event /\ on "?n", (("?i", "?e") \in "Fors"))
-    }
-  | DPOI' ctx :
-    ctx |- {A:
-      forall: "?n", "?e":
-      on "?n", event []<- "?e" =>>
-      eventuallyp^ (self-event /\ on "?n", ("?e" \in "Fois"))
-    }
-  | DPInit ctx :
-    ctx |- {A: self ("Fs" = fun: initialize C $ #(0, 0))}
-  | DPPostPre ctx :
-    ctx |- {A: forall: "?s": self ("Fs'" = "?s" <=> next ("Fs" = "?s"))}
-  | DPSEq ctx :
-    ctx |- {A: forall: "?n": "Fn" <> "?n" =>> "Fs'" $ "?n" = "Fs" $ "?n"}
-  | DPASelf ctx :
-    ctx |- {A: self always self-event}
-  | DPSInv_1 ctx A :
-    ctx |- {A: self A -> restrict_assertion {A: self-event} A}
-  | DPSInv_2 ctx A :
-    ctx |- {A: restrict_assertion {A: self-event} A -> self A}
-  | DPCSet ctx :
-    ctx |- {A: forall: "?n": correct "?n" <-> "?n" \in "Correct"}
-  | DPAPer ctx :
-    ctx |- {A:
-      forall: "?n":
-      correct "?n" -> always eventually on "?n", event []~> PE
-    }
-  | DPFLoss ctx :
-    ctx |- {A:
-      forall: "?n", "?n'", "?m", "?i":
-      correct "?n'" ->
-      always^ eventually^ on "?n", event ["?i"]-> CFLSend $ "?n'" $ "?m" ->
-      always^ eventually^ on "?n'", event ["?i"]<- CFLDeliver $ "?n" $ "?m"
-    }
-  | DPFDup ctx :
-    ctx |- {A:
-      forall: "?n", "?n'", "?m", "?i":
-      always eventually on "?n'", event ["?i"]<- CFLDeliver $ "?n" $ "?m" ->
-      always eventually on "?n", event ["?i"]-> CFLSend $ "?n'" $ "?m"
-    }
-  | DPNForge ctx :
-    ctx |- {A:
-      forall: "?n", "?n'", "?m", "?i":
-      on "?n'", event ["?i"]<- CFLDeliver $ "?n" $ "?m" =>>
-      eventuallyp on "?n", event ["?i"]-> CFLSend $ "?n'" $ "?m"
-    }
+  | DPNode Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: (* n *)
+      always ($$0 \in UNodes)
+    -}
+  | DPIR Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: (* e *)
+      event []-> $$0 =>>
+      (Fs' ' Fn, Fors, Fois) =
+        request C ' Fn ' (Fs ' Fn) ' $$0
+    -}
+  | DPII Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: forall: (* i, e *)
+      event [$$1]<- $$0 =>>
+      (Fs' ' Fn, Fors, Fois) =
+        indication C ' Fn ' (Fs ' Fn) ' ($$1, $$0)
+    -}
+  | DPPe Delta Gamma :
+    Context Delta Gamma ||- {-A
+      event []~> CPE =>>
+      (Fs' ' Fn, Fors, Fois) =
+        periodic C ' Fn ' (Fs ' Fn)
+    -}
+  | DPOR Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: forall: forall: (* n, i, e *)
+      on $$2, (self-event /\ ($$1, $$0) \in Fors) =>>
+      eventually^ on $$2, event [$$1]-> $$0
+    -}
+  | DPOI Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: forall: (* n, e *)
+      on $$1, (self-event /\ $$0 \in Fois) =>>
+      eventually^ on $$1, event []<- $$0
+    -}
+  | DPOR' Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: forall: forall: (* n, i, e *)
+      on $$2, event [$$1]-> $$0 =>>
+      eventuallyp^ (self-event /\ on $$2, (($$1, $$0) \in Fors))
+    -}
+  | DPOI' Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: forall: (* n, e *)
+      on $$1, event []<- $$0 =>>
+      eventuallyp^ (self-event /\ on $$1, ($$0 \in Fois))
+    -}
+  | DPInit Delta Gamma :
+    Context Delta Gamma ||- {-A self (Fs = fun: initialize C ' $$0) -}
+  | DPPostPre Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: (* s *)
+      self (Fs' = $$0 <=> next (Fs = $$0))
+    -}
+  | DPSEq Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: (* n *)
+      Fn <> $$0 =>> Fs' ' $$0 = Fs ' $$0
+    -}
+  | DPASelf Delta Gamma :
+    Context Delta Gamma ||- {-A self always self-event -}
+  | DPSInv_1 Delta Gamma A :
+    Context Delta Gamma ||- {-A self A -> restrict_assertion {-A self-event -} A -}
+  | DPSInv_2 Delta Gamma A :
+    Context Delta Gamma ||- {-A restrict_assertion {-A self-event -} A -> self A -}
+  | DPAPer Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: (* n *)
+      $$0 \in UCorrect -> always eventually on $$0, event []~> CPE
+    -}
+  | DPFLoss Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: forall: forall: forall: (* n, n', m, i *)
+      $$2 \in UCorrect ->
+      always^ eventually^ on $$3, event [$$0]-> CFLSend ' $$2 ' $$1 ->
+      always^ eventually^ on $$2, event [$$0]<- CFLDeliver ' $$3 ' $$1
+    -}
+  | DPFDup Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: forall: forall: forall: (* n, n', m, i *)
+      always eventually on $$2, event [$$0]<- CFLDeliver ' $$3 ' $$1 ->
+      always eventually on $$3, event [$$0]-> CFLSend ' $$2 ' $$1
+    -}
+  | DPNForge Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: forall: forall: forall: (* n, n', m, i *)
+      on $$2, event [$$0]<- CFLDeliver ' $$3 ' $$1 =>>
+      eventuallyp on $$3, event [$$0]-> CFLSend ' $$2 ' $$1
+    -}
   (* TODO: UniOR *)
-  | DPUniOI ctx :
-    ctx |- {A:
-      forall: "?n", "?ois", "?e":
-      (((FOcc $ "?ois" $ "?e") <= 1) /\
-       always^ (self-event /\ "Fn" = "?n" -> ("?e" \notin "?ois")) /\
-       alwaysp^ (self-event /\ "Fn" = "?n" -> "?e" \notin "?ois")) =>>
-      (on "?n", event[]<- "?e") =>>
-      alwaysp^ (~ (on "?n", event[]<- "?e")) /\ always^ (~ (on "?n", event[]<- "?e"))
-    }
-  where "ctx |- A" := (derives ctx A).
+  | DPUniOI Delta Gamma :
+    Context Delta Gamma ||- {-A
+      forall: forall: forall: (* n, ois, e *)
+      (((FCount ' $$0 ' $$1) <= 1) /\
+       always^ (self-event /\ Fn = $$2 -> $$0 \notin $$1) /\
+       alwaysp^ (self-event /\ Fn = $$2 -> $$0 \notin $$1)) =>>
+      (on $$2, event[]<- $$0) =>>
+      alwaysp^ (~ on $$2, event[]<- $$0) /\ always^ ~ on $$2, event[]<- $$0
+    -}
+  where "Z ||- A" := (derives Z A).
 
 End derives.
 
-Notation "ctx |- C , A" := (derives C ctx A)
+Notation "Z ||- C , A" := (derives C Z A)
   (at level 70, no associativity).
 
-Hint Constructors derives.
+Hint Constructors derives : core.
 
-(* Extracts the context from a proof term *)
-Definition derives_context C ctx A (H : ctx |- C, A) := ctx.
+(* Extract the context from a syntactic proof *)
+Definition derives_context C Z A (H : Z ||- C, A) := Z.
 
-(* Extracts the assertion from a proof term *)
-Definition derives_assertion C ctx A (H : ctx |- C, A) := A.
+(* Extract the assertion from a syntactic proof *)
+Definition derives_assertion C Z A (H : Z ||- C, A) := A.
+
+(* Extract the variables from a syntactic proof *)
+Definition derives_rigids Z A :=
+  (context_rigids Z) ++ (assertion_rigids A).
+
+(* Determine whether a proof is closed under its bindings *)
+Definition derives_closed
+  (Delta : context_bindings) (Gamma : context_assumptions) A :=
+  all (assertion_closed_in [::] Delta) (A :: Gamma).
+
+(* Every variable within a proof is bound *)
+Lemma DClosed (Delta : context_bindings) (Gamma : context_assumptions) A :
+  derives_closed Delta Gamma A.
+Proof.
+Admitted.
+
+(* There is always a fresh variable that does not appear in a syntactic proof *)
+Lemma DFresh Z A :
+  exists x, x \notin derives_rigids Z A.
+Proof.
+Admitted.
 
 (* Tactics
  * Some of these tactics are named for their Coq equivalents.  For example,
- * d_clear uses the DSThin axiom but operates similarly to clear.
+ * dclear uses the DSThin axiom but operates similarly to clear.
  *)
+
+(*
+Ltac d_fold := fold_terms; fold_assertions.
 
 (* Implementation-specific *)
 Tactic Notation "d_evalp" :=
-  eapply DAEvaluateP; first by [].
+  eapply DAEvaluateP; first by []; simpl_embed.
 Tactic Notation "d_evalc" :=
-  eapply DAEvaluateC; first by [].
+  eapply DAEvaluateC; first by []; simpl_embed.
 Tactic Notation "d_eval" :=
-  d_evalp; d_evalc.
+  eapply DAEvaluateP; first by [];
+  eapply DAEvaluateC; first by []; simpl_embed.
+Tactic Notation "d_applyp" :=
+  apply DAHplicationP; simpl_embed.
+Tactic Notation "d_applyc" :=
+  apply DAHplicationC; simpl_embed.
+Tactic Notation "d_apply" :=
+  apply DAHplicationP; apply DAHplicationC; simpl_embed.
 Tactic Notation "d_substp" :=
-  apply DASubstituteP; rewrite /=.
+  apply DASubstituteP;
+  rewrite /replace_term_in_assertion /=; simpl_embed.
 Tactic Notation "d_substc" :=
-  apply DASubstituteC; rewrite /=.
+  apply DASubstituteC;
+  rewrite /replace_term_in_assertion /=; simpl_embed.
 Tactic Notation "d_subst" :=
-  d_substp; d_substc.
+  apply DASubstituteP; apply DASubstituteC;
+  rewrite /replace_term_in_assertion /=; simpl_embed.
 Tactic Notation "d_destructp" constr(Pp) :=
   eapply DADestructP with (P := Pp);
-  rewrite /destruct_matchp /=.
+  rewrite /destruct_matchp; simpl_embed.
 Tactic Notation "d_destructc" constr(Pc) :=
   eapply DADestructC with (P := Pc);
-  rewrite /destruct_matchc /=.
-Tactic Notation "d_destructpairp"
-  constr(tll) constr(trl) constr(tlr) constr(trr) :=
-  eapply DARewriteIffPR; first by eapply DSCut;
-    first by apply (DADestructPair _ _ tll trl tlr trr);
-  rewrite_assertion_any.
-Tactic Notation "d_destructtuplep"
-  constr(t1l) constr(t2l) constr(t3l) constr(t1r) constr(t2r) constr(t3r) :=
-  d_destructpairp {t: (t1l, t2l)} t3l {t: (t1r, t2r)} t3r;
-  d_destructpairp t1l t2l t1r t2r;
-  rewrite_assertion_any.
+  rewrite /destruct_matchc; simpl_embed.
+Tactic Notation "d_destructpairp" :=
+  repeat (match goal with
+  | [ ||- context[ {-A (?ll, ?rl) = (?lr, ?rr) -} ] ] =>
+    eapply DARewriteIffPR; first by eapply DSCut;
+      by apply DADestructPair with (tll := ll) (trl := rl) (tlr := lr) (trr := rr)
+  end; simpl_embed).
+Tactic Notation "d_clearv" := apply DAThinV.
 Tactic Notation "d_swapv" := apply DAExchangeV.
-Tactic Notation "d_clearv" constr(x) :=
-  eapply DAThinV with (v := x); [ by [] | by [] | by [] | ].
+*)
+
+(* Tactics relating to fresh variables *)
+Ltac dsimplfresh :=
+  repeat match goal with
+  | Hf : is_true (_ \notin (derives_rigids _ _)) |- _ =>
+    rewrite /derives_rigids /context_rigids /= ?cats0 ?cat0s in Hf
+
+  | Hf : context[ term_rigids (initialize ?C) ] |- _ =>
+    let Hr := fresh "Hr" in
+    assert (Hr : term_rigids (initialize C) = [::]);
+      first (by
+      move/andP: (computable_term_closed (initialize_computable C)) => [_ ?];
+      exact: subsets0);
+    rewrite {}Hr ?cats0 ?cat0s in Hf
+
+  | Hf : context[ term_rigids (request ?C) ] |- _ =>
+    let Hr := fresh "Hr" in
+    assert (Hr : term_rigids (request C) = [::]);
+      first (by
+      move/andP: (computable_term_closed (request_computable C)) => [_ ?];
+      exact: subsets0);
+    rewrite {}Hr ?cats0 ?cat0s in Hf
+
+  | Hf : context[ term_rigids (indication ?C) ] |- _ =>
+    let Hr := fresh "Hr" in
+    assert (Hr : term_rigids (indication C) = [::]);
+      first (by
+      move/andP: (computable_term_closed (indication_computable C)) => [_ ?];
+      exact: subsets0);
+    rewrite {}Hr ?cats0 ?cat0s in Hf
+
+  | Hf : context[ term_rigids (periodic ?C) ] |- _ =>
+    let Hr := fresh "Hr" in
+    assert (Hr : term_rigids (periodic C) = [::]);
+      first (by
+      move/andP: (computable_term_closed (periodic_computable C)) => [_ ?];
+      exact: subsets0);
+    rewrite {}Hr ?cats0 ?cat0s in Hf
+  end;
+  repeat match goal with
+  | H : is_true (_ \notin _) |- _ =>
+    repeat rewrite ?in_cons ?mem_cat in H
+
+  (* Trim false branches *)
+  | H : context[ _ \in [::] ] |- _ =>
+    rewrite ?in_nil ?orFb ?orbF in H
+
+  (* Trim redundant branches *)
+  (* TODO: Find a way to find these in more deeply-nested trees *)
+  | H : context[ ?x || ?x ] |- _ =>
+    rewrite (orbb x) in H
+  | H : context[ ?x || (?x || ?y) ] |- _ =>
+    rewrite (orbA x x y) (orbb x) in H
+  | H : context[ ?x || (?y || ?x) ] |- _ =>
+    rewrite (orbC y x) (orbA x x y) (orbb x) in H
+
+  (* Flatten disjunctive trees *)
+  | H : context[ ((?x || ?y) || ?z) ] |- _ =>
+    rewrite -(orbA x y z) in H
+  end.
+Tactic Notation "dfresh" ident(x) :=
+  match goal with
+  | |- context[ ?Z ||- _, ?A ] =>
+    let Hxf := fresh "Hf_" x in
+    case: (DFresh Z A) => x Hxf
+  end.
+Tactic Notation "dautofresh" := by [].
 
 (* Sequent logic tactics *)
-Tactic Notation "d_false" := apply DSFalse.
-Tactic Notation "d_head" := apply DSAxiom.
-Tactic Notation "d_clear" := apply DSThin.
-Ltac d_have Ap :=
+Tactic Notation "dexfalso" := apply DSFalse.
+Tactic Notation "dhead" := apply DSAxiom.
+Tactic Notation "dclear" := apply DSThin.
+Ltac dhave H :=
   match goal with
-  | [ |- derives ?C (Context ?Delta ?Gamma) ?Ac ] =>
-    apply (@DSCut C Delta Gamma Ap Ac)
-  | _ => fail
+  | |- derives ?C (Context ?Delta ?Gamma) ?A =>
+    apply (@DSCut C Delta Gamma H A)
   end.
-Ltac d_use L :=
-  eapply DSCut; first by apply L.
-Tactic Notation "d_notp" := apply DSNotP.
-Tactic Notation "d_notc" := apply DSNotC.
-Tactic Notation "d_orp" := apply DSOrP.
-Tactic Notation "d_left" := apply DSOrCL.
-Tactic Notation "d_right" := apply DSOrCR.
-Tactic Notation "d_splitp" := apply DSAndP.
-Tactic Notation "d_splitc" := apply DSAndC.
-Tactic Notation "d_ifp" := apply DSIfP.
-Tactic Notation "d_ifc" := apply DSIfC.
-Tactic Notation "d_forallp" constr(x) :=
-  apply DSForAllP with (t := x);
-  rewrite /instantiate_assertion /=.
-Tactic Notation "d_forallc" constr(x) :=
-  apply DSForAllC with (v' := x);
-  rewrite /instantiate_assertion /=.
-Tactic Notation "d_existsp" constr(x) :=
-  apply DSExistsP with (v' := x);
-  rewrite /instantiate_assertion /=.
-Tactic Notation "d_existsc" constr(x) :=
-  apply DSExistsC with (t := x);
-  rewrite /instantiate_assertion /=.
+Ltac duse L :=
+  eapply DSCut; first by repeat dclear; eapply L.
+Tactic Notation "dnotp" := apply DSNotP.
+Tactic Notation "dnotc" := apply DSNotC.
+Tactic Notation "dorp" := apply DSOrP.
+Tactic Notation "dleft" := apply DSOrCL.
+Tactic Notation "dright" := apply DSOrCR.
+Tactic Notation "dsplitp" := apply DSAndP.
+Tactic Notation "dsplitc" := apply DSAndC.
+Tactic Notation "difp" := apply DSIfP.
+Tactic Notation "difc" := apply DSIfC.
+Tactic Notation "dforallp" constr(x) :=
+  eapply DSForAllP with (t := x);
+  [try by dautoclosed | try by dautoopen | dclean].
+Tactic Notation "dforallc" ident(y) :=
+  dfresh y; eapply DSForAllC with (x := y);
+  [try by dautofresh | try by dautoopen | dclean].
+Tactic Notation "dexistsp" ident(y) :=
+  dfresh y; eapply DSExistsP with (x := y);
+  [try by dautofresh | try by dautoopen | dclean].
+Tactic Notation "dexistsc" constr(x) :=
+  eapply DSExistsC with (t := x);
+  [try by dautoclosed | try by dautoopen | dclean].
+
+(* Temporal logic tactics *)
+Ltac dtgen :=
+  apply DTGeneralization; first by repeat constructor.

@@ -8,15 +8,16 @@ Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
+Require Import mathcomp.ssreflect.ssrfun.
 Require Import mathcomp.ssreflect.ssrnat.
 Require Import tlc.syntax.constructor.
+Require Import tlc.syntax.flexible.
 Require Import tlc.syntax.function.
-Require Import tlc.syntax.literal.
 Require Import tlc.syntax.parameter.
 Require Import tlc.syntax.pattern.
+Require Import tlc.syntax.unknown.
 Require Import tlc.syntax.variable.
 Require Import tlc.utility.functor.
-Require Import tlc.utility.set.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -24,252 +25,280 @@ Unset Printing Implicit Defensive.
 
 (* Forms of computational terms *)
 Inductive term :=
-| TFailure (* Computation error *)
-| TParameter (p : parameter) (* Nameless bound parameters *)
-| TVariable (v : variable) (* Named free variables *)
-| TConstructor (c : constructor) (* Value constructors *)
-| TLiteral (l : literal) (* Value literals *)
-| TFunction (f : function) (* External functions *)
-| TApplication (tf ta : term) (* Function application *)
-| TAbstraction (tb : term) (* Function abstraction *)
-| TMatch (ta : term) (cs : cases) (* Pattern matching *)
-(* Cases of pattern matching *)
-with case :=
-| TCase (p : pattern) (t : term)
-with cases :=
-| TCNil
-| TCCons (c : case) (cs : cases).
+| TParameter (x : parameter)
+| TVariable (x : variable)
+| TConstructor (c : constructor)
+| TFunction (f : function)
+| TUnknown (u : unknown)
+| TApplication (f a : term)
+| TMatch (cs : seq (pattern * term)).
+Definition match_case := prod pattern term.
+Definition match_cases := seq match_case.
 
 (* Equality *)
 Section eq.
 
-  (* Boolean equality
-   * As a consequence of the locally nameless representation, syntactic
-   * equality is equivalent to equality under alpha-conversion.
-   *)
-  Fixpoint term_eq tl tr :=
-    match tl, tr with
-    | TFailure, TFailure => true
-    | TFailure, _ => false
-    | TParameter pl, TParameter pr => pl == pr
-    | TParameter _, _ => false
-    | TVariable vl, TVariable vr => vl == vr
-    | TVariable _, _ => false
-    | TConstructor cl, TConstructor cr => cl == cr
-    | TConstructor _, _ => false
-    | TLiteral ll, TLiteral lr => ll == lr
-    | TLiteral _, _ => false
-    | TFunction fl, TFunction fr => fl == fr
-    | TFunction _, _ => false
-    | TApplication tfl tal, TApplication tfr tar =>
-      term_eq tfl tfr && term_eq tal tar
-    | TApplication _ _, _ => false
-    | TAbstraction tbl, TAbstraction tbr => term_eq tbl tbr
-    | TAbstraction _, _ => false
-    | TMatch tal csl, TMatch tar csr =>
-      term_eq tal tar && cases_eq csl csr
-    | TMatch _ _, _ => false
-    end
-  with case_eq cl cr :=
-    match cl, cr with
-    | TCase pl tl, TCase pr tr => (pl == pr) && term_eq tl tr
-    end
-  with cases_eq csl csr :=
-    match csl, csr with
-    | TCNil, TCNil => true
-    | TCNil, _ => false
-    | TCCons cl csl, TCCons cr csr => case_eq cl cr && cases_eq csl csr
-    | TCCons _ _, _ => false
+  (* Boolean equality *)
+  Fixpoint term_eq t1 t2 :=
+    let fix cases_eq cs1 cs2 :=
+      match cs1, cs2 with
+      | [::], [::] => true
+      | (p1, t1) :: cs1, (p2, t2) :: cs2 => (p1 == p2) && term_eq t1 t2 && cases_eq cs1 cs2
+      | _, _ => false
+      end in
+    match t1, t2 with
+    | TParameter x1, TParameter x2 => x1 == x2
+    | TVariable x1, TVariable x2 => x1 == x2
+    | TConstructor c1, TConstructor c2 => c1 == c2
+    | TFunction f1, TFunction f2 => f1 == f2
+    | TUnknown u1, TUnknown u2 => u1 == u2
+    | TApplication f1 a1, TApplication f2 a2 => term_eq f1 f2 && term_eq a1 a2
+    | TMatch cs1, TMatch cs2 => cases_eq cs1 cs2
+    | _, _ => false
     end.
 
   (* Boolean equality reflection *)
-  Fixpoint term_eqP tl tr : reflect (tl = tr) (term_eq tl tr)
-  with case_eqP cl cr : reflect (cl = cr) (case_eq cl cr)
-  with cases_eqP csl csr : reflect (csl = csr) (cases_eq csl csr).
+  Fixpoint term_eqP t1 t2 : reflect (t1 = t2) (term_eq t1 t2).
   Proof.
-    (* term_eqP *)
-    elim: tl tr => [| pl | vl | cl | ll | fl | tfl IHtf tal IHta | tbl IHtb |
-      tal IHta csl] [| pr | vr | cr | lr | fr | tfr tar | tbr | tar csr] //=;
-      try by constructor.
-    - case H: (pl == pr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
+    move: t1 t2; case=> [x1 |x1 | c1 | f1 | u1 | f1 a1 | cs1]
+      [x2 | x2 | c2 | f2 | u2 | f2 a2 | cs2] //=; try by constructor.
+    - by have [<- | neqx] := x1 =P x2; last (by right; case); constructor.
+    - by have [<- | neqx] := x1 =P x2; last (by right; case); constructor.
+    - by have [<- | neqx] := c1 =P c2; last (by right; case); constructor.
+    - by have [<- | neqx] := f1 =P f2; last (by right; case); constructor.
+    - by have [<- | neqx] := u1 =P u2; last (by right; case); constructor.
+    - have [<- | neqx] := term_eqP f1 f2; last (by right; case); simpl.
+      have [<- | neqx] := term_eqP a1 a2; last (by right; case); simpl.
       by constructor.
-    - case H: (vl == vr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
+    - match goal with |- reflect _ (?f cs1 cs2) => set cases_eq := f end.
+      assert (cases_eqP : Equality.axiom cases_eq).
+      {
+        clear cs1 cs2.
+        move; elim=> [| [p1 t1] cs1 IH] [| [p2 t2] cs2] //=; try by constructor.
+        have [<- | neqx] := p1 =P p2; last (by right; case); simpl.
+        have [<- | neqx] := term_eqP t1 t2; last (by right; case); simpl.
+        have [<- | neqx] := IH cs2; last (by right; case); simpl.
+        by constructor.
+      }
+      have [<- | neqx] := cases_eqP cs1 cs2; last (by right; case); simpl.
       by constructor.
-    - case H: (cl == cr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
-      by constructor.
-    - case H: (ll == lr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
-      by constructor.
-    - case H: (fl == fr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
-      by constructor.
-    - case H: (term_eq tfl tfr); move/IHtf: H => H //=; subst;
-        last by constructor; move=> [].
-      case H: (term_eq tal tar); move/IHta: H => H //=; subst;
-        last by constructor; move=> [].
-      by constructor.
-    - case H: (term_eq tbl tbr); move/IHtb: H => H //=; subst;
-        last by constructor; move=> [].
-      by constructor.
-    - case H: (term_eq tal tar); move/IHta: H => H //=; subst;
-        last by constructor; move=> [].
-      case H: (cases_eq csl csr); move/cases_eqP: H => H //=; subst;
-        last by constructor; move=> [].
-      by constructor.
-
-    (* case_eqP *)
-    elim: cl cr => [pl tl] [pr tr] //=; try by constructor.
-    case H: (pl == pr); move/eqP: H => H //=; subst;
-      last by constructor; move=> [].
-    case H: (term_eq tl tr); move/term_eqP: H => H //=; subst;
-      last by constructor; move=> [].
-    by constructor.
-
-    (* cases_eqP *)
-    elim: csl csr => [| cl csl IHcs] [| cr csr] //=; try by constructor.
-    case H: (case_eq cl cr); move/case_eqP: H => H //=; subst;
-      last by constructor; move=> [].
-    case H: (cases_eq csl csr); move/IHcs: H => H //=; subst;
-      last by constructor; move=> [].
-    by constructor.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure term_eqMixin :=
-    Eval hnf in EqMixin term_eqP.
-  Canonical Structure term_eqType :=
-    Eval hnf in EqType term term_eqMixin.
-  Canonical Structure case_eqMixin :=
-    Eval hnf in EqMixin case_eqP.
-  Canonical Structure case_eqType :=
-    Eval hnf in EqType case case_eqMixin.
-  Canonical Structure cases_eqMixin :=
-    Eval hnf in EqMixin cases_eqP.
-  Canonical Structure cases_eqType :=
-    Eval hnf in EqType cases cases_eqMixin.
+  Definition term_eqMixin := EqMixin term_eqP.
+  Canonical term_eqType := EqType term term_eqMixin.
 
 End eq.
 
 (* Constructor coercions *)
-Coercion TParameter : parameter >-> term.
 Coercion TVariable : variable >-> term.
+Coercion TFlexible x := TVariable (VF x).
+Coercion TRigid x := TVariable (VR x).
 Coercion TConstructor : constructor >-> term.
-Coercion TLiteral : literal >-> term.
 Coercion TFunction : function >-> term.
+Coercion TUnknown : unknown >-> term.
 
-(* Notation scope *)
+(* Notation scopes *)
+Declare Scope term_scope.
 Bind Scope term_scope with term.
 Delimit Scope term_scope with term.
-Notation "{t: t }" := (t%term)
-  (at level 0, t at level 100, no associativity, only parsing).
-Bind Scope case_scope with case.
+Declare Scope case_scope.
 Delimit Scope case_scope with case.
-Notation "{c: c }" := (c%case)
-  (at level 0, c at level 100, no associativity, only parsing).
-Bind Scope cases_scope with cases.
+Declare Scope cases_scope.
 Delimit Scope cases_scope with cases.
-Notation "{cs: cs }" := (cs%cases)
-  (at level 0, cs at level 100, no associativity, only parsing).
+
+Notation "{-t t -}" := (t%term)
+  (at level 0, t at level 100, no associativity, only parsing).
 
 (* Constructor notations *)
-Notation "#( i , j )" := (TParameter (P i j))
-  (at level 0, no associativity, format "'#(' i ','  j ')'") : term_scope.
-Notation "? v" := (TVariable v)
-  (at level 0, no associativity, format "'?' v") : term_scope.
-Notation "tf $ ta" := (TApplication tf ta)
+Notation "$( i , j )" := (TParameter (P i j))
+  (at level 0, i at level 0, j at level 0, no associativity,
+  format "'$(' i ','  j ')'") : term_scope.
+Notation "$ j" := (TParameter (P 0 j))
+  (at level 0, j at level 0, no associativity, format "'$' j") : term_scope.
+Notation "$$ i" := (TParameter (P i 0))
+  (at level 0, i at level 0, no associativity, format "'$$' i") : term_scope.
+Notation "? x" := (TVariable (x : variable))
+  (at level 0, x at level 0, no associativity, format "'?' x") : term_scope.
+Notation "f ' a" := (TApplication f a)
   (at level 10, left associativity) : term_scope.
-Notation "fun: tb" := (TAbstraction tb)
-  (at level 20, right associativity, tb at level 100) : term_scope.
-Notation "match: ta with: csl" := (TMatch ta csl)
-  (at level 20, right associativity, ta at level 100, csl at level 0)
-  : term_scope.
-Notation "p -> t" := (TCase p t) : case_scope.
-Notation "{{ }}" := (TCNil) : cases_scope.
-Notation "{{ c1 | .. | cn }}" := (TCCons c1 (.. (TCCons cn TCNil) ..))
-  : cases_scope.
+Notation "match: cs" := (TMatch (cs%cases : match_cases))
+  (at level 20, right associativity, cs at level 0) : term_scope.
+Notation "p -> b" := ((p%pattern : pattern, b%term : term) : match_case)
+  (only parsing) : case_scope.
+Notation "{ }" := ([::]) (only parsing) : cases_scope.
+Notation "{ c1 | .. | cn }" := (c1%case :: (.. [:: cn%case] ..))
+  (only parsing) : cases_scope.
 
-(* Derived constructor notations *)
-Definition TLet p ta tm := {t: match: ta with: {{ p -> tm }}}.
-Notation "let: p := ta in: tm" := (TLet p ta tm)
-  (at level 20, right associativity, ta at level 100, tm at level 100)
-  : term_scope.
-Definition TIf ta ti te := {t:
-  match: ta with:
-  {{ true -> ti
-   | false -> te
-  }}
-}.
-Notation "if: ta then: ti else: te" := (TIf ta ti te)
-  (at level 20, right associativity, ta at level 100, ti at level 100,
-    te at level 100) : term_scope.
-
-(* Pair constructor notations *)
-Notation TPair tl tr := {t: CPair $ tl $ tr}.
-Notation "( t1 , t2 , .. , tn )" :=
-  {t: CPair $ (.. (CPair $ t1 $ t2) ..) $ tn}
+(* Derived constructor notations for pairs *)
+Definition TPair x1 x2 := {-t CPair ' x1 ' x2 -}.
+Notation "( x1 , x2 , .. , xn )" := (TPair (.. (TPair x1 x2) ..) xn)
   : term_scope.
 
-(* List constructor notations *)
-Notation TNil := {t: TConstructor CNil}.
+(* Derived constructor notations for booleans *)
+Definition TTrue := TConstructor CTrue.
+Definition TFalse := TConstructor CFalse.
+Definition term_of_bool b := if b then TTrue else TFalse.
+Coercion term_of_bool : bool >-> term.
+
+(* Derived constructor notations for naturals *)
+Definition TZero := TConstructor CZero.
+Definition TSucc n := {-t CSucc ' n -}.
+Notation "n .+1" := (TSucc n) : term_scope.
+Fixpoint term_of_nat n :=
+  match n with
+  | 0 => TZero
+  | n.+1 => TSucc (term_of_nat n)
+  end.
+Fixpoint nat_of_term t :=
+  match t with
+  | TConstructor CZero => Some 0
+  | TApplication (TConstructor CSucc) t' =>
+    match nat_of_term t' with
+    | Some n' => Some (n'.+1)
+    | None => None
+    end
+  | _ => None
+  end.
+Definition term_of_uint n :=
+  term_of_nat (Nat.of_num_uint n).
+Definition uint_of_term t :=
+  match nat_of_term t with
+  | Some t' => Some (Nat.to_num_uint t')
+  | None => None
+  end.
+Numeral Notation term term_of_uint uint_of_term : term_scope.
+
+(* Derived constructor notations for lists *)
+Definition TNil := TConstructor CNil.
 Notation "[ ]" := TNil : term_scope.
-Notation TCons t ts := {t: CCons $ t $ ts}.
-Notation "t :: ts" := (TCons t ts) : term_scope.
-Notation "[ t1 , .. , tn ]" :=
-  {t: CCons $ t1 $ (.. (CCons $ tn $ CNil) ..)}
+Definition TCons x xs := {-t CCons ' x ' xs -}.
+Notation "x :: xs" := (TCons x xs) : term_scope.
+Notation "[ x1 , .. , xn ]" := {-t x1 :: (.. (xn :: []) ..) -}
   : term_scope.
-
-(* Function notations *)
-(* Generic *)
-Notation TEqual tl tr := {t: FEqual $ tl $ tr}.
-Notation "tl = tr" := (TEqual tl tr) : term_scope.
-(* Boolean *)
-Notation TNot t := {t: FNot $ t}.
-Notation "~ t" := (TNot t) : term_scope.
-Notation TOr tl tr := {t: FOr $ tl $ tr}.
-Notation "tl \/ tr" := (TOr tl tr) : term_scope.
-(* Natural *)
-Notation TSucc t := {t: FSucc $ t}.
-Notation "t .+1" := (TSucc t) : term_scope.
-Notation TAdd tl tr := {t: FAdd $ tl $ tr}.
-Notation "tl + tr" := (TAdd tl tr) : term_scope.
-(* List *)
-Notation TConcat tsl tsr := {t: FConcat $ tsl $ tsr}.
-Notation "tsl ++ tsr" := (TConcat tsl tsr) : term_scope.
-Notation TUnion tsl tsr := {t: FUnion $ tsl $ tsr}.
-Notation "tsl \union tsr" := (TUnion tsl tsr) : term_scope.
-Notation TMap tf ts := {t: FMap $ tf $ ts}.
-Notation "tf <$> ts" := (TMap tf ts) : term_scope.
-
-(* List conversion *)
-Fixpoint TList ts :=
+Fixpoint term_of_list ts :=
   match ts with
-  | [::] => {t: []}
-  | t :: ts => {t: t :: TList ts}
+  | [::] => TNil
+  | t :: ts => TCons t (term_of_list ts)
+  end.
+Fixpoint list_of_term t :=
+  match t with
+  | TConstructor CNil => Some [::]
+  | TApplication (TApplication (TConstructor CCons) t') ts =>
+    match list_of_term ts with
+    | Some ts' => Some (t' :: ts')
+    | None => None
+    end
+  | _ => None
   end.
 
-(* Derived generic functions *)
-Notation FNotEqual := {t: fun: fun: ~(#(1, 0) = #(0, 0))}.
-Notation TNotEqual tl tr := {t: FNotEqual $ tl $ tr}.
-Notation "tl <> tr" := (TNotEqual tl tr) : term_scope.
+(* Derived constructor notations for matching *)
+Definition TMatchWith s cs := {-t (match: cs) ' s -}.
+Notation "match: s with: cs" := (TMatchWith s%term cs%cases)
+  (at level 20, right associativity, s at level 0, cs at level 0) : term_scope.
+Definition TAbstraction b := {-t match: { $0 -> b } -}.
+Notation "fun: b" := (TAbstraction b%term)
+  (at level 20, right associativity, b at level 100) : term_scope.
+Definition TLet s p b := {-t match: s with: { p -> b } -}.
+Notation "let: p := s in: b" := (TLet s%term p%pattern b%term)
+  (at level 20, right associativity, s at level 100, b at level 100)
+  : term_scope.
+Definition TIf s tb fb := {-t
+  match: s with:
+  { true -> tb
+  | false -> fb
+  }
+-}.
+Notation "if: s then: tb else: fb" := (TIf s%term tb%term fb%term)
+  (at level 20, right associativity, s at level 100, tb at level 100,
+    fb at level 100) : term_scope.
 
-(* Derived Boolean functions *)
-Notation FAnd := {t: fun: fun: ~(~#(1, 0) \/ ~#(0, 0))}.
-Notation TAnd tl tr := {t: FAnd $ tl $ tr}.
-Notation "tl /\ tr" := (TAnd tl tr) : term_scope.
+(* Pair operations *)
+Definition TFirst p := {-t let: ($0, %) := p in: $0 -}.
+Notation "p .1" := (TFirst p) : term_scope.
+Definition TSecond p := {-t let: (%, $0) := p in: $0 -}.
+Notation "p .2" := (TSecond p) : term_scope.
 
-(* Derived pair functions *)
-Notation FLeft := {t: fun: match: #(0, 0) with: {{ (#, %) -> #(0, 0) }}}.
-Notation FRight := {t: fun: match: #(0, 0) with: {{ (%, #) -> #(0, 0) }}}.
+(* Boolean operations *)
+Definition TNot b := {-t if: b then: false else: true -}.
+Notation "~~ b" := (TNot b) : term_scope.
+Definition TOr b1 b2 := {-t
+  if: b1 then: true else:
+  if: b2 then: true else:
+  false
+-}.
+Notation "b1 || b2" := (TOr b1 b2) : term_scope.
+Definition TAnd b1 b2 := {-t ~~(~~b1 || ~~b2) -}.
+Notation "b1 && b2" := (TAnd b1 b2) : term_scope.
 
-(* Derived list functions *)
-Notation FMember := {t: fun: fun: (FCount $ #(1, 0) $ #(0, 0)) <> 0}.
-Notation TMember t ts := {t: FMember $ t $ ts}.
-Notation "t \in ts" := (TMember t ts) : term_scope.
-Notation FOcc := {t: fun: fun: (FCount $ #(0, 0) $ #(1, 0))}.
+(* Function notations for boolean equality *)
+Definition TEqual x1 x2 := {-t FEqual ' x1 ' x2 -}.
+Notation "x1 == x2" := (TEqual x1 x2) : term_scope.
+Definition TNotEqual x1 x2 := {-t ~~(x1 == x2) -}.
+Notation "x1 != x2" := (TNotEqual x1 x2) : term_scope.
 
-(* Derived predicates *)
-Notation FCorrect := {t: fun: #(0, 0) \in "Correct"}.
-Notation TCorrect tn := {t: FCorrect $ tn}.
+(* Function notations for naturals *)
+Definition TAdd x1 x2 := {-t FAdd ' x1 ' x2 -}.
+Notation "x1 + x2" := (TAdd x1 x2) : term_scope.
+
+(* Function notations for lists *)
+Definition TIn y xs := {-t FCount ' y ' xs != 0 -}.
+Notation "y \in xs" := (TIn y xs) : term_scope.
+Definition TNotIn y xs := {-t ~~(y \in xs) -}.
+Notation "y \notin xs" := (TNotIn y xs) : term_scope.
+Definition TConcat xs ys := {-t FConcat ' xs ' ys -}.
+Notation "xs ++ ys" := (TConcat xs ys) : term_scope.
+Definition TSetUnion xs ys := {-t FSetUnion ' xs ' ys -}.
+Notation "xs :|: ys" := (TSetUnion xs ys) : term_scope.
+
+(* Tactics *)
+Ltac dfold_term :=
+  repeat match goal with
+  (* Derived constructor notations for pairs *)
+  | |- context[ {-t TConstructor CPair ' ?x1 ' ?x2 -} ] => rewrite -/(TPair x1 x2)
+
+  (* Derived constructor notations for booleans *)
+  | |- context[ {-t TConstructor CTrue -} ] => rewrite -/TTrue
+  | |- context[ {-t TConstructor CFalse -} ] => rewrite -/TFalse
+
+  (* Derived constructor notations for lists *)
+  | |- context[ {-t TConstructor CNil -} ] => rewrite -/TNil
+  | |- context[ {-t TConstructor CCons ' ?x ' ?xs -} ] => rewrite -/(TCons x xs)
+
+  (* Derived constructor notations for matching *)
+  | |- context[ {-t (match: ?cs) ' ?s -} ] => rewrite -/(TMatchWith s cs)
+  | |- context[ {-t match: { $0 -> ?b } -} ] => rewrite -/(TAbstraction b)
+  | |- context[ {-t match: ?s with: { ?p -> ?b } -} ] => rewrite -/(TLet s p b)
+  | |- context[ {-t
+    match: ?s with:
+    { true -> ?tb
+    | false -> ?fb
+    }
+  -} ] => rewrite -/(TIf s tb fb)
+
+  (* Pair operations *)
+  | |- context[ {-t let: ($0, %) := ?p in: $0 -} ] => rewrite -/(TFirst p)
+  | |- context[ {-t let: (%, $0) := ?p in: $0 -} ] => rewrite -/(TSecond p)
+
+  (* Boolean operations *)
+  | |- context[ {-t if: ?b then: false else: true -} ] => rewrite -/(TNot b)
+  | |- context[ {-t
+    if: ?b1 then: true else:
+    if: ?b2 then: true else:
+    false
+  -} ] => rewrite -/(TOr b1 b2)
+  | |- context[ {-t ~~(~~?b1 || ~~?b2) -} ] => rewrite -/(TAnd b1 b2)
+
+  (* Function notations for boolean equality *)
+  | |- context[ {-t FEqual ' ?x1 ' ?x2 -} ] => rewrite -/(TEqual x1 x2)
+  | |- context[ {-t ~~(?x1 == ?x2) -} ] => rewrite -/(TNotEqual x1 x2)
+
+  (* Function notations for naturals *)
+  | |- context[ {-t FAdd ' ?x1 ' ?x2 -} ] => rewrite -/(TAdd x1 x2)
+
+  (* Function notations for lists *)
+  | |- context[ {-t FCount ' ?y ' ?xs != 0 -} ] => rewrite -/(TIn y xs)
+  | |- context[ {-t ~~(?y \in ?xs) -} ] => rewrite -/(TNotIn y xs)
+  | |- context[ {-t FConcat ' ?xs ' ?ys -} ] => rewrite -/(TConcat xs ys)
+  | |- context[ {-t FSetUnion ' ?xs ' ?ys -} ] => rewrite -/(TSetUnion xs ys)
+  end.

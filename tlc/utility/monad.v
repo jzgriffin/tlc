@@ -15,18 +15,18 @@ Unset Printing Implicit Defensive.
 Export tlc.utility.applicative.
 
 (* Monad typeclass
- * A monad consists of an applicative functor, the bind operation, and proofs
- * of the monad laws.
+ * A monad consists of an applicative functor, the bind operation, and proofs of
+ * the monad laws.
  *)
-Class Monad m `{Applicative m} := {
-  bind : forall a b, m a -> (a -> m b) -> m b;
-  bind_left_id : forall a b (f : (a -> m b)) x, bind (pure x) f = f x;
-  bind_right_id : forall a (x : m a), bind x (pure (a := a)) = x;
-  bind_assoc : forall a b c (f : (a -> m b)) (g : (b -> m c)) x,
+Class Monad M `{Applicative M} := {
+  bind A B : M A -> (A -> M B) -> M B;
+  bind_left_id A B (f : A -> M B) x : bind (pure x) f = f x;
+  bind_right_id A (x : M A) : bind x (pure (A := A)) = x;
+  bind_assoc A B C (f : A -> M B) (g : B -> M C) x :
     bind x (fun y => bind (f y) g) = bind (bind x f) g;
 }.
 
-Arguments Monad m {_}.
+Arguments Monad M {_} {_}.
 
 (* Monad notations *)
 Notation "x >>= y" := (bind x y) (at level 40, left associativity).

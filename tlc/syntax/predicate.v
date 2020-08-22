@@ -15,77 +15,47 @@ Unset Printing Implicit Defensive.
 
 (* Forms of logical predicates *)
 Inductive predicate :=
-| PFalse
-| PEqual (tl tr : term) (* tl and tr are syntactically equal *)
-| PGe (tl tr : term) (* tl is greater than or equal to tr *)
-| PLe (tl tr : term) (* tl is less than or equal to tr *)
-| PIn (t ts : term) (* t is a member of ts *)
-| PExtension (ts' ts : term) (* ts' is an extension of ts *)
-| PCorrect (tn : term). (* tn is a correct node *)
+| PEqual (x1 x2 : term) (* x1 and x2 are equal *)
+| PLess (x1 x2 : term) (* x1 is less than x2 *)
+| PMember (y xs : term) (* y is a member of xs *)
+| PExtension (xs' xs : term). (* xs' is an extension of xs *)
 
 (* Equality *)
 Section eq.
 
   (* Boolean equality *)
-  Fixpoint predicate_eq pl pr :=
-    match pl, pr with
-    | PFalse, PFalse => true
-    | PFalse, _ => false
-    | PEqual tll trl, PEqual tlr trr => (tll == tlr) && (trl == trr)
-    | PEqual _ _, _ => false
-    | PGe tll trl, PGe tlr trr => (tll == tlr) && (trl == trr)
-    | PGe _ _, _ => false
-    | PLe tll trl, PLe tlr trr => (tll == tlr) && (trl == trr)
-    | PLe _ _, _ => false
-    | PIn tl tsl, PIn tr tsr => (tl == tr) && (tsl == tsr)
-    | PIn _ _, _ => false
-    | PExtension ts'l tsl, PExtension ts'r tsr =>
-      (ts'l == ts'r) && (tsl == tsr)
-    | PExtension _ _, _ => false
-    | PCorrect tnl, PCorrect tnr => tnl == tnr
-    | PCorrect _, _ => false
+  Definition predicate_eq p1 p2 :=
+    match p1, p2 with
+    | PEqual x1_1 x1_2, PEqual x2_1 x2_2 => (x1_1 == x2_1) && (x1_2 == x2_2)
+    | PLess x1_1 x1_2, PLess x2_1 x2_2 => (x1_1 == x2_1) && (x1_2 == x2_2)
+    | PMember y1 xs1, PMember y2 xs2 => (y1 == y2) && (xs1 == xs2)
+    | PExtension xs'1 xs1, PExtension xs'2 xs2 => (xs'1 == xs'2) && (xs1 == xs2)
+    | _, _ => false
     end.
 
   (* Boolean equality reflection *)
   Lemma predicate_eqP : Equality.axiom predicate_eq.
   Proof.
-    elim=> [| tll trl | tll trl | tll trl | tl tsl | ts'l tsl | tnl]
-      [| tlr trr | tlr trr | tlr trr | tr tsr | ts'r tsr | tnr] //=;
-      try by constructor.
-    - case H: (tll == tlr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
-      case H: (trl == trr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
-        by constructor.
-    - case H: (tll == tlr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
-      case H: (trl == trr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
-        by constructor.
-    - case H: (tll == tlr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
-      case H: (trl == trr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
-        by constructor.
-    - case H: (tl == tr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
-      case H: (tsl == tsr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
+    case=>
+      [x1_1 x1_2 | x1_1 x1_2 | y1 xs1 | xs'1 xs1]
+      [x2_1 x2_2 | x2_1 x2_2 | y2 xs2 | xs'2 xs2]
+      //=; try by constructor.
+    - have [<- | neqx] := x1_1 =P x2_1; last (by right; case); simpl.
+      have [<- | neqx] := x1_2 =P x2_2; last (by right; case); simpl.
       by constructor.
-    - case H: (ts'l == ts'r); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
-      case H: (tsl == tsr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
+    - have [<- | neqx] := x1_1 =P x2_1; last (by right; case); simpl.
+      have [<- | neqx] := x1_2 =P x2_2; last (by right; case); simpl.
       by constructor.
-    - case H: (tnl == tnr); move/eqP: H => H //=; subst;
-        last by constructor; move=> [].
+    - have [<- | neqx] := y1 =P y2; last (by right; case); simpl.
+      have [<- | neqx] := xs1 =P xs2; last (by right; case); simpl.
+      by constructor.
+    - have [<- | neqx] := xs'1 =P xs'2; last (by right; case); simpl.
+      have [<- | neqx] := xs1 =P xs2; last (by right; case); simpl.
       by constructor.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure predicate_eqMixin :=
-    Eval hnf in EqMixin predicate_eqP.
-  Canonical Structure predicate_eqType :=
-    Eval hnf in EqType predicate predicate_eqMixin.
+  Definition predicate_eqMixin := EqMixin predicate_eqP.
+  Canonical predicate_eqType := EqType predicate predicate_eqMixin.
 
 End eq.

@@ -9,10 +9,7 @@ Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import mathcomp.ssreflect.ssrfun.
-Require Import tlc.utility.applicative.
-Require Import tlc.utility.functor.
 Require Import tlc.utility.monad.
-Require Import tlc.utility.string.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -28,35 +25,36 @@ Inductive result {error value} :=
 Arguments result : clear implicits.
 
 (* Equality *)
-Section result_eq.
+Section eq.
 
   Variable error : eqType.
   Variable value : eqType.
 
   (* Boolean equality *)
-  Definition result_eq (rl rr : result error value) :=
-    match rl, rr with
-    | Failure el, Failure er => el == er
-    | Failure _, _ => false
-    | Success xl, Success xr => xl == xr
-    | Success _, _ => false
+  Definition result_eq (r1 r2 : result error value) :=
+    match r1, r2 with
+    | Failure e1, Failure e2 => e1 == e2
+    | Success x1, Success x2 => x1 == x2
+    | _, _ => false
     end.
 
   (* Boolean equality reflection *)
   Lemma result_eqP : Equality.axiom result_eq.
   Proof.
-    case=> [el | xl] [er | xr] /=; (try by constructor);
-      try by apply/(iffP idP); [by move/eqP <- | by move=> [] => H; apply/eqP].
+    move; case=> [e1 | x1] [e2 | x2] //=; try by constructor.
+    - by have [<- | neqx] := e1 =P e2; last (by right; case); constructor.
+    - by have [<- | neqx] := x1 =P x2; last (by right; case); constructor.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure result_eqMixin := EqMixin result_eqP.
-  Canonical Structure result_eqType :=
+  Canonical result_eqMixin := EqMixin result_eqP.
+  Canonical result_eqType :=
     Eval hnf in EqType (result error value) result_eqMixin.
 
-End result_eq.
+End eq.
 
 (* Functor instance for result *)
+#[refine]
 Instance result_functor error : Functor (result error) := {
   map _ _ f r :=
     match r with
@@ -65,11 +63,19 @@ Instance result_functor error : Functor (result error) := {
     end;
 }.
 Proof.
-  - by move=> a; case=> //=.
-  - by move=> a b c f g; case=> //=.
+  (* map_id *)
+  {
+    by move=> ?; case.
+  }
+
+  (* map_comp *)
+  {
+    by move=> ?????; case.
+  }
 Defined.
 
 (* Applicative instance for result *)
+#[refine]
 Instance result_applicative error : Applicative (result error) := {
   pure := fun _ x => Success x;
   apply _ _ f x :=
@@ -79,14 +85,30 @@ Instance result_applicative error : Applicative (result error) := {
     end;
 }.
 Proof.
-  - by move=> a; rewrite /left_id; case=> //=.
-  - by [].
-  - by [].
-  - by move=> a b c; case=> [eu | fu] [ev | fv] [ew | fw] //=.
+  (* apply_left_id *)
+  {
+    by move=> ?; rewrite /left_id; case.
+  }
+
+  (* apply_homo *)
+  {
+    by [].
+  }
+
+  (* apply_inter *)
+  {
+    by [].
+  }
+
+  (* apply_comp *)
+  {
+    by move=> ???; case=> [? | ?] [? | ?] [? | ?].
+  }
 Defined.
 
 (* Monad instance for result *)
-Instance result_monad error : Monad (result error) _ := {
+#[refine]
+Instance result_monad error : Monad (result error) := {
   bind _ _ x f :=
     match x with
     | Failure e => Failure e
@@ -94,9 +116,20 @@ Instance result_monad error : Monad (result error) _ := {
     end;
 }.
 Proof.
-  - by [].
-  - by move=> a; case=> [x | ] //=.
-  - by move=> a b c f g; case=> [x | ] //=.
+  (* bind_left_id *)
+  {
+    by [].
+  }
+
+  (* bind_right_id *)
+  {
+    by move=> ?; case=> [? | ?].
+  }
+
+  (* bind_assoc *)
+  {
+    by move=> ?????; case=> [? | ?].
+  }
 Defined.
 
 (* Flattens a list of results into a result of list

@@ -5,147 +5,192 @@
  *)
 
 Require Import mathcomp.ssreflect.seq.
+Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import tlc.logic.context.
 Require Import tlc.logic.derives.
+Require Import tlc.logic.sequent.
 Require Import tlc.semantics.all_semantics.
 Require Import tlc.syntax.all_syntax.
-Require Import tlc.utility.partial_map.
 Require Import tlc.utility.result.
+Require Import tlc.utility.seq.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* The equality predicate is symmetric *)
-Lemma DAPEqualSymmetric C ctx :
-  ctx |- C, {A:
-    forall: "tl", "tr":
-    "tl" = "tr" <-> "tr" = "tl"
-  }.
+(* Basic predicate lifting *)
+
+(* Directly prove that x1 and x2 are equal *)
+Lemma DPEqual C Delta x1 x2 :
+  x1 = x2 ->
+  Context Delta [::] ||- C, {-A x1 = x2 -}.
+Proof.
+Admitted.
+
+(* Directly prove that x1 is less than x2 *)
+Lemma DPLess C Delta x1 x1' x2 x2' :
+  nat_of_term x1 = Some x1' ->
+  nat_of_term x2 = Some x2' ->
+  x1' < x2' ->
+  Context Delta [::] ||- C, {-A x1 < x2 -}.
+Proof.
+Admitted.
+
+(* Directly prove that y is a member of list xs *)
+Lemma DPMember C Delta y xs xs' :
+  list_of_term xs = Some xs' ->
+  y \in xs' ->
+  Context Delta [::] ||- C, {-A y \in xs -}.
+Proof.
+Admitted.
+
+(* Directly prove that xs' is an extension of xs *)
+Lemma DPExtension C Delta xs' xs'l xs xsl :
+  list_of_term xs' = Some xs'l ->
+  list_of_term xs = Some xsl ->
+  extension xs'l xsl ->
+  Context Delta [::] ||- C, {-A xs' <<< xs -}.
+Proof.
+Admitted.
+
+(* Equality *)
+
+(* FEqual reflects PEqual *)
+Lemma DPEqualReflect C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: (* x1, x2 *)
+    ($$1 == $$0) = true <->
+    $$1 = $$0
+  -}.
+Proof.
+Admitted.
+
+(* Directly prove that x1 and x2 are not equal *)
+Lemma DPNotEqual C Delta x1 x2 :
+  x1 <> x2 ->
+  Context Delta [::] ||- C, {-A x1 <> x2 -}.
+Proof.
+Admitted.
+
+(* Equality is symmetric *)
+Lemma DPEqualSymm C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: (* x1, x2 *)
+    $$1 = $$0 <-> $$0 = $$1
+  -}.
 Proof.
   (* Used in PLC *)
-Admitted. (* TODO *)
+Admitted.
+
+(* Less than *)
+
+(* Equality is a subset of less-than or equal *)
+Lemma DPEqualLessEqual C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: (* x1, x2 *)
+    $$1 = $$0 -> $$1 <= $$0
+  -}.
+Proof.
+  (* Used in PLC *)
+Admitted.
+
+(* Equality is a subset of greater-than or equal *)
+Lemma DPEqualGreaterEqual C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: (* x1, x2 *)
+    $$1 = $$0 -> $$1 >= $$0
+  -}.
+Proof.
+  (* Used in PLC *)
+Admitted.
+
+(* Membership *)
+
+(* FMember reflects PMember *)
+Lemma DPMemberReflect C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: (* x, xs *)
+    $$1 \in $$0 = true <->
+    $$1 \in $$0
+  -}.
+Proof.
+  (* Used in PLC *)
+Admitted.
+
+(* A member of a list appears at least once in that list *)
+Lemma DPMemberCount C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: (* y, xs *)
+    $$1 \in $$0 <->
+    FCount ' $$1 ' $$0 >= 1
+  -}.
+Proof.
+  (* Used in PLC *)
+Admitted.
 
 (* No element may appear in an empty list *)
-Lemma DAPInNil C ctx :
-  ctx |- C, {A:
-    forall: "t":
-    ~("t" \in [])
-  }.
+Lemma DPMemberNil C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: (* x *)
+    ~ $$0 \in []
+  -}.
 Proof.
   (* Used in SLC & PLC *)
-Admitted. (* TODO *)
+Admitted.
 
-(* Element not in the list *)
-Lemma DAPNotInCons C ctx :
-  ctx |- C, {A:
-    forall: "t", "ta", "ts":
-    ~("t" \in CCons $ "ta" $ "ts") <->
-    ("t" <> "ta") /\ ~("t" \in "ts")
-  }.
+(* Inductive definition of Member *)
+Lemma DPMemberCons C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: forall: (* y, x, xs *)
+    $$2 \in $$1 :: $$0 <->
+    ($$2 = $$1 \/ $$2 \in $$0)
+  -}.
 Proof.
   (* Used in SLC *)
-Admitted. (* TODO *)
+Admitted.
 
-Lemma DAPNotEqualToSucc C ctx :
-  ctx |- C, {A:
-    forall: "c":
-    "c" = FSucc $ "c" ->
-    AFalse
-  }.
-Proof.
-  (* Used in PLC *)
-Admitted. (* TODO *)
+(* Membership is closed under mapping *)
+Lemma DPMemberMap C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: forall: (* f, xs, y *)
+    $$0 \in $$1 <->
+    ($$2 ' $$0) \in (FMap ' $$2 ' $$1)
+  -}.
+  Proof.
+  (* Used in SLC *)
+Admitted.
 
-Lemma DAPInEliminateTrue C ctx :
-  ctx |- C, {A:
-    forall: "t", "ts":
-    "t" \in "ts" = true <->
-    AIn "t" "ts"
-  }.
-Proof.
-  (* Used in PLC *)
-Admitted. (* TODO *)
-
-Lemma DAPInEliminateFalse C ctx :
-  ctx |- C, {A:
-    forall: "t", "ts":
-    "t" \in "ts" = false <->
-    ~ AIn "t" "ts"
-  }.
-Proof.
-  (* Used in PLC *)
-Admitted. (* TODO *)
-
-(* If t is in tsl or tsr, then t is in the concatenation of tsl and tsr *)
-Lemma DAPInConcat C ctx :
-  ctx |- C, {A:
-    forall: "tsl", "tsr", "t":
-    "t" \in "tsl" \/ "t" \in "tsr" ->
-    "t" \in "tsl" ++ "tsr"
-  }.
+(* Membership is closed under concatenation *)
+Lemma DPMemberConcat C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: forall: (* xs1, xs2, y *)
+    $$0 \in $$2 \/ $$0 \in $$1 ->
+    $$0 \in $$2 ++ $$1
+  -}.
 Proof.
   (* Used in SLC *)
-Admitted. (* TODO *)
+Admitted.
 
-(* If t is in tsl or tsr, then t is in the union of tsl and tsr *)
-Lemma DAPInUnion C ctx :
-  ctx |- C, {A:
-    forall: "tsl", "tsr", "t":
-    "t" \in "tsl" \/ "t" \in "tsr" ->
-    "t" \in "tsl" \union "tsr"
-  }.
-Proof.
-  (* Used in PLC *)
-Admitted. (* TODO *)
-
-(* If t is in ts, then t under mapping tf is in tf mapped over ts *)
-Lemma DAPInMap C ctx : ctx |- C, {A:
-  forall: "f", "t", "ts":
-  ("t" \in "ts") <-> (("f" $ "t") \in ("f" <$> "ts"))
-}.
-Proof.
-  (* Used in SLC *)
-Admitted. (* TODO *)
-
-(* t is in ts if and only if there exist two lists tsl and tsr such that ts is
- * equal to the concatenation of tsl, t, and tsr
- *)
-Lemma DAPConcatIn C ctx :
-  ctx |- C, {A:
-    forall: "t", "ts":
-    "t" \in "ts" <->
-    exists: "tsl": exists: "tsr": "ts" = "tsl" ++ ["t"] ++ "tsr"
-  }.
+(* An element is a member of a list iff a surrounding prefix/suffix pair exists *)
+Lemma DPConcatMember C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: (* y, xs *)
+    $$1 \in $$0 <->
+    exists: exists: (* xs1, xs2 *)
+    $$2 = $$1 ++ [$$3] ++ $$0
+  -}.
 Proof.
   (* Used in SLC & PLC *)
-Admitted. (* TODO *)
+Admitted.
 
-Lemma DAPInOcc C ctx :
-  ctx |- C, {A:
-    forall: "t", "ts":
-    "t" \in "ts" <->
-    FOcc $ "ts" $ "t" >= 1
-  }.
+(* Membership is closed under set union *)
+Lemma DPMemberSetUnion C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: forall: (* xs1, xs2, y *)
+    $$0 \in $$2 \/ $$0 \in $$1 <->
+    $$0 \in $$2 :|: $$1
+  -}.
 Proof.
-  (* Used in PLC *)
-Admitted. (* TODO *)
-
-Lemma DAPEqualToGE C ctx :
-  ctx |- C, {A:
-    forall: "t", "c":
-    "t" = "c" -> "t" >= "c"
-  }.
-Proof.
-  (* Used in PLC *)
-Admitted. (* TODO *)
-
-Lemma DAPEqualToLe C ctx :
-  ctx |- C, {A:
-   forall: "t", "c":
-    "t" = "c" -> "t" <= "c"
-  }.
-Proof.
-  (* Used in PLC *)
-Admitted. (* TODO *)
+  (* Used in SLC *)
+Admitted.

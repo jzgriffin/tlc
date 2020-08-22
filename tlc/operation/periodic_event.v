@@ -15,28 +15,25 @@ Unset Printing Implicit Defensive.
 (* Constant for periodic events
  * Periodic events carry no data.
  *)
-Inductive periodic_event :=
-| PE.
+Inductive periodic_event := PE.
 
 (* Equality *)
 Section eq.
 
   (* Boolean equality *)
-  Definition periodic_event_eq pl pr :=
-    match pl, pr with
+  Definition periodic_event_eq p1 p2 :=
+    match p1, p2 with
     | PE, PE => true
     end.
 
   (* Boolean equality reflection *)
   Lemma periodic_event_eqP : Equality.axiom periodic_event_eq.
   Proof.
-    case; case; by constructor.
+    by case; case; constructor.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure periodic_event_eqMixin :=
-    Eval hnf in EqMixin periodic_event_eqP.
-  Canonical Structure periodic_event_eqType :=
-    Eval hnf in EqType periodic_event periodic_event_eqMixin.
+  Definition periodic_event_eqMixin := EqMixin periodic_event_eqP.
+  Canonical periodic_event_eqType := EqType periodic_event periodic_event_eqMixin.
 
 End eq.

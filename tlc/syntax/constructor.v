@@ -4,6 +4,7 @@
  * Purpose: Contains the syntax of constructors.
  *)
 
+Require Import mathcomp.ssreflect.choice.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -12,19 +13,33 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Constructors for value terms comprised of other terms
- * Value terms comprised of non-term elements, such as the naturals, are
- * represented as literals.
- *)
+(* Constructors for value terms *)
 Inductive constructor :=
-(* Product *)
-| CPair
-(* Sum *)
+(* Unit *)
+| CUnit
+(* Maybe *)
+| CNone
+| CSome
+(* Either *)
 | CLeft
 | CRight
+(* Pair *)
+| CPair
+(* Boolean *)
+| CFalse
+| CTrue
+(* Natural *)
+| CZero
+| CSucc
 (* List *)
 | CNil
 | CCons
+(* Orientation *)
+| CRequest
+| CIndication
+| CPeriodic
+(* PeriodicEvent *)
+| CPE
 (* FLRequest *)
 | CFLSend
 (* FLIndication *)
@@ -42,51 +57,57 @@ Inductive constructor :=
 Section eq.
 
   (* Boolean equality *)
-  Definition constructor_eq cl cr :=
-    match cl, cr with
-    (* Product *)
-    | CPair, CPair => true
-    | CPair, _ => false
-    (* Sum *)
+  Definition constructor_eq f1 f2 :=
+    match f1, f2 with
+    (* Unit *)
+    | CUnit, CUnit => true
+    (* Maybe *)
+    | CNone, CNone => true
+    | CSome, CSome => true
+    (* Either *)
     | CLeft, CLeft => true
-    | CLeft, _ => false
     | CRight, CRight => true
-    | CRight, _ => false
+    (* Pair *)
+    | CPair, CPair => true
+    (* Boolean *)
+    | CFalse, CFalse => true
+    | CTrue, CTrue => true
+    (* Natural *)
+    | CZero, CZero => true
+    | CSucc, CSucc => true
     (* List *)
     | CNil, CNil => true
-    | CNil, _ => false
     | CCons, CCons => true
-    | CCons, _ => false
+    (* Orientation *)
+    | CRequest, CRequest => true
+    | CIndication, CIndication => true
+    | CPeriodic, CPeriodic => true
+    (* PeriodicEvent *)
+    | CPE, CPE => true
     (* FLRequest *)
     | CFLSend, CFLSend => true
-    | CFLSend, _ => false
     (* FLIndication *)
     | CFLDeliver, CFLDeliver => true
-    | CFLDeliver, _ => false
     (* SLRequest *)
     | CSLSend, CSLSend => true
-    | CSLSend, _ => false
     (* SLIndication *)
     | CSLDeliver, CSLDeliver => true
-    | CSLDeliver, _ => false
     (* PLRequest *)
     | CPLSend, CPLSend => true
-    | CPLSend, _ => false
     (* PLIndication *)
     | CPLDeliver, CPLDeliver => true
-    | CPLDeliver, _ => false
+    (* Unequal *)
+    | _, _ => false
     end.
 
   (* Boolean equality reflection *)
   Lemma constructor_eqP : Equality.axiom constructor_eq.
   Proof.
-    case; case; by constructor.
+    by case; case; constructor.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure constructor_eqMixin :=
-    Eval hnf in EqMixin constructor_eqP.
-  Canonical Structure constructor_eqType :=
-    Eval hnf in EqType constructor constructor_eqMixin.
+  Definition constructor_eqMixin := EqMixin constructor_eqP.
+  Canonical constructor_eqType := EqType constructor constructor_eqMixin.
 
 End eq.

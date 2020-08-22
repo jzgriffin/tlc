@@ -12,13 +12,12 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 (* Functor typeclass
- * A functor consists of both the map operation and proofs of the functor
- * laws.
+ * A functor consists of both the map operation and proofs of the functor laws.
  *)
-Class Functor (f : Type -> Type) := {
-  map : forall a b, (a -> b) -> f a -> f b;
-  map_id : forall a x, map (@id a) x = x;
-  map_comp : forall a b c (f : b -> c) (g : a -> b) x,
+Class Functor (F : Type -> Type) := {
+  map A B : (A -> B) -> F A -> F B;
+  map_id A x : map (@id A) x = x;
+  map_comp A B C (f : B -> C) (g : A -> B) x :
     map (f \o g) x = (map f \o map g) x;
 }.
 

@@ -1,0 +1,55 @@
+-arg -w
+-arg -notation-overridden
+-arg -w
+-arg -notation-incompatible-format
+-arg -w
+-arg -cast-in-pattern
+-R tlc tlc
+
+tlc/utility/function.v
+tlc/utility/functor.v
+tlc/utility/applicative.v
+tlc/utility/monad.v
+tlc/utility/seq.v
+tlc/utility/partial_map.v
+tlc/utility/option.v
+tlc/utility/result.v
+tlc/utility/ascii.v
+tlc/utility/string.v
+tlc/utility/all_utility.v
+tlc/operation/orientation.v
+tlc/operation/periodic_event.v
+tlc/operation/all_operation.v
+tlc/syntax/parameter.v
+tlc/syntax/flexible.v
+tlc/syntax/rigid.v
+tlc/syntax/variable.v
+tlc/syntax/constructor.v
+tlc/syntax/function.v
+tlc/syntax/unknown.v
+tlc/syntax/pattern.v
+tlc/syntax/term.v
+tlc/syntax/predicate.v
+tlc/syntax/assertion.v
+tlc/syntax/all_syntax.v
+tlc/semantics/error.v
+tlc/semantics/constructor.v
+tlc/semantics/pattern.v
+tlc/semantics/term.v
+tlc/semantics/predicate.v
+tlc/semantics/assertion.v
+tlc/semantics/lower.v
+tlc/semantics/tactics.v
+tlc/semantics/all_semantics.v
+tlc/component/component.v
+tlc/logic/context.v
+tlc/logic/derives.v
+tlc/logic/sequent.v
+tlc/logic/temporal.v
+tlc/logic/predicate.v
+tlc/logic/program.v
+tlc/logic/all_logic.v
+tlc/component/stubborn_link.v
+tlc/component/perfect_link.v
+tlc/component/all_component.v
+tlc/all.v

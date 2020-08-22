@@ -4,45 +4,45 @@
  * Purpose: Contains the syntax of variables.
  *)
 
+Require Import mathcomp.ssreflect.choice.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
-Require Import tlc.utility.string.
+Require Import tlc.syntax.flexible.
+Require Import tlc.syntax.rigid.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Open Scope string_scope.
-
-(* Type of free variables
- * Free variables are represented by human-readable names encoded as ASCII
- * strings.
- *)
-Inductive variable := V : string -> variable.
+(* Flexible or rigid variables *)
+Inductive variable := VF (x : flexible) | VR (x : rigid).
 
 (* Equality *)
 Section eq.
 
   (* Boolean equality *)
-  Definition variable_eq vl vr :=
-    match vl, vr with V sl, V sr => sl == sr end.
+  Definition variable_eq x1 x2 :=
+    match x1, x2 with
+    | VF x1, VF x2 => x1 == x2
+    | VR x1, VR x2 => x1 == x2
+    | _, _ => false
+    end.
 
   (* Boolean equality reflection *)
   Lemma variable_eqP : Equality.axiom variable_eq.
   Proof.
-    case=> [sl] [sr] //=; case H: (sl == sr); move/eqP: H => H //=; subst;
-      last by constructor; move=> [].
-    by constructor.
+    case=> [x1 | x1] [x2 | x2] //=; try by constructor.
+    - by have [<- | neqx] := x1 =P x2; last (by right; case); constructor.
+    - by have [<- | neqx] := x1 =P x2; last (by right; case); constructor.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical Structure variable_eqMixin :=
-    Eval hnf in EqMixin variable_eqP.
-  Canonical Structure variable_eqType :=
-    Eval hnf in EqType variable variable_eqMixin.
+  Definition variable_eqMixin := EqMixin variable_eqP.
+  Canonical variable_eqType := EqType variable variable_eqMixin.
 
 End eq.
 
 (* Constructor coercions *)
-Coercion V : string >-> variable.
+Coercion VF : flexible >-> variable.
+Coercion VR : rigid >-> variable.

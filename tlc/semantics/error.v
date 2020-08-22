@@ -4,26 +4,19 @@
  * Purpose: Contains the error type.
  *)
 
-Require Import tlc.syntax.pattern.
-Require Import tlc.syntax.term.
+Require Import mathcomp.ssreflect.seq.
+Require Import mathcomp.ssreflect.ssreflect.
+Require Import tlc.semantics.pattern.
+Require Import tlc.syntax.all_syntax.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(* Kinds of errors produced during semantic operations
- * This type is typically used as the error type for the result monad in
- * semantic operations.
- *)
+(* Errors that may be encountered while operating on terms and assertions *)
 Inductive error :=
-(* Opening *)
-| EParameter (t : term)
-(* Pattern matching *)
-| EPattern (p : pattern) (t : term)
-| EMatch (ta : term) (cs : cases)
-(* Evaluation *)
-| EFailure
-| EBoolean (t : term)
-| ENatural (t : term)
-| EList (t : term)
-| EFuel (t : term).
+| EFuel (t : term)
+| EEmptyMatch (a : term)
+| EMatch (p : pattern) (pe : pattern_error) (a : term) (e : error)
+| EOpenTerm (t : term) (us : seq term) (k : nat) (x : parameter)
+| EOpenAssertion (A : assertion) (us : seq term) (k : nat) (x : parameter).

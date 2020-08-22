@@ -6,8 +6,6 @@
 
 Require Import mathcomp.ssreflect.ssreflect.
 Require Import mathcomp.ssreflect.ssrfun.
-Require Import tlc.utility.applicative.
-Require Import tlc.utility.functor.
 Require Import tlc.utility.monad.
 
 Set Implicit Arguments.
@@ -15,15 +13,24 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 (* Functor instance for option *)
+#[refine]
 Instance option_functor : Functor option := {
   map _ _ f x := if x is Some x' then Some (f x') else None;
 }.
 Proof.
-  - by move=> a; case=> //=.
-  - by move=> a b c f g; case=> //=.
+  (* map_id *)
+  {
+    by move=> ?; case.
+  }
+
+  (* map_comp *)
+  {
+    by move=> ?????; case.
+  }
 Defined.
 
 (* Applicative instance for option *)
+#[refine]
 Instance option_applicative : Applicative option := {
   pure := fun a x => Some x;
   apply _ _ f x :=
@@ -33,18 +40,45 @@ Instance option_applicative : Applicative option := {
     end;
 }.
 Proof.
-  - by move=> a; rewrite /left_id; case=> //=.
-  - by [].
-  - by [].
-  - by move=> a b c; case=> [u | ] [v | ] [w | ] //=.
+  (* apply_left_id *)
+  {
+    by move=> ?; rewrite /left_id; case.
+  }
+
+  (* apply_homo *)
+  {
+    by [].
+  }
+
+  (* apply_inter *)
+  {
+    by [].
+  }
+
+  (* apply_comp *)
+  {
+    by move=> ???; case=> [? |] [? |] [? |].
+  }
 Defined.
 
 (* Monad instance for option *)
-Instance option_monad : Monad option _ := {
+#[refine]
+Instance option_monad : Monad option := {
   bind _ _ x f := if x is Some x' then f x' else None;
 }.
 Proof.
-  - by [].
-  - by move=> a; case=> [x | ] //=.
-  - by move=> a b c f g; case=> [x | ] //=.
+  (* bind_left_id *)
+  {
+    by [].
+  }
+
+  (* bind_right_id *)
+  {
+    by move=> ?; case=> [? | ].
+  }
+
+  (* bind_assoc *)
+  {
+    by move=> ?????; case=> [? | ].
+  }
 Defined.
