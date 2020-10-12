@@ -47,10 +47,13 @@ Ltac dautoclosed :=
     | Hc : is_true (assertion_closed_in ?ks _ A) |- _ =>
       apply: closed_assertion_lc; exact: Hc
     end)
-  | |- is_true (assertion_closed_in _ _ _) =>
+  | |- is_true (assertion_closed_in _ _ ?A) =>
     (try by []);
     (try by rewrite /assertion_closed_in /= /assertion_gc_in /assertion_lc_in /=
-      ?andbT ?andTb; auto_mem_conj)
+      ?andbT ?andTb; auto_mem_conj);
+    (try by match goal with
+    | Hc : is_true (assertion_closed_in _ _ A) |- _ => eapply Hc
+    end)
 
   | |- is_true (predicate_lc_in ?ks ?p) =>
     (try by []);
@@ -59,10 +62,13 @@ Ltac dautoclosed :=
     | Hc : is_true (assertion_closed_in ?ks _ p) |- _ =>
       apply: closed_predicate_lc; exact: Hc
     end)
-  | |- is_true (predicate_closed_in _ _ _) =>
+  | |- is_true (predicate_closed_in _ _ ?p) =>
     (try by []);
     (try by rewrite /predicate_closed_in /= /predicate_gc_in /predicate_lc_in /=
-      ?andbT ?andTb; auto_mem_conj)
+      ?andbT ?andTb; auto_mem_conj);
+    (try by match goal with
+    | Hc : is_true (predicate_closed_in _ _ p) |- _ => eapply Hc
+    end)
 
   | |- is_true (term_lc_in ?ks ?t) =>
     (try by []);
@@ -72,11 +78,14 @@ Ltac dautoclosed :=
     | Hc : is_true (term_closed_in ?ks _ t) |- _ =>
       apply: closed_term_lc; exact: Hc
     end)
-  | |- is_true (term_closed_in _ _ _) =>
+  | |- is_true (term_closed_in _ _ ?t) =>
     (try by []);
     (try by apply: computable_term_closed);
     (try by rewrite /term_closed_in /= /term_gc_in /term_lc_in /=
-      ?andbT ?andTb; auto_mem_conj)
+      ?andbT ?andTb; auto_mem_conj);
+    (try by match goal with
+    | Hc : is_true (term_closed_in _ _ t) |- _ => eapply Hc
+    end)
   end.
 
 Ltac dautoopen :=
