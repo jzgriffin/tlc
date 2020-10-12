@@ -198,6 +198,9 @@ Axiom DTForAllIns :
     (forall: A) =>> A'
   -}.
 
+(* Apply constructor injection within the head premise *)
+Ltac dtinjectionp := repeat (dinjection; dtgenp; dclean; dtsubstposp).
+
 (* These rules and lemmas are taken directly from the appendix *)
 
 Lemma DTL76 C Z A1 A2 :
