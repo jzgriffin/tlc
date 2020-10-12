@@ -242,6 +242,8 @@ Definition TAdd x1 x2 := {-t FAdd ' x1 ' x2 -}.
 Notation "x1 + x2" := (TAdd x1 x2) : term_scope.
 
 (* Function notations for lists *)
+Definition TMap f xs := {-t FMap ' f ' xs -}.
+Notation "f <$> xs" := (TMap f xs) : term_scope.
 Definition TIn y xs := {-t FCount ' y ' xs != 0 -}.
 Notation "y \in xs" := (TIn y xs) : term_scope.
 Definition TNotIn y xs := {-t ~~(y \in xs) -}.
@@ -297,6 +299,7 @@ Ltac dfold_term :=
   | |- context[ {-t FAdd ' ?x1 ' ?x2 -} ] => rewrite -/(TAdd x1 x2)
 
   (* Function notations for lists *)
+  | |- context[ {-t FMap ' ?f ' ?xs -} ] => rewrite -/(TMap f xs)
   | |- context[ {-t FCount ' ?y ' ?xs != 0 -} ] => rewrite -/(TIn y xs)
   | |- context[ {-t ~~(?y \in ?xs) -} ] => rewrite -/(TNotIn y xs)
   | |- context[ {-t FConcat ' ?xs ' ?ys -} ] => rewrite -/(TConcat xs ys)
