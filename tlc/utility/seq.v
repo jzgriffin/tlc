@@ -134,8 +134,9 @@ Qed.
 Ltac auto_mem := rewrite in_cons; apply/orP; (try by left); right.
 Ltac auto_mem_conj :=
   by repeat match goal with
-  | [ |- is_true ((_ \in _) && _) ] =>
-    apply/andP; split; first by repeat auto_mem
+  | |- is_true ((_ \in _) && _) =>
+    apply/andP; split
+  | |- is_true (_ \in _) => repeat auto_mem
   end.
 
 (* Functor instance for seq *)
