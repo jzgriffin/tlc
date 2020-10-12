@@ -359,39 +359,43 @@ Proof.
     dsplitp; dassumption.
 Qed.
 
-(*
-Lemma DSExistsDistributesOr C Delta A1 A2 :
-  is_assertion_closed 1 Delta A1 ->
-  is_assertion_closed 1 Delta A2 ->
+Lemma DSExistsDistribOr2 C Delta A1 A2 :
+  assertion_closed_in [:: 1] Delta A1 ->
+  assertion_closed_in [:: 1] Delta A2 ->
   Context Delta [::] ||- C, {-A
     (exists: (A1 \/ A2)) <->
     (exists: A1) \/ (exists: A2)
    -}.
 Proof.
-  move => HA1_c HA2_c.
-  dsplitc; difc.
-  - by dexistsp z Hf_z; dorp; [dleft | dright]; dexistsc z.
-  - by dorp; dexistsp z Hf_z; dexistsc z; [dleft | dright].
-Qed.
+  move=> Hc_A1 Hc_A2.
+  dsplit; dif.
+  - dexistsp x; dsimplfresh.
+    + move/norP: Hf_x => [Hf_x_A1 Hf_x];
+      move/norP: Hf_x => [Hf_x_A2 Hf_x];
+      rewrite /context_rigids /= !mem_cat;
+      by apply/norP; split; [| apply/norP; split].
+    + admit.
+    dorp; [dleft | dright]; dexists x.
+  (* - by dorp; dexistsp z; dexists z; [dleft | dright]. *)
+  - admit.
+Admitted.
 
-Lemma DSExistsDistributesOr3 C Delta A1 A2 A3 :
-  is_assertion_closed 1 Delta A1 ->
-  is_assertion_closed 1 Delta A2 ->
-  is_assertion_closed 1 Delta A3 ->
+Lemma DSExistsDistribOr3 C Delta A1 A2 A3 :
+  assertion_closed_in [:: 1] Delta A1 ->
+  assertion_closed_in [:: 1] Delta A2 ->
+  assertion_closed_in [:: 1] Delta A3 ->
   Context Delta [::] ||- C, {-A
     (exists: (A1 \/ A2 \/ A3)) <->
     ((exists: A1) \/ (exists: A2) \/ (exists: A3))
    -}.
 Proof.
-  move => HA1_c HA2_c HA3_c.
-  dsplitc; difc.
-  - dexistsp z Hf_z; dorp; [| dorp].
-    + by dleft; dexistsc z.
-    + by dright; dleft; dexistsc z.
-    + by dright; dright; dexistsc z.
-  - dorp; [| dorp]; dexistsp z Hf_z; dexistsc z.
-    + by dleft.
-    + by dright; dleft.
-    + by dright; dright.
-Qed.
-*)
+  move=> Hc_A1 Hc_A2 Hc_A3.
+  dsplit; dif.
+  (*
+  - by dexistsp z; dorp;
+    [| dorp]; [dleft | dright; [dleft | dright] ]; dexists z.
+  - by dorp; [| dorp]; dexistsp z; dexists z.
+  *)
+  - admit.
+  - admit.
+Admitted.
