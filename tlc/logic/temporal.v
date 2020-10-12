@@ -538,7 +538,7 @@ Admitted.
 Lemma DTL121 C Delta Gamma A :
   Context Delta Gamma ||- C, {-A eventually^ A -> eventually A -}.
 Proof.
-  by difc; dright.
+  by dif; dright.
 Qed.
 
 Lemma DTL122 C Z A :
@@ -550,7 +550,7 @@ Admitted.
 Lemma DTL123 C Delta Gamma A :
   Context Delta Gamma ||- C, {-A eventuallyp^ A -> eventuallyp A -}.
 Proof.
-  by difc; dright.
+  by dif; dright.
 Qed.
 
 Lemma DTL124 C Z Ap Ac :

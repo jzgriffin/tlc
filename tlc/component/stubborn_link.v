@@ -69,8 +69,8 @@ Theorem SL_1 : Z0 ||- stubborn_link, {-A
 Proof.
   set C := stubborn_link.
 
-  dforallc n; dforallc n'; dforallc m; dsimplfresh.
-  difc; dsplitp.
+  dforall n; dforall n'; dforall m; dsimplfresh.
+  dif; dsplitp.
 
   (* By IR *)
   dhave {-A

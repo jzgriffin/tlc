@@ -42,10 +42,10 @@ Lemma DPTopRequestSelfElim C Delta :
     event[]-> $$0 /\ self-event <-> event[]-> $$0
   -}.
 Proof.
-  dforallc e; dsimplfresh; dsplitc; difc; first by dsplitp.
-  dsplitc; first by [].
+  dforall e; dsimplfresh; dsplit; dif; first by dsplitp.
+  dsplit; first by [].
   dsplitp; dswap; dsplitp.
-  by dright; dleft; dsplitc; dassumption.
+  by dright; dleft; dsplit; dassumption.
 Qed.
 
 Lemma DPTopRequestSelf C Delta :
@@ -67,10 +67,10 @@ Lemma DPSubIndicationSelfElim C Delta :
     event[$$1]<- $$0 /\ self-event <-> event[$$1]<- $$0
   -}.
 Proof.
-  dforallc i; dforallc e; dsimplfresh; dsplitc; difc; first by dsplitp.
-  dsplitc; first by [].
+  dforall i; dforall e; dsimplfresh; dsplit; dif; first by dsplitp.
+  dsplit; first by [].
   dsplitp; dswap; dsplitp.
-  by dleft; dexistsc i; dsplitc; dassumption.
+  by dleft; dexists i; dsplit; dassumption.
 Qed.
 
 Lemma DPSubIndicationSelf C Delta :
@@ -134,8 +134,8 @@ Lemma DPIROI C Delta S :
   -}.
 Proof.
   move=> Hu_S Hc_S NTS.
-  dforallc n; dforallc e; dforallc e'; dsimplfresh.
-  difc; dforallp {-t Fs ' n -}.
+  dforall n; dforall e; dforall e'; dsimplfresh.
+  dif; dforallp {-t Fs ' n -}.
 
   eapply DTTrans; last by duse DPOI; dforallp n; dforallp e'; dassumption.
   repeat (rewrite DTEntailsAndSplitC; split).
@@ -171,8 +171,8 @@ Lemma DPIIOI C Delta S :
   -}.
 Proof.
   move=> Hu_S Hc_S NTS.
-  dforallc n; dforallc i; dforallc e; dforallc e'; dsimplfresh.
-  difc; dforallp {-t Fs ' n -}.
+  dforall n; dforall i; dforall e; dforall e'; dsimplfresh.
+  dif; dforallp {-t Fs ' n -}.
 
   eapply DTTrans; last by duse DPOI; dforallp n; dforallp e'; dassumption.
   repeat (rewrite DTEntailsAndSplitC; split).

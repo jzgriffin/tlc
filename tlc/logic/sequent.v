@@ -114,7 +114,7 @@ Axiom DSEM :
 Lemma DSTrue C Delta Gamma :
   Context Delta Gamma ||- C, ATrue.
 Proof.
-  by dnotc.
+  by dnot.
 Qed.
 
 Hint Resolve DSTrue : core.
@@ -123,9 +123,9 @@ Hint Resolve DSTrue : core.
 Lemma DSNotImpliesFalse C Delta Gamma A :
   Context Delta Gamma ||- C, {-A ~A <-> (A -> AFalse) -}.
 Proof.
-  dsplitc; difc.
-  - by difc; dswap; dnotp.
-  - by dnotc; dswap; dnotp; dsplitc; dnotc; [dnotp |].
+  dsplit; dif.
+  - by dif; dswap; dnotp.
+  - by dnot; dswap; dnotp; dsplit; dnot; [dnotp |].
 Qed.
 
 (* Modus ponens in the premise *)
@@ -154,7 +154,7 @@ Qed.
 Lemma DSAndComm C Delta Gamma A1 A2 :
   Context Delta Gamma ||- C, {-A (A1 /\ A2) <-> (A2 /\ A1) -}.
 Proof.
-  by dsplitc; difc; dsplitp; dsplitc; try by []; by dclear.
+  by dsplit; dif; dsplitp; dsplit; try by []; by dclear.
 Qed.
 
 (* Associativity of And *)
@@ -164,76 +164,76 @@ Lemma DSAndAssoc C Delta Gamma A1 A2 A3 :
     A1 /\ (A2 /\ A3)
   -}.
 Proof.
-  dsplitc; difc.
-  - by dsplitp; dsplitp; dsplitc; [| dsplitc]; dassumption.
-  - by dsplitp; dswap; dsplitp; dsplitc; [dsplitc |]; dassumption.
+  dsplit; dif.
+  - by dsplitp; dsplitp; dsplit; [| dsplit]; dassumption.
+  - by dsplitp; dswap; dsplitp; dsplit; [dsplit |]; dassumption.
 Qed.
 
 (* Elimination of And with True *)
 Lemma DSAndElimTL C Delta Gamma A :
   Context Delta Gamma ||- C, {-A ATrue /\ A <-> A -}.
 Proof.
-  dsplitc; difc.
+  dsplit; dif.
   - by dsplitp; dassumption.
-  - by dsplitc; first by dnotc.
+  - by dsplit; first by dnot.
 Qed.
 
 Lemma DSAndElimTR C Delta Gamma A :
   Context Delta Gamma ||- C, {-A A /\ ATrue <-> A -}.
 Proof.
-  dsplitc; difc.
+  dsplit; dif.
   - by dsplitp.
-  - by dsplitc; last by dnotc.
+  - by dsplit; last by dnot.
 Qed.
 
 (* Elimination of And with False *)
 Lemma DSAndElimFL C Delta Gamma A :
   Context Delta Gamma ||- C, {-A AFalse /\ A <-> AFalse -}.
 Proof.
-  dsplitc; difc.
+  dsplit; dif.
   - by dsplitp.
-  - by dsplitc.
+  - by dsplit.
 Qed.
 
 Lemma DSAndElimFR C Delta Gamma A :
   Context Delta Gamma ||- C, {-A A /\ AFalse <-> AFalse -}.
 Proof.
-  dsplitc; difc.
+  dsplit; dif.
   - by dsplitp; dassumption.
-  - by dsplitc.
+  - by dsplit.
 Qed.
 
 (* Commutativity of Or *)
 Lemma DSOrComm C Delta Gamma Acl Acr :
   Context Delta Gamma ||- C, {-A (Acl \/ Acr) <-> (Acr \/ Acl) -}.
 Proof.
-  by dsplitc; difc; dorp; (try by dleft); (try by dright).
+  by dsplit; dif; dorp; (try by dleft); (try by dright).
 Qed.
 
 (* Elimination of Or with True *)
 Lemma DSOrElimTL C Delta Gamma A :
   Context Delta Gamma ||- C, {-A ATrue \/ A <-> ATrue -}.
 Proof.
-  by dsplitc; difc; [dorp | dleft]; dnotc.
+  by dsplit; dif; [dorp | dleft]; dnot.
 Qed.
 
 Lemma DSOrElimTR C Delta Gamma A :
   Context Delta Gamma ||- C, {-A A \/ ATrue <-> ATrue -}.
 Proof.
-  by dsplitc; difc; [dorp | dright]; dnotc.
+  by dsplit; dif; [dorp | dright]; dnot.
 Qed.
 
 (* Elimination of Or with False *)
 Lemma DSOrElimFL C Delta Gamma A :
   Context Delta Gamma ||- C, {-A AFalse \/ A <-> A -}.
 Proof.
-  by dsplitc; difc; [dorp | dright].
+  by dsplit; dif; [dorp | dright].
 Qed.
 
 Lemma DSOrElimFR C Delta Gamma A :
   Context Delta Gamma ||- C, {-A A \/ AFalse <-> A -}.
 Proof.
-  by dsplitc; difc; [dorp | dleft].
+  by dsplit; dif; [dorp | dleft].
 Qed.
 
 (* Commutativity of Iff *)
@@ -253,9 +253,9 @@ Lemma DSMergeIf C Delta Gamma H1 H2 A :
     (H1 /\ H2 -> A)
    -}.
 Proof.
-  dsplitc.
-  - by difc; difc; dsplitp; dxchg0 2; difp; [| difp]; dassumption.
-  - by difc; difc; difc; dxchg0 2; difp; [dsplitc |]; dassumption.
+  dsplit.
+  - by dif; dif; dsplitp; dxchg0 2; difp; [| difp]; dassumption.
+  - by dif; dif; dif; dxchg0 2; difp; [dsplit |]; dassumption.
 Qed.
 
 Lemma DSIfAndDropL C Delta Gamma A1 A2 :
@@ -263,7 +263,7 @@ Lemma DSIfAndDropL C Delta Gamma A1 A2 :
     A1 /\ A2 -> A2
    -}.
 Proof.
-  by difc; dsplitp; dswap.
+  by dif; dsplitp; dswap.
 Qed.
 
 Lemma DSIfAndDropR C Delta Gamma A1 A2 :
@@ -271,7 +271,7 @@ Lemma DSIfAndDropR C Delta Gamma A1 A2 :
     A1 /\ A2 -> A1
    -}.
 Proof.
-  by difc; dsplitp.
+  by dif; dsplitp.
 Qed.
 
 Lemma DSIfMergeAnd C Delta Gamma H A1 A2 :
@@ -280,7 +280,7 @@ Lemma DSIfMergeAnd C Delta Gamma H A1 A2 :
     (H -> A1 /\ A2)
    -}.
 Proof.
-  difc; dsplitp; difc; dsplitc.
+  dif; dsplitp; dif; dsplit.
   - dswap; difp; by [].
   - dswap; dclear; dswap; difp; by [].
 Qed.
@@ -291,11 +291,11 @@ Lemma DSIfAndSplit C Delta Gamma H A1 A2 :
     (H -> (A1 /\ A2))
   -}.
 Proof.
-  dsplitc; difc.
-  - dsplitp; difc; dsplitc.
+  dsplit; dif.
+  - dsplitp; dif; dsplit.
     + by dswap; difp; first by dhead.
     + by dswap; dclear; dswap; difp; first by dhead.
-  - dsplitc; difc; dswap; (difp; first by dhead); dsplitp.
+  - dsplit; dif; dswap; (difp; first by dhead); dsplitp.
     + by dhead.
     + by dswap.
 Qed.
@@ -306,8 +306,8 @@ Lemma DSIfAndIntro C Delta Gamma H1 H2 A :
     (H1 /\ H2 -> H1 /\ A)
   -}.
 Proof.
-  dsplitc; difc; difc.
-  - by dsplitc; [dsplitp | dswap; difp].
+  dsplit; dif; dif.
+  - by dsplit; [dsplitp | dswap; difp].
   - by dswap; difp; [| dsplitp]; dassumption.
 Qed.
 
@@ -317,60 +317,46 @@ Lemma DSIfAndElim C Delta Gamma H A1 A2 :
     (H -> A1)
   -}.
 Proof.
-  by difc; difc; dswap; difp; [| dsplitp].
+  by dif; dif; dswap; difp; [| dsplitp].
 Qed.
 
-Lemma DSOrDistributesAnd C Delta Gamma Al Ar A :
-  Context Delta Gamma ||- C, {-A A /\ (Al \/ Ar) <-> (A /\ Al) \/ (A /\ Ar) -}.
+Lemma DSOrDistribAnd2 C Delta Gamma A A1 A2 :
+  Context Delta Gamma ||- C, {-A
+    A /\ (A1 \/ A2) <-> (A /\ A1) \/ (A /\ A2)
+  -}.
 Proof.
-  dsplitc; difc.
-  - dsplitp; dswap; dorp.
-    + by dleft; dsplitc; [dclear; dhead | dhead].
-    + by dright; dsplitc; [dclear; dhead | dhead].
-  - dsplitc.
-    + by dorp; dsplitp; dhead.
-    + by dorp; dsplitp; dclear; [dleft | dright].
+  dsplit; dif.
+  - by dsplitp; dswap; dorp; [dleft | dright]; dsplit; dassumption.
+  - by dsplit; dorp; dsplitp; (try by []); [dleft | dright]; dassumption.
 Qed.
 
-Lemma DSOrDistributesAnd3 C Delta Gamma A1 A2 A3 A :
+Lemma DSOrDistribAnd3 C Delta Gamma A1 A2 A3 A :
   Context Delta Gamma ||- C, {-A
     A /\ (A1 \/ A2 \/ A3) <->
     (A /\ A1) \/ (A /\ A2) \/ (A /\ A3)
-   -}.
+  -}.
 Proof.
-  dsplitc. difc.
-  dsplitp. dswap. dorp.
-  dleft. dsplitc. dswap; first by dhead. dhead.
-  dright. dorp. dleft. dsplitc. dswap; first by dhead. dhead.
-  dright. dsplitc. dswap; first by dhead. dhead.
-
-  difc. dorp. dsplitc. dsplitp; first by dhead.
-  dleft. dsplitp. dswap. dhead.
-  dorp. dsplitc. dsplitp. dhead.
-  dright. dleft. dsplitp; dswap. dhead.
-  dsplitc. dsplitp. dhead.
-  dright. dright. dsplitp; dswap. dhead.
+  dsplit; dif.
+  - by dsplitp; dswap; dorp;
+    [dleft | dright; dorp; [dleft | dright] ];
+    dsplit; dassumption.
+  - by dorp; [| dorp]; dsplitp; dsplit; (try by dhead);
+    [dleft | dright; dleft | dright; dright]; dassumption.
 Qed.
 
-Lemma DSOrDistributesAnd4 C Delta Gamma A1 A2 A3 A4 A :
+Lemma DSOrDistribAnd4 C Delta Gamma A1 A2 A3 A4 A :
   Context Delta Gamma ||- C, {-A
     A /\ (A1 \/ A2 \/ A3 \/ A4) <->
     (A /\ A1) \/ (A /\ A2) \/ (A /\ A3) \/ (A /\ A4)
-   -}.
+  -}.
 Proof.
-  dsplitc; difc.
-  - dsplitp; dswap.
-    dorp; first by dleft; dsplitc; [dclear; dhead | dhead].
-    dorp; first by dright; dleft; dsplitc; [dclear; dhead | dhead].
-    dorp; first by dright; dright; dleft; dsplitc; [dclear; dhead | dhead].
-    dright; dright; dright; dsplitc; [dclear; dhead | dhead].
-  - dsplitc; dorp.
-    + by dsplitp.
-    + by dorp; [dsplitp | dorp; dsplitp].
-    + by dsplitp; dleft; by dswap.
-    + dorp; [| dorp]; dsplitp; dswap; dright; [by dleft | dright | dright].
-      * by dleft.
-      * by dright.
+  dsplit; dif.
+  - by dsplitp; dswap; dorp; [| dorp; [| dorp] ];
+    [dleft | dright; dleft | dright; dright; dleft | dright; dright; dright];
+    dsplit; dassumption.
+  - by dsplit; dorp; [| dorp; [| dorp] | |]; (try by dsplitp);
+    [dleft | dright; dorp; [dleft | dright; dorp; [dleft | dright] ] ];
+    dsplitp; dassumption.
 Qed.
 
 (*

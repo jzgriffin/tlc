@@ -424,23 +424,23 @@ Ltac dhave H :=
 Ltac duse L :=
   eapply DSCut; first by repeat dclear; eapply L.
 Ltac dnotp := apply DSNotP.
-Ltac dnotc := apply DSNotC.
+Ltac dnot := apply DSNotC.
 Ltac dorp := apply DSOrP.
 Ltac dleft := apply DSOrCL.
 Ltac dright := apply DSOrCR.
 Ltac dsplitp := apply DSAndP.
-Ltac dsplitc := apply DSAndC.
+Ltac dsplit := apply DSAndC.
 Ltac difp := apply DSIfP.
-Ltac difc := apply DSIfC.
+Ltac dif := apply DSIfC.
 Tactic Notation "dforallp" constr(x) :=
   eapply DSForAllP with (t := x);
   [try by dautoclosed | try by dautoopen | dclean].
-Tactic Notation "dforallc" ident(y) :=
+Tactic Notation "dforall" ident(y) :=
   dfresh y; eapply DSForAllC with (x := y);
   [try by dautofresh | try by dautoopen | dclean].
 Tactic Notation "dexistsp" ident(y) :=
   dfresh y; eapply DSExistsP with (x := y);
   [try by dautofresh | try by dautoopen | dclean].
-Tactic Notation "dexistsc" constr(x) :=
+Tactic Notation "dexists" constr(x) :=
   eapply DSExistsC with (t := x);
   [try by dautoclosed | try by dautoopen | dclean].
