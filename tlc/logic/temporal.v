@@ -67,6 +67,15 @@ Ltac dttrans :=
   | |- Context _ (AEntails _ ?A :: _) ||- _, AEntails _ _ =>
     eapply DTTrans with (A2 := A); [try by [] |]
   end.
+Ltac dttransp_keep :=
+  match goal with
+  | |- Context _ ({-A ?H2 =>> ?H3 -} :: {-A ?H1 =>> ?H2 -} :: _) ||- _, _ =>
+    eapply DSCut;
+      first by eapply DTTrans with (A1 := H1) (A2 := H2) (A3 := H3);
+      dassumption
+  end.
+(* Apply transitivity on the two head premises and remove them *)
+Ltac dttransp := dttransp_keep; dswap; dclear; dswap; dclear.
 
 (* State substituvity *)
 Axiom DSSubst :
