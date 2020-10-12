@@ -65,13 +65,15 @@ Section derives.
     Z ||- {-A A <=> A' -}
 
   (* Injection *)
-  | DInjection Delta Gamma v1 v2 c xs1 xs2 A :
-    term_construction v1 = Some (c, xs1) ->
-    term_construction v2 = Some (c, xs2) ->
-    size xs1 = size xs2 ->
-    Context Delta ({-A v1 = v2 -} :: Gamma) ||- A ->
-    Context Delta (foldr (fun '(x1, x2) Gamma => {-A x1 = x2 -} :: Gamma) Gamma
-      (zip xs1 xs2)) ||- A
+  | DInjection Delta Gamma t1 t2 c xh1 xh2 xt1 xt2 :
+    term_construction t1 = Some (c, rcons xh1 xt1) ->
+    term_construction t2 = Some (c, rcons xh2 xt2) ->
+    size xh1 = size xh2 ->
+    Context Delta Gamma ||- {-A
+      t1 = t2 ->
+      foldr (fun '(x1, x2) A => {-A x1 = x2 /\ A -})
+        {-A xt1 = xt2 -} (zip xh1 xh2)
+    -}
 
   (* Case analysis *)
   (* TODO *)
@@ -399,6 +401,16 @@ Tactic Notation "dfresh" ident(x) :=
     case: (DFresh Z A) => x Hxf
   end.
 Ltac dautofresh := by [].
+
+(* Injection tactics *)
+Ltac dinject t1_ t2_ :=
+  eapply DSCut;
+    first (by eapply DInjection with (t1 := t1_) (t2 := t2_));
+    simpl.
+Ltac dinjection :=
+  match goal with
+  | |- context[ {-A ?t1_ = ?t2_ -} ] => dinject t1_ t2_
+  end.
 
 (* Sequent logic tactics *)
 Ltac dexfalso := apply DSFalse.
