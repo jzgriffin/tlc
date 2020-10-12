@@ -27,64 +27,33 @@ Unset Printing Implicit Defensive.
 Definition stubborn_link :=
   let flc := 0 in
   let initialize :=
-    {t: fun:
-      (* Begin scoped parameters *)
-      let n := {t: #0} in
-      (* End scoped parameters *)
+    {-t fun: (* n *)
       []
-    } in
+    -} in
   let request :=
-    {t: fun: fun: fun:
-      (* Begin scoped parameters *)
-      let n := {t: #2} in
-      let s := {t: #1} in
-      let ir := {t: #0} in
-      (* End scoped parameters *)
-      match: ir with:
-      {{ CSLSend $ # $ # (* n', m *) ->
-        (* Begin scoped parameters *)
-        let n := {t: #4} in
-        let s := {t: #3} in
-        let ir := {t: #2} in
-        let n' := {t: #0} in
-        let m := {t: #1} in
-        (* End scoped parameters *)
-        (s \union [(n', m)], [(flc, CFLSend $ n' $ m)], [])
-      }}
-    } in
+    {-t fun: fun: fun: (* n, s, ir *)
+      match: $$0 with:
+      { CSLSend ' $0 ' $1 (* {n', m} *) ->
+        ($$2 :|: [($0, $1)], [(term_of_nat flc, CFLSend ' $0 ' $1)], [])
+      }
+    -} in
   let indication :=
-    {t: fun: fun: fun:
-      (* Begin scoped parameters *)
-      let n' := {t: #2} in
-      let s := {t: #1} in
-      let ii := {t: #0} in
-      (* End scoped parameters *)
-      match: ii with:
-      {{ (flc, CFLDeliver $ # $ #) (* n, m *) ->
-        (* Begin scoped parameters *)
-        let n' := {t: #4} in
-        let s := {t: #3} in
-        let ii := {t: #2} in
-        let n := {t: #0} in
-        let m := {t: #1} in
-        (* End scoped parameters *)
-        (s, [], [CSLDeliver $ n $ m])
-      }}
-    } in
+    {-t fun: fun: fun: (* n, s, ii *)
+      match: $$0 with:
+      { (pattern_of_nat flc, CFLDeliver ' $0 ' $1) (* {n, m} *) ->
+        ($$2, [], [CSLDeliver ' $0 ' $1])
+      }
+    -} in
   let periodic :=
-    {t: fun: fun:
-      (* Begin scoped parameters *)
-      let n' := {t: #1} in
-      let s := {t: #0} in
-      (* End scoped parameters *)
-      (s, (fun: let: (#, #) := #0 in:
-        (flc, CFLSend $ #0 $ #1)) <$> s, [])
-    } in
+    {-t fun: fun: (* n, s *)
+      ($$0, (fun: (* (n', m) *)
+        (term_of_nat flc, CFLSend ' ($$0).1 ' ($$0).2)) <$> $$0, [])
+    -} in
   Component
-    (Logic.eq_refl : is_term_concrete 0 [::] initialize)
-    (Logic.eq_refl : is_term_concrete 0 [::] request)
-    (Logic.eq_refl : is_term_concrete 0 [::] indication)
-    (Logic.eq_refl : is_term_concrete 0 [::] periodic).
+    (Logic.eq_refl : term_computable initialize)
+    (Logic.eq_refl : term_computable request)
+    (Logic.eq_refl : term_computable indication)
+    (Logic.eq_refl : term_computable periodic).
 
 (* Specification *)
 
