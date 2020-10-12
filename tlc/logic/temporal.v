@@ -20,6 +20,17 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+(* Temporal logic tactics *)
+Ltac dtgenp_keep :=
+  match goal with
+  | |- Context _ (?H :: _) ||- _, _ =>
+    eapply DSCut; first by apply DTGeneralization with (A := H);
+      first by repeat constructor
+  end.
+Ltac dtgenp := dtgenp_keep; dswap; dclear.
+Ltac dtgen :=
+  apply DTGeneralization; first by repeat constructor.
+
 (* Particularization *)
 Lemma DTPar C Delta Gamma A :
   Context Delta Gamma ||- C, {-A always A -} ->

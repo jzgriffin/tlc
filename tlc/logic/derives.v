@@ -444,7 +444,3 @@ Tactic Notation "dexistsp" ident(y) :=
 Tactic Notation "dexistsc" constr(x) :=
   eapply DSExistsC with (t := x);
   [try by dautoclosed | try by dautoopen | dclean].
-
-(* Temporal logic tactics *)
-Ltac dtgen :=
-  apply DTGeneralization; first by repeat constructor.
