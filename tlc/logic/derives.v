@@ -332,49 +332,8 @@ Admitted.
  * dclear uses the DSThin axiom but operates similarly to clear.
  *)
 
-(*
-Ltac d_fold := fold_terms; fold_assertions.
-
-(* Implementation-specific *)
-Tactic Notation "d_evalp" :=
-  eapply DAEvaluateP; first by []; simpl_embed.
-Tactic Notation "d_evalc" :=
-  eapply DAEvaluateC; first by []; simpl_embed.
-Tactic Notation "d_eval" :=
-  eapply DAEvaluateP; first by [];
-  eapply DAEvaluateC; first by []; simpl_embed.
-Tactic Notation "d_applyp" :=
-  apply DAHplicationP; simpl_embed.
-Tactic Notation "d_applyc" :=
-  apply DAHplicationC; simpl_embed.
-Tactic Notation "d_apply" :=
-  apply DAHplicationP; apply DAHplicationC; simpl_embed.
-Tactic Notation "d_substp" :=
-  apply DASubstituteP;
-  rewrite /replace_term_in_assertion /=; simpl_embed.
-Tactic Notation "d_substc" :=
-  apply DASubstituteC;
-  rewrite /replace_term_in_assertion /=; simpl_embed.
-Tactic Notation "d_subst" :=
-  apply DASubstituteP; apply DASubstituteC;
-  rewrite /replace_term_in_assertion /=; simpl_embed.
-Tactic Notation "d_destructp" constr(Pp) :=
-  eapply DADestructP with (P := Pp);
-  rewrite /destruct_matchp; simpl_embed.
-Tactic Notation "d_destructc" constr(Pc) :=
-  eapply DADestructC with (P := Pc);
-  rewrite /destruct_matchc; simpl_embed.
-Tactic Notation "d_destructpairp" :=
-  repeat (match goal with
-  | [ ||- context[ {-A (?ll, ?rl) = (?lr, ?rr) -} ] ] =>
-    eapply DARewriteIffPR; first by eapply DSCut;
-      by apply DADestructPair with (tll := ll) (trl := rl) (tlr := lr) (trr := rr)
-  end; simpl_embed).
-Tactic Notation "d_clearv" := apply DAThinV.
-Tactic Notation "d_swapv" := apply DAExchangeV.
-*)
-
 (* Tactics relating to fresh variables *)
+Ltac dclearv := apply DVThin.
 Ltac dsimplfresh :=
   repeat match goal with
   | Hf : is_true (_ \notin (derives_rigids _ _)) |- _ =>
@@ -439,12 +398,12 @@ Tactic Notation "dfresh" ident(x) :=
     let Hxf := fresh "Hf_" x in
     case: (DFresh Z A) => x Hxf
   end.
-Tactic Notation "dautofresh" := by [].
+Ltac dautofresh := by [].
 
 (* Sequent logic tactics *)
-Tactic Notation "dexfalso" := apply DSFalse.
-Tactic Notation "dhead" := apply DSAxiom.
-Tactic Notation "dclear" := apply DSThin.
+Ltac dexfalso := apply DSFalse.
+Ltac dhead := apply DSAxiom.
+Ltac dclear := apply DSThin.
 Ltac dhave H :=
   match goal with
   | |- derives ?C (Context ?Delta ?Gamma) ?A =>
@@ -452,15 +411,15 @@ Ltac dhave H :=
   end.
 Ltac duse L :=
   eapply DSCut; first by repeat dclear; eapply L.
-Tactic Notation "dnotp" := apply DSNotP.
-Tactic Notation "dnotc" := apply DSNotC.
-Tactic Notation "dorp" := apply DSOrP.
-Tactic Notation "dleft" := apply DSOrCL.
-Tactic Notation "dright" := apply DSOrCR.
-Tactic Notation "dsplitp" := apply DSAndP.
-Tactic Notation "dsplitc" := apply DSAndC.
-Tactic Notation "difp" := apply DSIfP.
-Tactic Notation "difc" := apply DSIfC.
+Ltac dnotp := apply DSNotP.
+Ltac dnotc := apply DSNotC.
+Ltac dorp := apply DSOrP.
+Ltac dleft := apply DSOrCL.
+Ltac dright := apply DSOrCR.
+Ltac dsplitp := apply DSAndP.
+Ltac dsplitc := apply DSAndC.
+Ltac difp := apply DSIfP.
+Ltac difc := apply DSIfC.
 Tactic Notation "dforallp" constr(x) :=
   eapply DSForAllP with (t := x);
   [try by dautoclosed | try by dautoopen | dclean].
