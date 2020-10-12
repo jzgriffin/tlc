@@ -94,16 +94,36 @@ Ltac dautoopen :=
     [eapply (@open_lc_assertion_at k _ us A); last first;
       [dautoclosed | try by [] ] |
     rewrite {}H]
+  | |- context[ open_assertion_at ?k ?us ?A ] =>
+    let H := fresh "H" in
+    let A' := fresh A "'" in
+    assert (H : exists A', open_assertion_at k us A = Success A');
+      [by eapply open_closed_assertion_at; [dautoclosed |] |
+      case: H => A' ->]
+
   | |- context[ open_predicate_at ?k ?us ?p ] =>
     let H := fresh "H" in
     assert (H : open_predicate_at k us p = Success p);
     [eapply (@open_lc_predicate_at k _ us p); last first;
       [dautoclosed | try by [] ] |
     rewrite {}H]
+  | |- context[ open_predicate_at ?k ?us ?p ] =>
+    let H := fresh "H" in
+    let p' := fresh p "'" in
+    assert (H : exists p', open_predicate_at k us p = Success p');
+      [by eapply open_closed_predicate_at; [dautoclosed |] |
+      case: H => p' ->]
+
   | |- context[ open_term_at ?k ?us ?t ] =>
     let H := fresh "H" in
     assert (H : open_term_at k us t = Success t);
     [eapply (@open_lc_term_at k _ us t); last first;
       [dautoclosed | try by [] ] |
     rewrite {}H]
+  | |- context[ open_term_at ?k ?us ?t ] =>
+    let H := fresh "H" in
+    let t' := fresh t "'" in
+    assert (H : exists t', open_term_at k us t = Success t');
+      [by eapply open_closed_term_at; [dautoclosed |] |
+      case: H => t' ->]
   end.
