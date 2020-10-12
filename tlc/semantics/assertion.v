@@ -163,6 +163,14 @@ Proof.
   by move/andP => [??].
 Qed.
 
+(* Well-formed opening will not fail *)
+Lemma open_closed_assertion_at ks xs k us A :
+  assertion_closed_in ks xs A ->
+  onth ks k = Some (size us) ->
+  exists A', open_assertion_at k us A = Success A'.
+Proof.
+Admitted.
+
 (* Determine whether an assertion is rigid
  * An assertion is rigid if it contains no flexible variables.
  *)

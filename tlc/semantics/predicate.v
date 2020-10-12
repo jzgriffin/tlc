@@ -127,6 +127,14 @@ Proof.
   by move/andP => [??].
 Qed.
 
+(* Well-formed opening will not fail *)
+Lemma open_closed_predicate_at ks xs k us p :
+  predicate_closed_in ks xs p ->
+  onth ks k = Some (size us) ->
+  exists p', open_predicate_at k us p = Success p'.
+Proof.
+Admitted.
+
 (* Determine whether a predicate is rigid
  * A predicate is rigid if it contains no flexible variables.
  *)

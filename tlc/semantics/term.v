@@ -193,6 +193,14 @@ Proof.
   by move/andP => [??].
 Qed.
 
+(* Well-formed opening will not fail *)
+Lemma open_closed_term_at ks xs k us t :
+  term_closed_in ks xs t ->
+  onth ks k = Some (size us) ->
+  exists t', open_term_at k us t = Success t'.
+Proof.
+Admitted.
+
 (* Determine whether a term is rigid
  * A term is rigid if it contains no flexible variables.
  *)
