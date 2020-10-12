@@ -190,50 +190,6 @@ Proof.
   by dttrans; first dtentails_r.
 Qed.
 
-(*
-  (* By InvL *)
-  eapply DSCut.
-    repeat dclear; apply DPInvL with (A := {-A on n, S ' (Fs ' Fn) -> e' \in Fois -});
-      last by repeat constructor.
-    move/andP: Hc_S => [Hlc_S Hgc_S]; apply/andP; split;
-      first by rewrite /= !andbT.
-    rewrite /assertion_gc_in /=; apply/andP; split; first by repeat auto_mem.
-    rewrite ?subset_catl; repeat (apply/andP; split); try by repeat auto_mem.
-    by assert (H : [:: e', e, i, n & Delta] = foldr cons Delta [:: e'; e; i; n]);
-      first by [];
-      last by apply subsetT with (xs2 := Delta); first by [];
-      rewrite {}H -(cat_foldr_cons _ Delta); exact: subset_catrr.
-
-    difp. (* request *)
-      admit.
-
-    difp. (* indication *)
-      dforallc i_l; dforallc e_l; dsimplfresh.
-      repeat difc.
-      dsplitp.
-      dxchg0 3; difp.
-        dsplitc; first by dassumption.
-        match goal with
-        | |- _ ||- _, ?A' =>
-          eapply DSCut; [
-            apply DTReplE with (x := Fn) (t1 := Fn) (t2 := n) (A := A');
-            [| by repeat constructor | |]; try by []
-          |]
-        end.
-        - rewrite /assertion_vars /= ?cats0 mem_cat; apply/orP; left.
-          rewrite mem_map; last by rewrite /injective; move=> ?? Hx; injection Hx.
-          rewrite mem_cat; apply/orP; left; rewrite mem_cat; apply/orP; right.
-          by repeat auto_mem.
-        dsplitp; dswap; dclear; difp; first by dassumption.
-        rewrite /replace_assertion_var /=; dclean.
-        rewrite ?replace_rigid_term_flexible_var;
-          try by apply computable_term_rigid.
-        dsplitp; dclear; difp; last by [].
-        dswap; dsplitp.
-        admit.
-      by [].
-*)
-
 Lemma DPInvSe C Delta A :
   assertion_closed_in [::] Delta A ->
   Context Delta [::] ||- C, {-A
