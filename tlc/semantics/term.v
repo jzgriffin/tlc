@@ -342,10 +342,8 @@ Fixpoint reduce_term_rec fuel t :=
     let t' := TApplication f' a' in
     match t' with
     | TApplication (TMatch cs) _ =>
-      if is_value a' then
-        b <- reduce_match cs a';
-        reduce_term_rec fuel b
-      else pure t'
+      b <- reduce_match cs a';
+      reduce_term_rec fuel b
     (* Boolean equality *)
     | TApplication (TApplication FEqual x1) x2 =>
       (* Only reduce this if the equality can be determined
