@@ -55,6 +55,11 @@ Lemma DPTopRequestSelf C Delta :
   -}.
 Proof.
 Admitted.
+Ltac dptoprequestself :=
+  match goal with
+  | |- _ ||- _, {-A event[]-> ?e =>> self-event -} =>
+    by duse DPTopRequestSelf; dforallp e
+  end.
 
 Lemma DPSubIndicationSelfElim C Delta :
   Context Delta [::] ||- C, {-A
@@ -75,6 +80,11 @@ Lemma DPSubIndicationSelf C Delta :
   -}.
 Proof.
 Admitted.
+Ltac dpsubindicationself :=
+  match goal with
+  | |- _ ||- _, {-A event[?i]<- ?e =>> self-event -} =>
+    by duse DPSubIndicationSelf; dforallp i; dforallp e
+  end.
 
 (* These rules and lemmas are taken directly from the appendix *)
 
@@ -130,8 +140,7 @@ Proof.
   eapply DTTrans; last by duse DPOI; dforallp n; dforallp e'; dassumption.
   repeat (rewrite DTEntailsAndSplitC; split).
   - by exact: DTEntailsAndDropRight.
-  - by dtentails_r; dtentails_l;
-    duse DPTopRequestSelf; dforallp e.
+  - by dtentails_r; dtentails_l; dptoprequestself.
 
   eapply DTTrans with (A2 := {-A S ' (Fs ' n) /\
     (Fs' ' n, Fors, Fois) = request C ' n ' (Fs ' n) ' e -});
@@ -168,8 +177,7 @@ Proof.
   eapply DTTrans; last by duse DPOI; dforallp n; dforallp e'; dassumption.
   repeat (rewrite DTEntailsAndSplitC; split).
   - by exact: DTEntailsAndDropRight.
-  - by dtentails_r; dtentails_l;
-    duse DPSubIndicationSelf; dforallp i; dforallp e.
+  - by dtentails_r; dtentails_l; dpsubindicationself.
 
   eapply DTTrans with (A2 := {-A S ' (Fs ' n) /\
     (Fs' ' n, Fors, Fois) = indication C ' n ' (Fs ' n) ' (i, e) -});
