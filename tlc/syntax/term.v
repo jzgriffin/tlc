@@ -255,6 +255,9 @@ Notation "xs :|: ys" := (TSetUnion xs ys) : term_scope.
 
 (* Tactics *)
 Ltac dfold_term :=
+  rewrite /TFlexible /TRigid; (* Skip the flexible/rigid coercions.
+                               * This allows us to consistently use TVariable
+                               * in contextual matches. *)
   repeat match goal with
   (* Derived constructor notations for pairs *)
   | |- context[ {-t TConstructor CPair ' ?x1 ' ?x2 -} ] => rewrite -/(TPair x1 x2)
