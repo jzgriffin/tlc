@@ -48,6 +48,7 @@ tlc/logic/sequent.v
 tlc/logic/temporal.v
 tlc/logic/predicate.v
 tlc/logic/program.v
+tlc/logic/tactics.v
 tlc/logic/all_logic.v
 tlc/component/stubborn_link.v
 tlc/component/perfect_link.v
