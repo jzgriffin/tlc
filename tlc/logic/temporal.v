@@ -4,6 +4,7 @@
  * Purpose: Contains derived rules and lemmas regarding temporal logic.
  *)
 
+Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -102,6 +103,16 @@ Axiom DTSubstPos :
   Z ||- C, {-A
     ((replace_assertion u A1 A) =>> (replace_assertion u A2 A))
   -}.
+Ltac dtsubstposp :=
+  match goal with
+  | |- Context _ (AEntails ?A1_ ?A2_ :: ?A_ :: _) ||- _, _ =>
+    eapply DSCut;
+    [eapply DTSubstPos with (A1 := A1_) (A2 := A2_) (u := A1_) (A := A_);
+      [try by rewrite /all_assertion_occ_pos /all_assertion_occ_rec
+        /= ?eq_refl ?if_same | try by [] ] |
+    simpl; dclean; rewrite ?eq_refl;
+    dsplitp; dswap; dclear; difp; [by dclear | do 2 (dswap; dclear)] ]
+  end.
 
 (* Negative polarity *)
 Axiom DTSubstNeg :
