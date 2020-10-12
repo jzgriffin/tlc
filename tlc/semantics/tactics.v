@@ -50,7 +50,7 @@ Ltac dautoclosed :=
   | |- is_true (assertion_closed_in _ _ _) =>
     (try by []);
     (try by rewrite /assertion_closed_in /= /assertion_gc_in /assertion_lc_in /=
-      ?andbT ?andTb; repeat auto_mem)
+      ?andbT ?andTb; auto_mem_conj)
 
   | |- is_true (predicate_lc_in ?ks ?p) =>
     (try by []);
@@ -62,7 +62,7 @@ Ltac dautoclosed :=
   | |- is_true (predicate_closed_in _ _ _) =>
     (try by []);
     (try by rewrite /predicate_closed_in /= /predicate_gc_in /predicate_lc_in /=
-      ?andbT ?andTb; repeat auto_mem)
+      ?andbT ?andTb; auto_mem_conj)
 
   | |- is_true (term_lc_in ?ks ?t) =>
     (try by []);
@@ -76,7 +76,7 @@ Ltac dautoclosed :=
     (try by []);
     (try by apply: computable_term_closed);
     (try by rewrite /term_closed_in /= /term_gc_in /term_lc_in /=
-      ?andbT ?andTb; repeat auto_mem)
+      ?andbT ?andTb; auto_mem_conj)
   end.
 
 Ltac dautoopen :=
