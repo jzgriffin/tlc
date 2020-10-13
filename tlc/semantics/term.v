@@ -350,8 +350,11 @@ Fixpoint reduce_term_rec fuel t :=
     let t' := TApplication f' a' in
     match t' with
     | TApplication (TMatch cs) _ =>
-      b <- reduce_match cs a';
-      reduce_term_rec fuel b
+      (* Do not fail pattern matching failed on a non-value *)
+      match reduce_match cs a' with
+      | Success b => reduce_term_rec fuel b
+      | Failure e => if is_value a' then Failure e else pure t'
+      end
     (* Boolean equality *)
     | TApplication (TApplication FEqual x1) x2 =>
       (* Only reduce this if the equality can be determined
