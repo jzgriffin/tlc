@@ -42,5 +42,5 @@ Qed.
 (* Reduction *)
 Ltac dsimplp :=
   rewrite -DReduceP; last by []; dclean.
-Ltac dsimplc :=
+Ltac dsimpl :=
   rewrite -DReduceC; last by []; dclean.
