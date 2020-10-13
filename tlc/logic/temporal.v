@@ -721,6 +721,12 @@ Lemma DTEntailsAndAssocC C Z H A1 A2 A3 :
 Proof.
 Admitted.
 
+Lemma DTEntailsAndSplitP C Delta Gamma H A1 A2 A :
+  Context Delta ({-A H =>> A1 /\ A2 -} :: Gamma) ||- C, A <->
+    Context Delta ({-A H =>> A1 -} :: {-A H =>> A2 -} :: Gamma) ||- C, A.
+Proof.
+Admitted.
+
 Lemma DTEntailsAndSplitC C Z H A1 A2 :
   Z ||- C, {-A H =>> A1 /\ A2 -} <->
   Z ||- C, {-A H =>> A1 -} /\ Z ||- C, {-A H =>> A2 -}.
