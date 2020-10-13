@@ -166,22 +166,6 @@ Lemma DTIfSubstE :
 Proof.
 Admitted.
 
-Ltac dtifsubste_pl :=
-  match goal with
-  | |- Context _ ({-A ?H_ =>> ?A_ -} :: _) ||- _,
-    {-A TVariable ?x1 = TVariable ?x2 /\ ?H_ =>> _ -} =>
-    eapply DSCut; [eapply DTIfSubstE with
-      (x := x1) (t1 := x1) (t2 := x2) (H := H_) (A := A_) |];
-      [by repeat auto_mem | by [] | by [] |]
-  end;
-  rewrite /replace_assertion_var /=
-    ?replace_rigid_term_flexible_var
-    ?replace_gc_term_rigid_var;
-    (try by exact: computable_term_rigid);
-    (try by exact: computable_term_closed);
-    last (dclean; dsplitp; dswap; dclear; dsplitp; dswap; dclear;
-      difp; last by []).
-
 (* Quantifier duality *)
 Axiom DTQDual :
   forall C Z A,
@@ -742,3 +726,21 @@ Lemma DTEntailsAndSplitC C Z H A1 A2 :
   Z ||- C, {-A H =>> A1 -} /\ Z ||- C, {-A H =>> A2 -}.
 Proof.
 Admitted.
+
+(* Further tactics *)
+Ltac dtifsubste_pl :=
+  rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
+  match goal with
+  | |- Context _ ({-A ?H_ =>> ?A_ -} :: _) ||- _,
+    {-A TVariable ?x1 = TVariable ?x2 /\ ?H_ =>> _ -} =>
+    eapply DSCut; [eapply DTIfSubstE with
+      (x := x1) (t1 := x1) (t2 := x2) (H := H_) (A := A_) |];
+      [by repeat auto_mem | by [] | by [] |]
+  end;
+  rewrite /replace_assertion_var /=
+    ?replace_rigid_term_flexible_var
+    ?replace_gc_term_rigid_var;
+    (try by exact: computable_term_rigid);
+    (try by exact: computable_term_closed);
+  dclean; dsplitp; dswap; dclear; dsplitp; dswap; dclear; difp;
+    (try by []); (try by dtentails_r).

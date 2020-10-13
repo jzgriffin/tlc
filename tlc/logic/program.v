@@ -149,8 +149,7 @@ Proof.
   rewrite DTEntailsAndSplitC; split; first by repeat dtentails_r.
   rewrite -DTEntailsAndAssocP; dtentails_l.
   duse DPIR; dforallp e.
-  rewrite /AOn /TFlexible /TRigid; dtifsubste_pl.
-  by dttrans; first dtentails_r.
+  by dtifsubste_pl.
 Qed.
 
 Lemma DPIIOI C Delta S :
@@ -186,8 +185,7 @@ Proof.
   rewrite DTEntailsAndSplitC; split; first by repeat dtentails_r.
   rewrite -DTEntailsAndAssocP; dtentails_l.
   duse DPII; dforallp i; dforallp e.
-  rewrite /AOn /TFlexible /TRigid; dtifsubste_pl.
-  by dttrans; first dtentails_r.
+  by dtifsubste_pl.
 Qed.
 
 Lemma DPInvSe C Delta A :
