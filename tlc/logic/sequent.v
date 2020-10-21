@@ -369,11 +369,7 @@ Lemma DSExistsDistribOr2 C Delta A1 A2 :
 Proof.
   move=> Hc_A1 Hc_A2.
   dsplit; dif.
-  - dexistsp x; dsimplfresh.
-    + move/norP: Hf_x => [Hf_x_A1 Hf_x];
-      move/norP: Hf_x => [Hf_x_A2 Hf_x];
-      rewrite /context_rigids /= !mem_cat;
-      by apply/norP; split; [| apply/norP; split].
+  - dexistsp x.
     + admit.
     dorp; [dleft | dright]; dexists x.
   (* - by dorp; dexistsp z; dexists z; [dleft | dright]. *)

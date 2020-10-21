@@ -343,67 +343,44 @@ Ltac dsimplfresh :=
   repeat match goal with
   | Hf : is_true (_ \notin (derives_rigids _ _)) |- _ =>
     rewrite /derives_rigids /context_rigids /= ?cats0 ?cat0s in Hf
-
-  | Hf : context[ term_rigids (initialize ?C) ] |- _ =>
-    let Hr := fresh "Hr" in
-    assert (Hr : term_rigids (initialize C) = [::]);
-      first (by
-      move/andP: (computable_term_closed (initialize_computable C)) => [_ ?];
-      exact: subsets0);
-    rewrite {}Hr ?cats0 ?cat0s in Hf
-
-  | Hf : context[ term_rigids (request ?C) ] |- _ =>
-    let Hr := fresh "Hr" in
-    assert (Hr : term_rigids (request C) = [::]);
-      first (by
-      move/andP: (computable_term_closed (request_computable C)) => [_ ?];
-      exact: subsets0);
-    rewrite {}Hr ?cats0 ?cat0s in Hf
-
-  | Hf : context[ term_rigids (indication ?C) ] |- _ =>
-    let Hr := fresh "Hr" in
-    assert (Hr : term_rigids (indication C) = [::]);
-      first (by
-      move/andP: (computable_term_closed (indication_computable C)) => [_ ?];
-      exact: subsets0);
-    rewrite {}Hr ?cats0 ?cat0s in Hf
-
-  | Hf : context[ term_rigids (periodic ?C) ] |- _ =>
-    let Hr := fresh "Hr" in
-    assert (Hr : term_rigids (periodic C) = [::]);
-      first (by
-      move/andP: (computable_term_closed (periodic_computable C)) => [_ ?];
-      exact: subsets0);
-    rewrite {}Hr ?cats0 ?cat0s in Hf
+  | Hf : is_true (_ \notin _) |- _ =>
+    try rewrite computable_term_rigids ?cats0 ?cat0s in Hf; last by []
   end;
   repeat match goal with
-  | H : is_true (_ \notin _) |- _ =>
-    repeat rewrite ?in_cons ?mem_cat in H
-
-  (* Trim false branches *)
-  | H : context[ _ \in [::] ] |- _ =>
-    rewrite ?in_nil ?orFb ?orbF in H
-
-  (* Trim redundant branches *)
-  (* TODO: Find a way to find these in more deeply-nested trees *)
-  | H : context[ ?x || ?x ] |- _ =>
-    rewrite (orbb x) in H
-  | H : context[ ?x || (?x || ?y) ] |- _ =>
-    rewrite (orbA x x y) (orbb x) in H
-  | H : context[ ?x || (?y || ?x) ] |- _ =>
-    rewrite (orbC y x) (orbA x x y) (orbb x) in H
-
-  (* Flatten disjunctive trees *)
-  | H : context[ ((?x || ?y) || ?z) ] |- _ =>
-    rewrite -(orbA x y z) in H
+  (* Break down compounds *)
+  | Hf : is_true (_ \notin (_ :: _)) |- _ =>
+    let Hf' := fresh Hf in
+    rewrite in_cons in Hf; move/norP: Hf => [/eqP Hf' Hf]
+  | Hf : is_true (_ \notin (_ ++ _)) |- _ =>
+    rewrite mem_cat in Hf; move/norP: Hf => Hf
+  | Hf : is_true (?x \notin ?ys) /\ is_true (?x \notin _) |- _ =>
+    let Hf' := fresh Hf in
+    move: Hf => [Hf' Hf]
+  (* Remove duplicates and tautologies *)
+  | Hf : is_true (_ \notin [::]) |- _ =>
+    clear Hf
+  | Hf : is_true (?x \notin ?ys), Hf' : is_true (?x \notin ?ys) |- _ =>
+    clear Hf'
+  | Hf : ?x <> ?y, Hf' : ?x <> ?y |- _ =>
+    clear Hf'
   end.
 Tactic Notation "dfresh" ident(x) :=
   match goal with
   | |- context[ ?Z ||- _, ?A ] =>
     let Hxf := fresh "Hf_" x in
-    case: (DFresh Z A) => x Hxf
+    case: (DFresh Z A) => x Hxf; dsimplfresh
   end.
-Ltac dautofresh := by [].
+Ltac dautofresh :=
+  repeat match goal with
+  | |- context[ context_rigids _ ] =>
+    rewrite /context_rigids /= ?cats0 ?cat0s
+  | |- is_true (_ \notin (term_rigids _)) =>
+    rewrite computable_term_rigids; last by []
+  | |- is_true (_ \notin (_ :: _)) =>
+    rewrite in_cons; apply/norP; split; [try by apply/eqP | try by [] ]
+  | |- is_true (_ \notin (_ ++ _)) =>
+    rewrite mem_cat; apply/norP; split; try by []
+  end.
 
 (* Injection tactics *)
 Ltac dinject t1_ t2_ :=
@@ -440,10 +417,10 @@ Tactic Notation "dforallp" constr(x) :=
   [try by dautoclosed | try by dautoopen | dclean].
 Tactic Notation "dforall" ident(y) :=
   dfresh y; eapply DSForAllC with (x := y);
-  [try by dautofresh | try by dautoopen | dclean].
+  [dautofresh; try by [] | try by dautoopen | dclean].
 Tactic Notation "dexistsp" ident(y) :=
   dfresh y; eapply DSExistsP with (x := y);
-  [try by dautofresh | try by dautoopen | dclean].
+  [dautofresh; try by [] | try by dautoopen | dclean].
 Tactic Notation "dexists" constr(x) :=
   eapply DSExistsC with (t := x);
   [try by dautoclosed | try by dautoopen | dclean].

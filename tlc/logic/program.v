@@ -42,7 +42,7 @@ Lemma DPTopRequestSelfElim C Delta :
     event[]-> $$0 /\ self-event <-> event[]-> $$0
   -}.
 Proof.
-  dforall e; dsimplfresh; dsplit; dif; first by dsplitp.
+  dforall e; dsplit; dif; first by dsplitp.
   dsplit; first by [].
   dsplitp; dswap; dsplitp.
   by dright; dleft; dsplit; dassumption.
@@ -67,7 +67,7 @@ Lemma DPSubIndicationSelfElim C Delta :
     event[$$1]<- $$0 /\ self-event <-> event[$$1]<- $$0
   -}.
 Proof.
-  dforall i; dforall e; dsimplfresh; dsplit; dif; first by dsplitp.
+  dforall i; dforall e; dsplit; dif; first by dsplitp.
   dsplit; first by [].
   dsplitp; dswap; dsplitp.
   by dleft; dexists i; dsplit; dassumption.
@@ -134,7 +134,7 @@ Lemma DPIROI C Delta S :
   -}.
 Proof.
   move=> Hu_S Hc_S NTS.
-  dforall n; dforall e; dforall e'; dsimplfresh.
+  dforall n; dforall e; dforall e'.
   dif; dforallp {-t Fs ' n -}.
 
   eapply DTTrans; last by duse DPOI; dforallp n; dforallp e'; dassumption.
@@ -170,7 +170,7 @@ Lemma DPIIOI C Delta S :
   -}.
 Proof.
   move=> Hu_S Hc_S NTS.
-  dforall n; dforall i; dforall e; dforall e'; dsimplfresh.
+  dforall n; dforall i; dforall e; dforall e'.
   dif; dforallp {-t Fs ' n -}.
 
   eapply DTTrans; last by duse DPOI; dforallp n; dforallp e'; dassumption.
