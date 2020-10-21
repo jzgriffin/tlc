@@ -733,6 +733,14 @@ Lemma DTEntailsAndSplitC C Z H A1 A2 :
 Proof.
 Admitted.
 
+Lemma DTOrEntails C Z H1 H2 A :
+  Z ||- C, {-A always (H1 \/ H2) -} ->
+  Z ||- C, {-A H1 =>> A -} ->
+  Z ||- C, {-A H2 =>> A -} ->
+  Z ||- C, {-A always A -}.
+Proof.
+Admitted.
+
 (* Further tactics *)
 Ltac dtifsubste_pl :=
   rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
