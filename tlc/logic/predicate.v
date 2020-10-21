@@ -194,3 +194,10 @@ Lemma DPMemberSetUnion C Delta :
 Proof.
   (* Used in SLC *)
 Admitted.
+Ltac dpmembersetunion :=
+  match goal with
+  | |- _ ||- _, {-A ?x \in ?y :|: ?z -} =>
+    duse DPMemberSetUnion;
+    dforallp y; dforallp z; dforallp x; dclean;
+    dsplitp; dswap; dclear; difp; last by []
+  end.
