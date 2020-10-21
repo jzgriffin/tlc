@@ -295,16 +295,16 @@ Ltac dfold_term :=
   | |- context[ {-t ~~(~~?b1 || ~~?b2) -} ] => rewrite -/(TAnd b1 b2)
 
   (* Function notations for boolean equality *)
-  | |- context[ {-t FEqual ' ?x1 ' ?x2 -} ] => rewrite -/(TEqual x1 x2)
+  | |- context[ {-t TFunction FEqual ' ?x1 ' ?x2 -} ] => rewrite -/(TEqual x1 x2)
   | |- context[ {-t ~~(?x1 == ?x2) -} ] => rewrite -/(TNotEqual x1 x2)
 
   (* Function notations for naturals *)
-  | |- context[ {-t FAdd ' ?x1 ' ?x2 -} ] => rewrite -/(TAdd x1 x2)
+  | |- context[ {-t TFunction FAdd ' ?x1 ' ?x2 -} ] => rewrite -/(TAdd x1 x2)
 
   (* Function notations for lists *)
-  | |- context[ {-t FMap ' ?f ' ?xs -} ] => rewrite -/(TMap f xs)
-  | |- context[ {-t FCount ' ?y ' ?xs != 0 -} ] => rewrite -/(TIn y xs)
+  | |- context[ {-t TFunction FMap ' ?f ' ?xs -} ] => rewrite -/(TMap f xs)
+  | |- context[ {-t TFunction FCount ' ?y ' ?xs != 0 -} ] => rewrite -/(TIn y xs)
   | |- context[ {-t ~~(?y \in ?xs) -} ] => rewrite -/(TNotIn y xs)
-  | |- context[ {-t FConcat ' ?xs ' ?ys -} ] => rewrite -/(TConcat xs ys)
-  | |- context[ {-t FSetUnion ' ?xs ' ?ys -} ] => rewrite -/(TSetUnion xs ys)
+  | |- context[ {-t TFunction FConcat ' ?xs ' ?ys -} ] => rewrite -/(TConcat xs ys)
+  | |- context[ {-t TFunction FSetUnion ' ?xs ' ?ys -} ] => rewrite -/(TSetUnion xs ys)
   end.
