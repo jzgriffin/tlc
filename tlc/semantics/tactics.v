@@ -15,27 +15,34 @@ Require Import tlc.syntax.all_syntax.
 Require Import tlc.utility.result.
 Require Import tlc.utility.seq.
 
+(* Automatically resolve known equalities *)
+Ltac dautoeq :=
+  rewrite ?eqE /= -?eqE;
+  repeat match goal with
+  | H : ?x <> ?y |- context[ ?x == ?y ] =>
+    rewrite (negbTE (introN eqP H))
+  end.
+
+(* Automatically simplify replacement *)
+Ltac dreplace :=
+  rewrite
+    /replace_assertion_var
+    /replace_predicate_var
+    /replace_term_var
+    /=
+    -/replace_term_var
+    -/replace_predicate_var
+    -/replace_assertion_var
+    ?replace_rigid_term_flexible_var
+    ?replace_gc_term_rigid_var
+    ?eq_refl;
+    (try by exact: computable_term_rigid);
+    (try by exact: computable_term_closed);
+  dautoeq.
+
 (* Tactics for refolding syntactic sugar *)
 Ltac dclean :=
-  dfold_assertion.
-
-(*
-(* Tactics for distinguishing variables *)
-Ltac distinguish_variable x y Hf :=
-  let H := fresh "H" in
-  assert (H: ((x == y) = false)); [
-    by apply negbTE; eapply eq_notin; last first; [apply Hf | repeat auto_in_seq] ||
-    by rewrite eq_sym; apply negbTE; eapply eq_notin; last first; [apply Hf | repeat auto_in_seq]
-  | rewrite {}H
-  ].
-Ltac distinguish_variables :=
-  repeat match goal with
-  | [ Hf: is_true (_ \notin _) |- context[ eq_op ?x ?y ] ] =>
-    distinguish_variable x y Hf
-  | [ Hf: is_true (_ \notin _) |- context[ variable_eq ?x ?y ] ] =>
-    rewrite -!eqE; distinguish_variable x y Hf
-  end; rewrite /=.
-*)
+  dreplace; dfold_assertion.
 
 (* Tactics for automatically solving openings *)
 Ltac dautoclosed :=

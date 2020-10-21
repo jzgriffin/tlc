@@ -751,10 +751,5 @@ Ltac dtifsubste_pl :=
       (x := x1) (t1 := x1) (t2 := x2) (H := H_) (A := A_) |];
       [by repeat auto_mem | by [] | by [] |]
   end;
-  rewrite /replace_assertion_var /=
-    ?replace_rigid_term_flexible_var
-    ?replace_gc_term_rigid_var;
-    (try by exact: computable_term_rigid);
-    (try by exact: computable_term_closed);
   dclean; dsplitp; dswap; dclear; dsplitp; dswap; dclear; difp;
     (try by []); (try by dtentails_r).
