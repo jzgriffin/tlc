@@ -753,3 +753,15 @@ Ltac dtifsubste_pl :=
   end;
   dclean; dsplitp; dswap; dclear; dsplitp; dswap; dclear; difp;
     (try by []); (try by dtentails_r).
+Ltac dtsubste_l :=
+  rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
+  match goal with
+  | |- Context _ ({-A always (TVariable ?t1_ = ?t2_) -} :: _) ||- _, ?A_ =>
+    eapply DSCut;
+      [eapply DTSubstE with (x := t1_) (t1 := t1_) (t2 := t2_) (A := A_);
+        [by auto_mem_conj | by [] | by [] ] |]
+  end;
+  dclean; difp; first (by dassumption);
+  dsplitp; dswap; dclear;
+  dsplitp; dclear;
+  difp; (try by []).
