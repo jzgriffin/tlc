@@ -308,6 +308,15 @@ Proof.
   by move/andP => [_]; move/andP => [? _].
 Qed.
 
+(* A computable term has no rigids *)
+Lemma computable_term_rigids t :
+  term_computable t ->
+  term_rigids t = [::].
+Proof.
+  by move=> Hc; move/andP: (computable_term_closed Hc) => [_ ?];
+    exact: subsets0.
+Qed.
+
 (* Reduce the application of an argument to a match.
  * If no match can be made between the patterns and the argument, EMatch will
  * be returned with an explanation for each matching failure.  If a match is
