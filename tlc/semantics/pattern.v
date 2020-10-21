@@ -12,7 +12,6 @@ Require Import mathcomp.ssreflect.ssreflect.
 Require Import mathcomp.ssreflect.ssrfun.
 Require Import mathcomp.ssreflect.ssrnat.
 Require Import tlc.syntax.all_syntax.
-Require Import tlc.utility.function.
 Require Import tlc.utility.monad.
 Require Import tlc.utility.option.
 Require Import tlc.utility.partial_map.
@@ -102,46 +101,28 @@ Example pattern_term_1 :
   Some ({-t ($(1, 0), $(2, 0), $(0, 0), $(1, 0)) -}, 3).
 by []. Defined.
 
-(*
-
-(* Destructs a case into an assertion about that case
- * ta is the term being destructed
- * c is the case to destruct on
- * Ac is the goal assertion
- * f is a function that produces the form of the destructed assertion
- * The resulting assertion is quantified by q on all free variables generated.
+(* Destruct a case of an argument term into an assertion about that term when
+ * it satisfies the case
+ * A term that matches the case pattern is constructed using pattern_term.
+ * That term is then equated to the argument term and the equality is wrapped
+ * in N existential quantifiers, where N is the number of bindings in the
+ * pattern term.
  *)
-Definition destruct_case ta c Ac
-  (f : term -> term -> assertion -> assertion)
-  (q : assertion -> assertion) : option assertion :=
-  let '(p, t) := c in
-  omap (fun '(pt, n) => iter q (f ta pt Ac) n) (pattern_term p).
+Definition destruct_case a (c : match_case) :=
+  let '(p, b) := c in
+  ts <- pattern_term p;
+  let '(t, n) := ts in
+  pure (iter n AExists {-A a = t -}).
 
-(* Destructs a case into an assertion for use in the premise *)
-Definition destruct_casep ta c Ac :=
-  destruct_case ta c Ac (fun ta pt Ac => {A: ta = pt /\ Ac}) AExists.
-
-(* Destructs a case into an assertion for use in the conclusion *)
-Definition destruct_casec ta c Ac :=
-  destruct_case ta c Ac (fun ta pt Ac => {A: ta = pt -> Ac}) AForAll.
-
-(* Destructs a match into an assertion about the possible cases of that
- * assertion
+(* Destruct a list of cases of an argument term into an assertion about that
+ * term when it satisfies at least one of the cases
  *)
-Fixpoint destruct_match P ta cs
-  (dc : term -> case -> assertion -> assertion) :=
+Fixpoint destruct_cases a (cs : match_cases) :=
   match cs with
-  | TCNil => ATrue
-  | TCCons c TCNil =>
-    {A: dc ta c (P (TMatch ta cs))}
-  | TCCons c cs' =>
-    {A: (dc ta c (P (TMatch ta cs))) \/ destruct_match P ta cs' dc}
+  | nil => pure ATrue
+  | [:: c] => destruct_case a c
+  | c :: cs =>
+    A <- destruct_case a c;
+    As <- destruct_cases a cs;
+    pure (AOr A As)
   end.
-
-(* Destructs a match into an assertion for use in the premise *)
-Definition destruct_matchp P ta cs := destruct_match P ta cs destruct_casep.
-
-(* Destructs a match into an assertion for use in the conclusion *)
-Definition destruct_matchc P ta cs := destruct_match P ta cs destruct_casec.
-
-*)

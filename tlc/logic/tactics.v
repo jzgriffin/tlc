@@ -44,3 +44,14 @@ Ltac dsimplp :=
   rewrite -DReduceP; last by []; dclean.
 Ltac dsimpl :=
   rewrite -DReduceC; last by []; dclean.
+
+(* Perform case analysis on an argument term a that appears in a match *)
+Ltac dcase a_ :=
+  (* Unfold common forms of match syntaxes *)
+  rewrite /TIf /TLet /TAbstraction /TMatchWith;
+  match goal with
+  | |- context[ {-t TMatch ?cs_ ' a_ -} ] =>
+    eapply DSCut;
+      [by apply DCaseAnalysis with (a := a_) (cs := cs_); first by [] |
+      simpl]
+  end.

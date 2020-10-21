@@ -76,7 +76,10 @@ Section derives.
     -}
 
   (* Case analysis *)
-  (* TODO *)
+  | DCaseAnalysis Z a cs A :
+    (* Assumes that cs type-checks with a and is exhaustive *)
+    destruct_cases a cs = Some A ->
+    Z ||- A
 
   (* Sequent logic *)
   | DSFalse Delta Gamma A :
