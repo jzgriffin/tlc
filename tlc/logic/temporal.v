@@ -848,6 +848,19 @@ Ltac dtifsubste_pl :=
   end;
   dclean; dsplitp; dswap; dclear; dsplitp; dswap; dclear; difp;
     (try by []); (try by dtentails_r).
+Ltac dtsubstep_l :=
+  rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
+  match goal with
+  | |- Context _ ({-A always (?t1_ = ?t2_) -} :: ?H_ :: _) ||- _, _ =>
+    eapply DSCut;
+      [eapply DTSubstE' with (t1 := t1_) (t2 := t2_) (A := H_);
+        [try by rewrite /term_rigid //=; auto] |]
+  end;
+  dclean; difp; first (by dassumption);
+  dsplitp; dswap; dclear;
+  dsplitp; dswap; dclear;
+  difp; first (by dassumption);
+  dxchg 0 2; dclear; dswap.
 Ltac dtsubste_l :=
   rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
   match goal with
