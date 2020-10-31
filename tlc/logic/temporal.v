@@ -724,14 +724,6 @@ Lemma DTEntailsSplitAnd C Z H1 H2 A :
 Proof.
 Admitted.
 
-Lemma DTEntailsMergeAnd C Z H A1 A2 :
-  Z ||- C, {-A
-    (H =>> A1) /\ (H =>> A2) ->
-    (H =>> A1 /\ A2)
-  -}.
-Proof.
-Admitted.
-
 Lemma DTEntailsAndAssocP C Z H1 H2 H3 A :
   Z ||- C, {-A (H1 /\ H2) /\ H3 =>> A -} <->
   Z ||- C, {-A H1 /\ (H2 /\ H3) =>> A -}.
