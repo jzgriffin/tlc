@@ -768,6 +768,12 @@ Lemma DTEntailsOrTautR C Z H A1 A2 :
 Proof.
 Admitted.
 
+Lemma DTEntailsAlwaysC C Z H A :
+  Z ||- C, {-A always A -} ->
+  Z ||- C, {-A H =>> A -}.
+Proof.
+Admitted.
+
 (* Further tactics *)
 Ltac dtreple_cl :=
   rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
