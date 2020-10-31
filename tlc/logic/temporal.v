@@ -108,9 +108,10 @@ Ltac dtsubstposp :=
   | |- Context _ (AEntails ?A1_ ?A2_ :: ?A_ :: _) ||- _, _ =>
     eapply DSCut;
     [eapply DTSubstPos with (A1 := A1_) (A2 := A2_) (u := A1_) (A := A_);
-      [try by rewrite /all_assertion_occ_pos /all_assertion_occ_rec
-        /= ?eq_refl ?if_same | try by [] ] |
-    simpl; dclean; rewrite ?eq_refl;
+      [try by rewrite /all_assertion_occ_pos /= ?eqE /=
+        ?eq_refl ?if_same ?andbF ?andFb ?andbT ?andTb /=
+        | try by [] ] |
+    simpl; dclean; rewrite ?eq_refl ?andbF ?andFb;
     dsplitp; dswap; dclear; difp; [by dclear | do 2 (dswap; dclear)] ]
   end.
 
