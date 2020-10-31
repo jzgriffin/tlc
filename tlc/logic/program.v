@@ -369,13 +369,13 @@ Lemma DPAPerSA C Delta S A :
     forall: (* n *)
     (
       on $$0, self-event /\
-      S ' (Fs ' Fn) /\
-      (Fs' ' Fn, Fors, Fois) = periodic C ' Fn ' (Fs ' Fn) ->
+      S ' (Fs ' $$0) /\
+      (Fs' ' $$0, Fors, Fois) = periodic C ' $$0 ' (Fs ' $$0) ->
       A
     ) ->
     (
       $$0 \in UCorrect ->
-      (self-event -> S ' (Fs ' $$0)) =>>
+      (self-event =>> S ' (Fs ' $$0)) =>>
       always eventually A
     )
   -}.
