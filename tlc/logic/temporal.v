@@ -805,6 +805,26 @@ Ltac dtsubstp_r :=
   difp; first (by dassumption);
   dswap; dclear;
   dswap; dclear.
+Ltac dtsubst_l :=
+  match goal with
+  | |- Context _ ({-A ?A1_ <=> ?A2_ -} :: _) ||- _, ?A_ =>
+    eapply DSCut; first (by eapply DTSubst with
+      (A1 := A1_) (A2 := A2_) (u := A2_) (A := A_))
+  end;
+  dclean;
+  dsplitp; dswap; dclear;
+  dsplitp; dswap; dclear;
+  difp; last (by dassumption).
+Ltac dtsubst_r :=
+  match goal with
+  | |- Context _ ({-A ?A1_ <=> ?A2_ -} :: _) ||- _, ?A_ =>
+    eapply DSCut; first (by eapply DTSubst with
+      (A1 := A1_) (A2 := A2_) (u := A1_) (A := A_))
+  end;
+  dclean;
+  dsplitp; dswap; dclear;
+  dsplitp; dclear;
+  difp; last (by dassumption).
 Ltac dtreple_cl :=
   rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
   match goal with
