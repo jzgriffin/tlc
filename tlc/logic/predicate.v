@@ -150,6 +150,16 @@ Proof.
   (* Used in SLC *)
 Admitted.
 
+(* An element is always a member of a list containing only itself *)
+Lemma DPMemberSingleton C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: (* x *)
+    $$0 \in [$$0]
+  -}.
+Proof.
+  (* Used in SLC *)
+Admitted.
+
 (* Membership is closed under mapping *)
 Lemma DPMemberMap C Delta :
   Context Delta [::] ||- C, {-A
