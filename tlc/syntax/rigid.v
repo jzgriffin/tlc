@@ -40,4 +40,9 @@ Section eq.
   Definition rigid_eqMixin := EqMixin rigid_eqP.
   Canonical rigid_eqType := EqType rigid rigid_eqMixin.
 
+  Lemma rigid_eqE x y : rigid_eq x y = (x == y).
+  Proof.
+    by rewrite eqE /=.
+  Qed.
+
 End eq.

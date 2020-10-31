@@ -17,10 +17,12 @@ Require Import tlc.utility.seq.
 
 (* Automatically resolve known equalities *)
 Ltac dautoeq :=
-  rewrite ?eqE /= -?eqE;
+  rewrite ?eqE /= -?eqE ?rigid_eqE;
   repeat match goal with
   | H : ?x <> ?y |- context[ ?x == ?y ] =>
     rewrite (negbTE (introN eqP H))
+  | H : ?y <> ?x |- context[ ?x == ?y ] =>
+    rewrite (negbTE (introN eqP (not_eq_sym H)))
   end.
 
 (* Automatically simplify replacement *)
