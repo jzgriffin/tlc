@@ -141,6 +141,18 @@ Axiom DTReplE :
     (replace_assertion_var x t1 A <-> replace_assertion_var x t2 A)
   -}.
 
+(* Direct replacement of equals by equals for terms *)
+Lemma DTReplE' :
+  forall C Z t1 t2 A,
+  non_temporal_assertion A ->
+  (~ term_rigid t1) \/ (term_rigid t1 /\ term_rigid t2) ->
+  Z ||- C, {-A
+    (t1 = t2 =>> A) <=>
+    (t1 = t2 =>> replace_assertion_term t1 t2 A)
+  -}.
+Proof.
+Admitted.
+
 (* Substitutivity of equality *)
 Lemma DTSubstE :
   forall C Z (x : variable) t1 t2 A,
@@ -754,6 +766,18 @@ Proof.
 Admitted.
 
 (* Further tactics *)
+Ltac dtreple_cl :=
+  rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
+  match goal with
+  | |- _ ||- _, {-A ?t1_ = ?t2_ =>> ?A_ -} =>
+    eapply DSCut;
+      [eapply DTReplE' with (t1 := t1_) (t2 := t2_) (A := A_);
+        [try by repeat constructor | try by rewrite /term_rigid //=; auto] |]
+  end;
+  dclean;
+  dsplitp; dswap; dclear;
+  dsplitp; dclear;
+  difp; last (by dassumption).
 Ltac dtifsubste_pl :=
   rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
   match goal with
