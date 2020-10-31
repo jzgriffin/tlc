@@ -216,31 +216,35 @@ Fixpoint term_rigid t :=
   | TMatch cs => all (fun '(p, b) => term_rigid b) cs
   end.
 
-(* Replace all instances of variable x with term u within t *)
-Fixpoint replace_term_var x u t :=
+(* Replace all instances of term x with term u within t *)
+Fixpoint replace_term (x u t : term) :=
+  if x == t then u else
   match t with
   | TParameter _ => t
-  | TVariable y => if x == y then u else t
+  | TVariable _ => t
   | TConstructor _ => t
   | TFunction _ => t
   | TUnknown _ => t
   | TApplication f a =>
-    TApplication (replace_term_var x u f) (replace_term_var x u a)
+    TApplication (replace_term x u f) (replace_term x u a)
   | TMatch cs =>
-    TMatch ((fun '(p, b) => (p, replace_term_var x u b)) <$> cs)
+    TMatch ((fun '(p, b) => (p, replace_term x u b)) <$> cs)
   end.
+
+(* Replace all instances of variable x with term u within t *)
+Definition replace_term_var x u t := replace_term (TVariable x) u t.
 
 (* Replacing a flexible variable inside of a rigid term has no effect *)
 Lemma replace_rigid_term_flexible_var (x : flexible) u t :
   term_rigid t ->
-  replace_term_var x u t = t.
+  replace_term x u t = t.
 Proof.
 Admitted.
 
 (* Replacing a rigid variable inside of a globally-closed term has no effect *)
 Lemma replace_gc_term_rigid_var (x : rigid) u t :
   term_gc t ->
-  replace_term_var x u t = t.
+  replace_term x u t = t.
 Proof.
 Admitted.
 

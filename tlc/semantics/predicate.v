@@ -146,15 +146,18 @@ Definition predicate_rigid p :=
   | PExtension xs' xs => term_rigid xs' && term_rigid xs
   end.
 
-(* Replace all instances of variable x with term u within p *)
-Definition replace_predicate_var x u p :=
+(* Replace all instances of term x with term u within p *)
+Definition replace_predicate_term x u p :=
   match p with
-  | PEqual x1 x2 => PEqual (replace_term_var x u x1) (replace_term_var x u x2)
-  | PLess x1 x2 => PLess (replace_term_var x u x1) (replace_term_var x u x2)
-  | PMember y xs => PMember (replace_term_var x u y) (replace_term_var x u xs)
+  | PEqual x1 x2 => PEqual (replace_term x u x1) (replace_term x u x2)
+  | PLess x1 x2 => PLess (replace_term x u x1) (replace_term x u x2)
+  | PMember y xs => PMember (replace_term x u y) (replace_term x u xs)
   | PExtension xs' xs =>
-    PExtension (replace_term_var x u xs') (replace_term_var x u xs)
+    PExtension (replace_term x u xs') (replace_term x u xs)
   end.
+
+(* Replace all instances of variable x with term u within p *)
+Definition replace_predicate_var x u p := replace_predicate_term (TVariable x) u p.
 
 (* Reduce the subterms of predicate P *)
 Definition reduce_predicate p :=

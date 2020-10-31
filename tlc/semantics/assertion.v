@@ -191,25 +191,28 @@ Fixpoint assertion_rigid A :=
   | ASelf A => assertion_rigid A
   end.
 
-(* Replace all instances of variable x with term u within A *)
-Fixpoint replace_assertion_var x u A :=
+(* Replace all instances of term x with term u within A *)
+Fixpoint replace_assertion_term x u A :=
   match A with
   | AFalse => A
-  | APredicate p => APredicate (replace_predicate_var x u p)
-  | ANot A => ANot (replace_assertion_var x u A)
+  | APredicate p => APredicate (replace_predicate_term x u p)
+  | ANot A => ANot (replace_assertion_term x u A)
   | AAnd A1 A2 =>
-    AAnd (replace_assertion_var x u A1) (replace_assertion_var x u A2)
-  | AForAll A => AForAll (replace_assertion_var x u A)
+    AAnd (replace_assertion_term x u A1) (replace_assertion_term x u A2)
+  | AForAll A => AForAll (replace_assertion_term x u A)
   | AApplication A t =>
-    AApplication (replace_assertion_var x u A) (replace_term_var x u t)
-  | AAlways' A => AAlways' (replace_assertion_var x u A)
-  | AAlwaysP' A => AAlwaysP' (replace_assertion_var x u A)
-  | AEventually' A => AEventually' (replace_assertion_var x u A)
-  | AEventuallyP' A => AEventuallyP' (replace_assertion_var x u A)
-  | ANext A => ANext (replace_assertion_var x u A)
-  | APrevious A => APrevious (replace_assertion_var x u A)
-  | ASelf A => ASelf (replace_assertion_var x u A)
+    AApplication (replace_assertion_term x u A) (replace_term x u t)
+  | AAlways' A => AAlways' (replace_assertion_term x u A)
+  | AAlwaysP' A => AAlwaysP' (replace_assertion_term x u A)
+  | AEventually' A => AEventually' (replace_assertion_term x u A)
+  | AEventuallyP' A => AEventuallyP' (replace_assertion_term x u A)
+  | ANext A => ANext (replace_assertion_term x u A)
+  | APrevious A => APrevious (replace_assertion_term x u A)
+  | ASelf A => ASelf (replace_assertion_term x u A)
   end.
+
+(* Replace all instances of variable x with term u within A *)
+Definition replace_assertion_var x u A := replace_assertion_term (TVariable x) u A.
 
 (* Determine whether all occurrences of A' within A are positive or negative
  * p' is the positivity to check for; true for positive, false for negative.

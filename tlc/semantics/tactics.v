@@ -29,7 +29,13 @@ Ltac dreplace :=
     /replace_assertion_var
     /replace_predicate_var
     /replace_term_var
+    /replace_assertion_term
+    /replace_predicate_term
+    /replace_term
     /=
+    -/replace_term
+    -/replace_predicate_term
+    -/replace_assertion_term
     -/replace_term_var
     -/replace_predicate_var
     -/replace_assertion_var
