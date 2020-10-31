@@ -756,6 +756,18 @@ Lemma DTOrEntails C Z H1 H2 A :
 Proof.
 Admitted.
 
+Lemma DTEntailsOrTautL C Z H A1 A2 :
+  Z ||- C, {-A H =>> A2 -} ->
+  Z ||- C, {-A H =>> A1 \/ A2 -}.
+Proof.
+Admitted.
+
+Lemma DTEntailsOrTautR C Z H A1 A2 :
+  Z ||- C, {-A H =>> A2 -} ->
+  Z ||- C, {-A H =>> A1 \/ A2 -}.
+Proof.
+Admitted.
+
 (* Further tactics *)
 Ltac dtreple_cl :=
   rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
