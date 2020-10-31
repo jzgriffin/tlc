@@ -566,23 +566,22 @@ Lemma DTL120_4 C Z A :
 Proof.
 Admitted.
 
-Lemma DTL121 C Delta Gamma A :
-  Context Delta Gamma ||- C, {-A eventually^ A -> eventually A -}.
-Proof.
-  by dif; dright.
-Qed.
-
-Lemma DTL122 C Z A :
-  Z ||- C, {-A always^ eventually A -> always eventually A -}.
+Lemma DTL121 C Z A :
+  Z ||- C, {-A eventually^ A =>> eventually A -}.
 Proof.
   (* Used in SLC *)
 Admitted.
 
-Lemma DTL123 C Delta Gamma A :
-  Context Delta Gamma ||- C, {-A eventuallyp^ A -> eventuallyp A -}.
+Lemma DTL122 C Z A :
+  Z ||- C, {-A always^ eventually A =>> always eventually A -}.
 Proof.
-  by dif; dright.
-Qed.
+  (* Used in SLC *)
+Admitted.
+
+Lemma DTL123 C Z A :
+  Z ||- C, {-A eventuallyp^ A =>> eventuallyp A -}.
+Proof.
+Admitted.
 
 Lemma DTL124 C Z Ap Ac :
   Z ||- C, {-A (Ac /\ always^ (Ap -> Ac)) =>> (Ap =>> Ac) -}.
