@@ -154,6 +154,17 @@ Lemma DTSubstE :
 Proof.
 Admitted.
 
+(* Direct substitutivity of equality for terms *)
+Lemma DTSubstE' :
+  forall C Z t1 t2 A,
+  (~ term_rigid t1) \/ (term_rigid t1 /\ term_rigid t2) ->
+  Z ||- C, {-A
+    always (t1 = t2) ->
+    (A <=> replace_assertion_term t1 t2 A)
+  -}.
+Proof.
+Admitted.
+
 (* Conditional substitutivity of equality *)
 Lemma DTIfSubstE :
   forall C Z (x : variable) t1 t2 H A,
@@ -757,10 +768,10 @@ Ltac dtifsubste_pl :=
 Ltac dtsubste_l :=
   rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
   match goal with
-  | |- Context _ ({-A always (TVariable ?t1_ = ?t2_) -} :: _) ||- _, ?A_ =>
+  | |- Context _ ({-A always (?t1_ = ?t2_) -} :: _) ||- _, ?A_ =>
     eapply DSCut;
-      [eapply DTSubstE with (x := t1_) (t1 := t1_) (t2 := t2_) (A := A_);
-        [by auto_mem_conj | by [] | by [] ] |]
+      [eapply DTSubstE' with (t1 := t1_) (t2 := t2_) (A := A_);
+        [try by rewrite /term_rigid //=; auto] |]
   end;
   dclean; difp; first (by dassumption);
   dsplitp; dswap; dclear;
