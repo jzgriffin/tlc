@@ -774,6 +774,12 @@ Lemma DTEntailsAlwaysC C Z H A :
 Proof.
 Admitted.
 
+Lemma DTAlwaysAlways' C Z A :
+  Z ||- C, {-A always A =>> always^ A -}.
+Proof.
+  by dtentails_r.
+Qed.
+
 (* Further tactics *)
 Ltac dtreple_cl :=
   rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
