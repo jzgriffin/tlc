@@ -781,6 +781,30 @@ Proof.
 Qed.
 
 (* Further tactics *)
+Ltac dtsubstp_l :=
+  match goal with
+  | |- Context _ ({-A ?A1_ <=> ?A2_ -} :: ?H_ :: _) ||- _, _ =>
+    eapply DSCut; first (by eapply DTSubst with
+      (A1 := A1_) (A2 := A2_) (u := A1_) (A := H_))
+  end;
+  dclean;
+  dsplitp; dswap; dclear;
+  dsplitp; dswap; dclear;
+  difp; first (by dassumption);
+  dswap; dclear;
+  dswap; dclear.
+Ltac dtsubstp_r :=
+  match goal with
+  | |- Context _ ({-A ?A1_ <=> ?A2_ -} :: ?H_ :: _) ||- _, _ =>
+    eapply DSCut; first (by eapply DTSubst with
+      (A1 := A1_) (A2 := A2_) (u := A2_) (A := H_))
+  end;
+  dclean;
+  dsplitp; dswap; dclear;
+  dsplitp; dclear;
+  difp; first (by dassumption);
+  dswap; dclear;
+  dswap; dclear.
 Ltac dtreple_cl :=
   rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
   match goal with
