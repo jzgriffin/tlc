@@ -271,8 +271,8 @@ Section derives.
     Context Delta Gamma ||- {-A
       forall: forall: forall: forall: (* n, n', m, i *)
       $$2 \in UCorrect ->
-      (always^ eventually^ on $$3, event [$$0]-> CFLSend ' $$2 ' $$1) ->
-      (always^ eventually^ on $$2, event [$$0]<- CFLDeliver ' $$3 ' $$1)
+      always^ eventually^ (on $$3, event [$$0]-> CFLSend ' $$2 ' $$1) =>>
+      always^ eventually^ (on $$2, event [$$0]<- CFLDeliver ' $$3 ' $$1)
     -}
   | DPFDup Delta Gamma :
     Context Delta Gamma ||- {-A
