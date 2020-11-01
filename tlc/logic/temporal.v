@@ -774,6 +774,11 @@ Lemma DTEntailsAlwaysC C Z H A :
 Proof.
 Admitted.
 
+Lemma DTOrComm C Z H1 H2 :
+  Z ||- C, {-A (H1 \/ H2) <=> (H2 \/ H1) -}.
+Proof.
+Admitted.
+
 Lemma DTAlwaysAlways' C Z A :
   Z ||- C, {-A always A =>> always^ A -}.
 Proof.
