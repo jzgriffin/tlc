@@ -279,15 +279,15 @@ Qed.
 (* No-forge
  * If a node n delivers a message m with sender n', then m was previously sent
  * to n by n' *)
-Theorem SL_2 : empty_context ||- stubborn_link, {-A
-  forall: forall: forall: (* 2:n, 1:n', 0:m *)
-  on $$2, event[]<- {-t CSLDeliver ' $$1 ' $$0 -} <~
-  on $$1, event[]-> {-t CSLSend ' $$2 ' $$0 -}
+Theorem SL_2 : Z0 ||- stubborn_link, {-A
+  forall: forall: forall: (* n, n', m *)
+  on $$2, event[]<- CSLDeliver ' $$1 ' $$0 <~
+  on $$1, event[]-> CSLSend ' $$2 ' $$0
 -}.
 Proof.
-  (* Introduce context *)
-  set C := stubborn_link; rewrite -/C /empty_context.
-  dforall n; dforall n'; dforall m; dclean.
+  set C := stubborn_link.
+
+  dforall n; dforall n'; dforall m.
 
   (* By OI' *)
   dhave {-A
@@ -295,100 +295,73 @@ Proof.
     eventuallyp (self-event /\ on n, (CSLDeliver ' n' ' m \in Fois))
   -}.
   {
-    (* Instantiate OI' *)
-    duse DPOI'; dforallp n; dforallp {-t CSLDeliver ' n' ' m -}; dclean.
-
-    eapply DARewriteIfP; first by apply DTL123 with (A := {-A
-      self-event /\ on n, (CSLDeliver ' n' ' m \in Fois) -}).
-    by dclean.
+    duse DPOI'; dforallp n; dforallp {-t CSLDeliver ' n' ' m -}.
+    by eapply DSCut; first (by apply DTL123 with (A := {-A
+      self-event /\ on n, CSLDeliver ' n' ' m  \in Fois -})); dtsubstposp.
   }
 
   (* By InvL *)
   dhave {-A
-    self-event /\ on n, (CSLDeliver ' n' ' m \in Fois) =>>
+    (self-event /\ on n, CSLDeliver ' n' ' m \in Fois) =>>
     on n, event[0]<- CFLDeliver ' n' ' m
   -}.
   {
-    dclear. (* dclean up the context *)
+    eapply DSCut; first by repeat dclear; apply DPInvL with (A := {-A
+      on n, CSLDeliver ' n' ' m \in Fois ->
+      on n, event[0]<- CFLDeliver ' n' ' m -});
+      [dautoclosed | repeat constructor].
 
-    (* Instantiate InvL *)
-    eapply DSCut; first by apply DSEmptyContext; apply DPInvL with (A := {-A
-        on n, (CSLDeliver ' n' ' m \in Fois) ->
-        on n, event[0]<- CFLDeliver ' n' ' m
-      -}); first by repeat constructor.
-
-    (* Prove for requests *)
+    (* request *)
     difp.
-      (* Obtain the first contradictory premise *)
-      dforall e; dclean.
-      dif; dsplitp; dswap; dsimplp.
-      ddestructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        dexistsp m_; dexistsp n'_; dsplitp; dswap;
-        dsubstp; dsimplp.
-      ddestructpairp; do 2 dsplitp.
-      do 2 dclear; do 2 (dswap; dclear). (* dclean up the context *)
+      dforall e; dif; dsplitp; dswap; dsimplp; dsimpl; simpl; dif; dswap.
+      dcase {-t ? e -}; dexistsp e_n'; dexistsp e_m; dtgenp.
+      dtsubstep_l; dswap; dclear; dsimplp; dtinjectionp; repeat dsplitp.
+      dclear; dclear; dtgenp; dtsubstep_l.
+      dsplitp; dclear.
+      by duse DPMemberNil; dforallp {-t CSLDeliver ' n' ' m -}; dnotp.
 
-      (* Obtain the second contradictory premise *)
-      by dif; dsplitp; dclear; dsubstp; dsimplp.
-
-
-    (* Prove for indications *)
+    (* indication *)
     difp.
-      dforall i; dforall e; dclean.
-      dif; dsplitp; dswap; dsimplp.
-      ddestructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        dexistsp m_; dexistsp n'_; dsplitp; dswap;
-        dsubst; dsimplp.
-      ddestructpairp; do 2 dsplitp.
-      dif; dsplitp.
-      dsplit; first by dhead.
-      dswap; do 3 (dswap; drotate 1); dsubstp.
-      din_cons_pl; dclean.
-      dorp; last by dsimplp.
-      eapply DSEqualEvent; dsplitp.
-      dsubstc; dclear; dsubstc; dclear;
-        distinguish_variables; rewrite eq_refl.
-      dclear; ddestructpairp; dsplitp; drotate 2; do 3 (dswap; dclear).
-      by do 2 (dsubstp; dswap; dclear);
-        distinguish_variables; rewrite eq_refl.
+      dforall i; dforall e; dif; dsplitp; dswap; dsimplp; dsimpl; simpl; dif.
+      dsplit; first by dsplitp.
+      dswap; dcase {-t (? i, ? e) -}; dexistsp e_m; dexistsp e_n'.
+      dtinjectionp; dsplitp.
+      dtgenp; dxchg 1 2; dtsubstep_l; dswap; dxchg 1 4; dtsubstep_l; dautoeq;
+        dswap; dclear; dswap.
+      dtgenp; dtsubstep_l; dswap; dxchg 1 3; dtsubstep_l; dautoeq;
+        dswap; dclear; dsimplp.
+      dtinjectionp; repeat dsplitp.
+      dclear; dclear; dtgenp; dtsubstep_l; dswap; dclear.
+      dsplitp; dclear.
+      duse DPMemberCons;
+        dforallp {-t CSLDeliver ' n' ' m -};
+        dforallp {-t CSLDeliver ' e_n' ' e_m -};
+        dforallp {-t [] -};
+        dsplitp; dswap; dclear; difp; first by [].
+      dorp; last by duse DPMemberNil; dforallp {-t CSLDeliver ' n' ' m -}; dnotp.
+      dtinjectionp; dsplitp.
+      by do 2 (dtgenp; dtsubste_l; dclear; dautoeq); dassumption.
 
-    (* Prove for periodics *)
+    (* periodic *)
     difp.
-      (* Obtain the first contradictory premise *)
-      dif; dsplitp; dswap; dsimplp.
-      ddestructpairp; repeat dsplitp.
-      do 2 dclear; (dswap; dclear). (* dclean up the context *)
+      dif; dsplitp; dswap; dsimplp; dsimpl; simpl; dif; dswap.
+      dtinjectionp; repeat dsplitp.
+      dxchg 0 2; dxchg 1 3; dtgenp; dtsubstep_l.
+      dsplitp; dclear.
+      by duse DPMemberNil; dforallp {-t CSLDeliver ' n' ' m -}; dnotp.
 
-      (* Obtain the second contradictory premise *)
-      by dif; dsplitp; dclear; dsubstp; dsimplp.
-
-    eapply DARewriteIffPL; first by apply DSMergeIf with
-      (Ap1 := {-A self-event -})
-      (Ap2 := {-A on n, (CSLDeliver ' n' ' m \in Fois) -})
-      (Ac := {-A on n, event[0]<- CFLDeliver ' n' ' m -}).
-    by dclean.
+    by eapply DSCut; first (by apply DSMergeIf with
+      (H1 := {-A self-event -})
+      (H2 := {-A on n, (CSLDeliver ' n' ' m \in Fois) -})
+      (A := {-A on n, event[0]<- CFLDeliver ' n' ' m -}));
+      dtgenp; dclean; dtsubst_l; dclear.
   }
 
   (* From (1) and (2) *)
-  dhave {-A
-    on n, event[]<- CSLDeliver ' n' ' m <~
-    on n, event[0]<- CFLDeliver ' n' ' m
-  -}.
-  {
-    drotate 1; eapply DARewriteEntailsP; first by dhead.
-    by dclean.
-  }
+  dtsubstposp.
 
   (* By NForge *)
-  dhave {-A
-    on n, event[0]<- CFLDeliver ' n' ' m <~
-    on n', event[0]-> CFLSend ' n ' m
-  -}.
-  {
-    (* Instantiate NForge *)
-    by duse DPNForge;
-      dforallp n'; dforallp n; dforallp m; dforallp 0.
-  }
+  duse DPNForge; dforallp n'; dforallp n; dforallp m; dforallp {-t 0 -}.
 
   (* By lemma 85 on (3) and (4) *)
   dhave {-A
@@ -396,344 +369,296 @@ Proof.
     on n', event[0]-> CFLSend ' n ' m
   -}.
   {
-    by eapply DTL85; first by drotate 1; dhead.
+    by eapply DTL85; first by dexacti 1.
   }
+  do 2 (dswap; dclear).
 
   (* By OR' *)
   dhave {-A
     on n', event[0]-> CFLSend ' n ' m =>>
-    eventuallyp (self-event /\ on n',
-      ((0, CFLSend ' n ' m) \in Fors))
+    eventuallyp (self-event /\ on n', (0, CFLSend ' n ' m) \in Fors)
   -}.
   {
-    (* Instantiate OR' *)
-    duse DPOR';
-      dforallp n'; dforallp 0; dforallp {-t CFLSend ' n ' m -}; dclean.
-
-    eapply DARewriteIfP; first by apply DTL123 with (A := {-A
-      self-event /\ on n', ((0, CFLSend ' n ' m) \in Fors) -}).
-    by dclean.
+    duse DPOR'; dforallp n'; dforallp {-t 0 -}; dforallp {-t CFLSend ' n ' m -}.
+    by eapply DSCut; first (by apply DTL123 with (A := {-A
+      self-event /\ on n', ((0, CFLSend ' n ' m) \in Fors) -})); dtsubstposp.
   }
 
   (* By InvSA *)
   dhave {-A
-    self-event /\ on n', ((n, m) \in Fs ' n') =>>
+    (self-event /\ on n', (n, m) \in Fs ' n') =>>
     eventuallyp^ on n', event[]-> CSLSend ' n ' m
   -}.
   {
-    do 6 dclear. (* dclean up the context *)
-
-    (* Instantiate InvSA *)
-    eapply DSCut; first by apply DPInvSA with
-      (S0 := {-A forall: (* 0:ts *) on n', ((n, m) \in $$0) -})
+    eapply DSCut; first by repeat dclear; apply DPInvSA with
+      (S0 := {-A forall: (* s *) on n', (n, m) \in $$0 -})
       (A := {-A event[]-> CSLSend ' n ' m -});
-      [by auto_is_closed | by repeat econstructor | by repeat econstructor].
-    dforallp n'; dclean.
+      [by [] | by dautoclosed | by dautoclosed |
+        by repeat constructor | by repeat constructor].
+    dforallp n'.
 
-    (* Prove for initialization *)
+    (* initialize *)
     difp.
-      dsimpl.
-      by dnotc; dsplitp; dassumption.
+      dsimpl; dnot; dsplitp; dclear.
+      by duse DPMemberNil; dforallp {-t (n, m) -}; dnotp.
 
-    (* Prove for requests *)
+    (* request *)
     difp.
-      dforall e; dsimpl.
-      dif; dsplitp; dsplitp; do 2 (dswap; dsplitp).
-      dsplit; first by dassumption.
-      dsplit; first by dassumption.
-      drotate 4; dsplitp.
-      ddestructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        dexistsp m_; dexistsp n_; dsplitp;
-        dswap; dsubstp; dsimplp;
-        ddestructpairp; repeat dsplitp.
-      drotate 4; dsplitp.
-      drotate 5; dswap; dsubstp.
-      do 5 (dswap; drotate 1); dswap; dsubstp.
+      dforall e; dsimpl; dif; dsplitp; dswap; dsplitp.
+      dcase {-t ? e -}; dexistsp e_m; dexistsp e_n'; dtgenp.
+      dtsubstep_l; dswap; dxchg 1 2; dtsubstep_l; dautoeq; dsplitp; dsimplp.
+      dtinjectionp; repeat dsplitp.
+
+      dxchg 1 3; dtgenp; dtsubstep_l.
+      dsplitp; dswap.
+      duse DPMemberSetUnion;
+        dforallp {-t Fs ' Fn -}; dforallp {-t [(e_n', e_m)] -}; dforallp {-t (n, m) -}.
+      dsplitp; dclear; dtgenp; dclean; dtsubstposp.
+
+      eapply DSCut; first (by apply DSOrDistribAnd2 with
+        (A := {-A Fn = n' -})
+        (A1 := {-A (n, m) \in Fs ' Fn -})
+        (A2 := {-A (n, m) \in [(e_n', e_m)] -}));
+        dsplitp; dswap; dclear; difp; first by [].
+      dswap; dclear; dclean; dorp; first by dswap; dnotp.
       dsplitp; dclear.
-      do 8 (dswap; drotate 1); dswap.
-      duse DSDistributeNand; dsplitp; dswap; dclear.
-      eapply DSModusPonensP; first by dhead.
-      dswap; dclear; dorp.
-        do 5 (dswap; drotate 1); dsubstp.
-        dnotp; first by apply DAPEqual.
-      dswap; din_union_pr; dclean.
-      dorp; first by dswap; dnotp.
-      din_cons_pl; dclean.
-      dorp; last by dsimplp.
-      eapply DSEqualEvent.
-      do 8 (dswap; drotate 1); dsplitp; do 2 (dsubstc; dclear);
-        distinguish_variables; rewrite eq_refl.
-      do 3 (dswap; drotate 1); dswap; dsubstc; distinguish_variables.
-      by dassumption.
 
-    (* Prove for indications *)
+      duse DPMemberCons;
+        dforallp {-t (n, m) -};
+        dforallp {-t (e_n', e_m) -};
+        dforallp {-t [] -};
+        dsplitp; dswap; dclear; difp; first by [].
+      dorp; last by duse DPMemberNil; dforallp {-t (n, m) -}; dnotp.
+      dswap; dclear; dtinjectionp; dsplitp.
+      by do 2 (dtgenp; dtsubste_l; dclear; dautoeq); dassumption.
+
+    (* indication *)
     difp.
-      dforall i; dforall e; dsimpl.
-      dif; dsplitp; dswap; dsplitp.
-      ddestructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        dexistsp m_; dexistsp n_; dsplitp;
-        dswap; dsubstp; dsimplp;
-        ddestructpairp; repeat dsplitp.
-      drotate 5; dsplitp.
-      dswap; drotate 1; dswap; dsubstp.
-      do 4 (dswap; drotate 1); dswap; dsubstp; dsplitp.
-      by dnotp.
+      dforall i; dforall e; dsimpl; dif; dsplitp; dswap; dsplitp.
+      dcase {-t (? i, ? e) -}; dexistsp e_m; dexistsp e_n'; dtgenp.
+      dswap; dclear; dtsubstep_l; dautoeq.
+      dsplitp; dsimplp; dtinjectionp; repeat dsplitp.
+      do 2 (dswap; dclear); dswap; dsplitp.
+      dxchg 0 2; dtgenp; dtsubstep_l.
+      by dxchg 0 2; dnotp; dassumption.
 
-    (* Prove for periodics *)
+    (* periodic *)
     difp.
       dsimpl; dif; dsplitp; dswap; dsplitp.
-      ddestructpairp; repeat dsplitp.
-      do 2 (dswap; dclear); dswap.
-      drotate 2; dsplitp; dswap; dclear; drotate 2; dsubstp.
-      dswap; drotate 2; dsubstp; dswap; dclear; dsplitp.
-      by dnotp; dsubstp.
+      dclear; dtinjectionp; repeat dsplitp.
+      do 2 (dswap; dclear); dswap; dsplitp.
+      dxchg 0 2; dtgenp; dtsubstep_l.
+      by dxchg 0 2; dnotp; dassumption.
 
     by dsimplp.
   }
 
   (* By InvL *)
   dhave {-A
-    self-event /\ on n', ((n, m) \in Fs' ' n') =>>
-    (self-event /\ on n', (((n, m) \in Fs ' n')) \/
-      on n', event[]-> CSLSend ' n ' m)
+    (self-event /\ on n', (n, m) \in Fs' ' n') =>>
+    (self-event /\ on n', (n, m) \in Fs ' n') \/
+      on n', event[]-> CSLSend ' n ' m
   -}.
   {
-    repeat dclear. (* dclean up the context *)
+    repeat dclear.
+    eapply DSCut; first by apply DPInvL with (A := {-A
+      (on n', (n, m) \in Fs' ' n') ->
+      (on n', (n, m) \in Fs ' n') \/ on n', event[]-> CSLSend ' n ' m -});
+      [by dautoclosed | by repeat constructor].
 
-    (* Instantiate InvL *)
-    eapply DSCut; first by apply DSEmptyContext; apply DPInvL with (A := {-A
-        on n', ((n, m) \in Fs' ' n') ->
-        (on n', ((n, m) \in Fs ' n') \/
-          on n', event[]-> CSLSend ' n ' m) -});
-      first by repeat constructor.
-
-    (* Prove for requests *)
+    (* request *)
     difp.
-      dforall e; dclean.
-      dif; dsplitp; dsplitp; dswap; dsplitp.
-      drotate 3; dsubstp; dsimplp.
-      ddestructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        dexistsp m_; dexistsp n_; dclean; dsplitp;
-        dswap; dsubstp; dsimplp;
-        ddestructpairp; repeat dsplitp.
+      dforall e; dif; dsplitp; dswap; dsimplp.
+      dcase {-t ? e -}; dexistsp e_m; dexistsp e_n.
+      dtgenp; dtsubstep_l; dswap; dxchg 1 2; dtsubstep_l; dswap; dclear.
+      dswap; dsimplp; dtinjectionp; repeat dsplitp.
 
-      dif; dsplitp.
-      dswap; drotate 1; dswap; dsubstp.
-      do 7 (dswap; drotate 1); dswap; dsubstp.
-      din_union_pr; dclean; dswap; dclear; dorp;
-        first by dleft; dsplit; dassumption.
-      dright; dsplit; first by dassumption.
-      din_cons_pl; dclean; dorp; last by dsimplp.
-      ddestructpairp; dsplitp; dsubstc; dclear; dsubstc;
-        dclear; distinguish_variables; rewrite eq_refl.
-      repeat (dsplit; first by dassumption).
-      by drotate 5; dsubstc; dassumption.
+      dif; dsplitp; dtgenp; dtsubste_l; dxchg 1 2; dtsubstep_l; dswap; dclear.
+      dtgenp; dtsubstep_l; dswap; dclear.
+      duse DPMemberSetUnion;
+        dforallp {-t Fs ' n' -}; dforallp {-t [(e_n, e_m)] -}; dforallp {-t (n, m) -}.
+      dsplitp; dclear; difp; first by [].
+      dorp; [dleft | dright]; dsplit; try (by repeat dclear; apply DPEqual); try by [].
 
-    (* Prove for indications *)
+      duse DPMemberCons;
+        dforallp {-t (n, m) -};
+        dforallp {-t (e_n, e_m) -};
+        dforallp {-t [] -};
+        dsplitp; dswap; dclear; difp; first by [].
+      dorp; last by duse DPMemberNil; dforallp {-t (n, m) -}; dnotp.
+      dswap; dclear; dtinjectionp; dsplitp.
+      by do 2 (dtgenp; dtsubste_l; dclear; dautoeq); dassumption.
+
+    (* indication *)
     difp.
-      dforall i; dforall e; dclean.
-      dif; dsplitp; dsplitp; dswap; dsplitp.
-      drotate 3; dsimplp.
-      ddestructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        dexistsp m_; dexistsp n_; dclean; dsplitp;
-        dswap; dsubstp; dsimplp;
-        ddestructpairp; repeat dsplitp.
+      dforall i; dforall e; dif; dsplitp; dswap; dsimplp.
+      dcase {-t (? i, ? e) -}; dexistsp e_m; dexistsp e_n'.
+      dtgenp; dtsubstep_l; dswap; dclear.
+      dsimplp; dtinjectionp; repeat dsplitp.
 
-      dif; dsplitp.
-      dswap; drotate 1; dswap; dsubstp.
-      dleft; dsplit; first by dassumption.
-      by do 7 (dswap; drotate 1); dswap; dsubstp.
+      dif; dsplitp; dleft; dsplit; first by [].
+      dtgenp; dxchg 1 2; dtsubstep_l; dswap; dclear.
+      by dtgenp; dtsubstep_l.
 
-    (* Prove for periodics *)
+    (* periodic *)
     difp.
-      dif; dsplitp; dsplitp; dswap; dsplitp.
-      drotate 3; dsimplp.
+      dif; dsplitp; dswap; dsimplp.
+      dtinjectionp; repeat dsplitp.
 
-      dif; dsplitp; dleft; dsubstc.
-      dsplit; first by eapply DAPEqual.
+      dif; dsplitp; dleft; dsplit; first by [].
+      dtgenp; dxchg 1 2; dtsubstep_l; dswap; dclear.
+      by dtgenp; dtsubstep_l.
 
-      drotate 2; do 3 (dswap; dclear); dsubstp.
-      ddestructpairp; do 2 dsplitp; do 3 (dswap; dclear); dswap; dsubstp.
-      by dassumption.
-
-    eapply DARewriteIffPL; first by apply DSMergeIf with
-      (Ap1 := {-A self-event -})
-      (Ap2 := {-A on n', ((n, m) \in Fs' ' n') -})
-      (Ac := {-A on n', (((n, m) \in Fs ' n')) \/
-        on n', event[]-> CSLSend ' n ' m -}).
-    eapply DARewriteIffPL; first by apply DSIfAndIntroduce with
-      (Apl := {-A self-event -})
-      (Apr := {-A on n', ((n, m) \in Fs' ' n') -})
-      (Ac := {-A on n', ((n, m) \in Fs ' n') \/
-        on n', event[]-> CSLSend ' n ' m -}).
-    eapply DARewriteIffPL; first by apply DSOrDistributesAnd with
-      (Al := {-A on n', ((n, m) \in Fs ' n') -})
-      (Ar := {-A on n', event[]-> CSLSend ' n ' m -})
-      (A := {-A self-event -}).
-    eapply DARewriteIffPL; first by apply DSAndComm with
-      (Acl := {-A Fn = n' -})
-      (Acr := {-A event[]-> CSLSend ' n ' m -}).
-    eapply DARewriteIffPR; first by apply DSAndAssociative with
-      (Al := {-A self-event -})
-      (Am := {-A event[]-> CSLSend ' n ' m -})
-      (Ar := {-A Fn = n' -}).
-    eapply DARewriteIffPL; first by apply DSAndComm with
-      (Acl := {-A self-event -})
-      (Acr := {-A event[]-> CSLSend ' n ' m -}).
-    dclean; rewrite !andbF /=; dclean.
-    eapply DARewriteIffPL; first by duse DPTopRequestSelfEliminate;
-      dforallp {-t CSLSend ' n ' m -}; dhead.
-    eapply DARewriteIffPL; first by apply DSAndComm with
-      (Acl := {-A event[]-> CSLSend ' n ' m -})
-      (Acr := {-A Fn = n' -}).
-    by dclean.
+    eapply DSCut; first (by repeat dclear; apply DSMergeIf with
+      (H1 := {-A self-event -})
+      (H2 := {-A on n', (n, m) \in Fs' ' n' -})
+      (A := {-A (on n', (n, m) \in Fs ' n') \/
+        on n', event[]-> CSLSend ' n ' m -}));
+      dtgenp; dclean; dtsubstp_l.
+    eapply DSCut; first (by repeat dclear; apply DSIfAndIntro with
+      (H1 := {-A self-event -})
+      (H2 := {-A on n', (n, m) \in Fs' ' n' -})
+      (A := {-A (on n', (n, m) \in Fs ' n') \/
+        on n', event[]-> CSLSend ' n ' m -}));
+      dtgenp; dclean; dtsubstp_l.
+    eapply DSCut; first (by repeat dclear; apply DSOrDistribAnd2 with
+      (A := {-A self-event -})
+      (A1 := {-A on n', (n, m) \in Fs ' n' -})
+      (A2 := {-A on n', event[]-> CSLSend ' n ' m -}));
+      dtgenp; dclean; dtsubstp_l.
+    eapply DSCut; first (by repeat dclear; apply DSAndComm with
+      (A1 := {-A Fn = n' -})
+      (A2 := {-A event[]-> CSLSend ' n ' m -}));
+      dtgenp; dclean; dtsubstp_l.
+    eapply DSCut; first (by repeat dclear; apply DSAndAssoc with
+      (A1 := {-A self-event -})
+      (A2 := {-A event[]-> CSLSend ' n ' m -})
+      (A3 := {-A Fn = n' -}));
+      dtgenp; dclean; dtsubstp_r.
+    eapply DSCut; first (by repeat dclear; apply DSAndComm with
+      (A1 := {-A self-event -})
+      (A2 := {-A event[]-> CSLSend ' n ' m -}));
+      dtgenp; dclean; dtsubstp_l.
+    eapply DSCut; first (by duse DPTopRequestSelfElim;
+      dforallp {-t CSLSend ' n ' m -}; dhead);
+      dtgenp; dclean; dtsubstp_l.
+    by eapply DSCut; first (by repeat dclear; apply DSAndComm with
+      (A1 := {-A event[]-> CSLSend ' n ' m -})
+      (A2 := {-A Fn = n' -}));
+      dtgenp; dclean; dtsubstp_l.
   }
 
   (* By InvL *)
   dhave {-A
-    self-event /\ on n', ((0, CFLSend ' n ' m) \in Fors) =>>
-    self-event /\ on n', ((n, m) \in Fs' ' n')
+    self-event /\ (on n', (0, CFLSend ' n ' m) \in Fors) =>>
+    self-event /\ (on n', (n, m) \in Fs' ' n')
   -}.
   {
-    repeat dclear. (* dclean up the context *)
+    repeat dclear.
+    eapply DSCut; first by repeat dclear; apply DPInvL with (A := {-A
+      on n', (0, CFLSend ' n ' m) \in Fors ->
+      on n', (n, m) \in Fs' ' n'
+    -}); [by dautoclosed | by repeat constructor].
 
-    (* Instantiate InvL *)
-    eapply DSCut; first by apply DSEmptyContext; apply DPInvL with (A := {-A
-        on n', ((0, CFLSend ' n ' m) \in Fors) ->
-        on n', ((n, m) \in Fs' ' n')
-      -}); first by repeat constructor.
-
-    (* Prove for requests *)
+    (* request *)
     difp.
-      dforall e; dclean.
-      dif; dsplitp; dsplitp; dswap; dsplitp.
-      drotate 3; dsubstp; dsimplp.
-      ddestructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        dexistsp m_; dexistsp n_; dclean; dsplitp;
-        dswap; dsubstp; dsimplp;
-        ddestructpairp; repeat dsplitp.
+      dforall e; dif; dsplitp; dswap; dsimplp.
+      dcase {-t ? e -}; dexistsp e_m; dexistsp e_n.
+      dtgenp; dtsubstep_l; dswap; dclear; dswap; dclear.
+      dsimplp; dtinjectionp; repeat dsplitp.
 
-      dif; dsplitp; dsplit; first by dhead.
-      dswap; do 2 (dswap; drotate 1); dsubstp.
-      din_cons_pl; dclean; dorp; last by dsimplp.
-      ddestructpairp; dsplitp; dclear; apply DSEqualEvent.
+      dif; dsplitp; dtgenp; dtsubste_l; dxchg 1 2; dtsubstep_l; dswap; dclear.
+      dsplit; first by repeat dclear; apply DPEqual.
+      dtgenp; dtsubste_l; dclear.
+      dswap; dtgenp; dtsubstep_l; dswap; dclear.
 
-      do 6 (dswap; dclear); drotate 1; dswap; dsubstp; dswap; dclear.
-      dswap; dsplitp; dsubstc; dclear; dsubstc; dclear;
-        distinguish_variables; rewrite eq_refl /eq_op /=; distinguish_variables.
-      dsubstc.
-      duse DAPInUnion;
-        dforallp {-t Fs ' n' -};
-        dforallp {-t [(n_, m_)] -};
-        dforallp {-t (n_, m_) -};
-        dclean;
-        dsplitp; dswap; dclear.
-      by difp; first by dright; dsimpl.
+      duse DPMemberSetUnion;
+        dforallp {-t Fs ' n' -}; dforallp {-t [(e_n, e_m)] -}; dforallp {-t (n, m) -}.
+      dsplitp; dswap; dclear; difp; last by [].
 
-    (* Prove for indications *)
+      dright.
+      duse DPMemberCons;
+        dforallp {-t (0, CFLSend ' n ' m) -};
+        dforallp {-t (0, CFLSend ' e_n ' e_m) -};
+        dforallp {-t [] -};
+        dsplitp; dswap; dclear; difp; first by [].
+      dorp; last by duse DPMemberNil; dforallp {-t (0, CFLSend ' n ' m) -}; dnotp.
+      dswap; dclear; dtinjectionp; dsplitp; dclear; dsplitp.
+      do 2 (dtgenp; dtsubste_l; dclear; dautoeq).
+
+      by duse DPMemberSingleton; dforallp {-t (e_n, e_m) -}.
+
+    (* indication *)
     difp.
-      dforall i; dforall e; dclean.
-      dif; dsplitp; dsplitp; dswap; dsplitp.
-      drotate 3; dsubstp; dsimplp.
-      ddestructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        dexistsp m_; dexistsp n_; dclean; dsplitp;
-        dswap; dsubstp; dsimplp;
-        ddestructpairp; repeat dsplitp.
+      dforall i; dforall e; dif; dsplitp; dswap; dsimplp.
+      dcase {-t (? i, ? e) -}; dexistsp e_m; dexistsp e_n'.
+      dtgenp; dtsubstep_l; dswap; dclear; dswap; dclear.
+      dsimplp; dtinjectionp; repeat dsplitp.
 
-      dif; dsplitp; dsplit; first by dhead.
-      by dclear; dswap; drotate 1; dsubstp; dsimplp.
+      dif; dsplitp; dxchg 0 3; dtgenp; dtsubstep_l; dswap; dclear.
+      by duse DPMemberNil; dforallp {-t (0, CFLSend ' n ' m) -}; dnotp.
 
-    (* Prove for periodics *)
+    (* periodic *)
     difp.
       dif; dsplitp; dswap; dsimplp.
-      set tf := {-t fun: match: $$0 with:
-        { ($, $) -> (0, CFLSend ' $$0 ' $$1) } -}.
-      ddestructpairp; do 2 dsplitp.
-      dif; dsplitp; dsplit; first by dhead.
-      dswap; dsubstp; drotate 2; dsubst; drotate 5.
-      duse DAPInMap;
-        dforallp tf; dforallp {-t (n, m) -}; dforallp {-t Fs ' Fn -}; dclean.
-      dsplitp; dclear; dsimplp; difp; first by
-        dclear; dswap; drotate 4; dsubstp.
-      dswap; drotate 1; dswap.
-      dhave {-A Fs ' Fn = Fs' ' Fn -}; first by duse DAPEqualSymmetric;
-        dforallp {-t Fs' ' Fn -}; dforallp {-t Fs ' Fn -}; dclean;
-        dsplitp; difp; dassumption.
-      by dswap; dclear; dswap; dsubstp; do 5 (dswap; dclear); dsubstp.
+      dtinjectionp; repeat dsplitp.
 
-    eapply DARewriteIffPL; first by apply DSMergeIf with
-      (Ap1 := {-A self-event -})
-      (Ap2 := {-A on n', ((0, CFLSend ' n ' m) \in Fors) -})
-      (Ac := {-A on n', ((n, m) \in Fs' ' n') -}).
-    eapply DARewriteIffPL; first by apply DSIfAndIntroduce with
-      (Apl := {-A self-event -})
-      (Apr := {-A on n', ((0, CFLSend ' n ' m) \in Fors) -})
-      (Ac := {-A on n', ((n, m) \in Fs' ' n') -}).
-    by dclean.
+      dif; dsplitp; dtgenp; dtsubste_l;
+        dxchg 1 2; dtsubstep_l; dswap;
+        dxchg 1 3; dtsubstep_l; dswap; dclear.
+      dsplit; first by repeat dclear; apply DPEqual.
+
+      dtgenp; dtsubstep_l; dswap; dclear.
+      dswap; dtgenp; dtsubste_l; dclear.
+
+      set f := {-t fun: (0, CFLSend ' ($$0).1 ' ($$0).2) -};
+        duse DPMemberMap;
+        dforallp f; dforallp {-t Fs ' n' -}; dforallp {-t (n, m) -}.
+      dsplitp; dclear; difp; last by [].
+      by dsimpl.
+
+    eapply DSCut; first (by repeat dclear; apply DSMergeIf with
+      (H1 := {-A self-event -})
+      (H2 := {-A on n', (0, CFLSend ' n ' m) \in Fors -})
+      (A := {-A on n', (n, m) \in Fs' ' n' -}));
+      dtgenp; dclean; dtsubstp_l.
+    by eapply DSCut; first (by repeat dclear; apply DSIfAndIntro with
+      (H1 := {-A self-event -})
+      (H2 := {-A on n', (0, CFLSend ' n ' m) \in Fors -})
+      (A := {-A on n', (n, m) \in Fs' ' n' -}));
+      dtgenp; dclean; dtsubstp_l.
   }
 
   (* By (8) and (9) *)
-  dhave {-A
-    self-event /\ on n', ((0, CFLSend ' n ' m) \in Fors) =>>
-    (self-event /\ on n', ((n, m) \in Fs ' n')) \/
-      on n', event[]-> CSLSend ' n ' m
-  -}.
-  {
-    eapply DARewriteEntailsP; first by dhead.
-    by dclean; rewrite /eq_op /= andbF.
-  }
+  dswap; dtsubstposp.
 
   (* By (6) and (10) *)
-  dhave {-A
-    on n', event[0]-> CFLSend ' n ' m <~
-    self-event /\ on n', ((n, m) \in Fs ' n') \/
-    on n', event[]-> CSLSend ' n ' m
-  -}.
-  {
-    drotate 4; eapply DARewriteEntailsP; first by drotate 5; dhead.
-    by dclean.
-  }
+  dxchg 1 2; dtsubstposp.
 
-  (* By (7) and (11) *)
+  (* By lemma 83 on (7) and (11) *)
   dhave {-A
     on n', event[0]-> CFLSend ' n ' m <~
     on n', event[]-> CSLSend ' n ' m
   -}.
   {
-    eapply DARewriteEntailsP; first by drotate 3; dhead.
-    dclean.
-    eapply DARewriteIffPL; first by apply DSOrComm with
-      (Acl := {-A eventuallyp^ on n', event[]-> CSLSend ' n ' m -})
-      (Acr := {-A on n', event[]-> CSLSend ' n ' m -}).
-    dclean.
-    eapply DARewriteCongruentCL; first by apply DTL83_1 with
-      (A := {-A on n', event[]-> CSLSend ' n ' m -}).
-    by dclean.
+    dswap; dtsubstposp.
+    eapply DSCut; first (by repeat dclear; apply DTOrComm with
+      (H1 := {-A eventuallyp^ on n', event[]-> CSLSend ' n ' m -})
+      (H2 := {-A on n', event[]-> CSLSend ' n ' m -}));
+      dtsubstp_l.
+    by eapply DSCut; first (by repeat dclear; apply DTL83_1 with
+      (A := {-A on n', event[]-> CSLSend ' n ' m -}));
+      dtsubstp_r.
   }
+  do 2 (dswap; dclear).
 
   (* From (5) and (12) *)
-  dhave {-A
-    on n, event[]<- CSLDeliver ' n' ' m <~
-    eventuallyp on n', event[]-> CSLSend ' n ' m
-  -}.
-  {
-    drotate 7; eapply DARewriteEntailsP; first by drotate 4; dhead.
-    by dclean; rewrite /eq_op /= andbF.
-  }
+  rewrite /APrecededBy; dtsubstposp.
 
   (* By lemma 83 on (9) *)
-  (* NOTE: This line is missing from the paper proof *)
-  dhave {-A
-    on n, event[]<- CSLDeliver ' n' ' m <~
-    on n', event[]-> CSLSend ' n ' m
-  -}.
-  {
-    eapply DARewriteCongruentCL; first by apply DTL83_1 with
-      (A := {-A on n', event[]-> CSLSend ' n ' m -}).
-    by dclean.
-  }
-
-  by [].
+  by eapply DSCut; first (by repeat dclear; apply DTL83_1 with
+    (A := {-A on n', event[]-> CSLSend ' n ' m -}));
+    dtsubstp_r.
 Qed.
 
 (* Top assertions for properties *)
