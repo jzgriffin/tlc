@@ -46,7 +46,8 @@ Ltac dreplace :=
     ?eq_refl;
     (try by exact: computable_term_rigid);
     (try by exact: computable_term_closed);
-  dautoeq.
+  dautoeq;
+  rewrite ?eq_refl ?andbF ?andFb.
 
 (* Tactics for refolding syntactic sugar *)
 Ltac dclean :=
