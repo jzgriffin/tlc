@@ -26,147 +26,53 @@ Unset Printing Implicit Defensive.
 Definition perfect_link :=
   let slc := 0 in
   let initialize :=
-    {t: fun:
-      (* Begin scoped parameters *)
-      let n := {t: #0} in
-      (* End scoped parameters *)
+    {-t fun: (* n *)
       (0, [])
-    } in
+     -} in
   let request :=
-    {t: fun: fun: fun:
-      (* Begin scoped parameters *)
-      let n := {t: #2} in
-      let s := {t: #1} in
-      let ir := {t: #0} in
-      (* End scoped parameters *)
-      let: (#, #) := s in: (* c, r *)
-      (* Begin scoped parameters *)
-      let n := {t: #4} in
-      let s := {t: #3} in
-      let ir := {t: #2} in
-      let r := {t: #1} in
-      let c := {t: #0} in
-      (* End scoped parameters *)
-      match: ir with:
-      {{ CPLSend $ # $ # (* n', m *) ->
-        (* Begin scoped parameters *)
-        let n := {t: #6} in
-        let s := {t: #5} in
-        let ir := {t: #4} in
-        let r := {t: #3} in
-        let c := {t: #2} in
-        let m := {t: #1} in
-        let n' := {t: #0} in
-        (* End scoped parameters *)
-        let: # := c.+1 in: (* c' *)
-        (* Begin scoped parameters *)
-        let n := {t: #7} in
-        let s := {t: #6} in
-        let ir := {t: #5} in
-        let r := {t: #4} in
-        let c := {t: #3} in
-        let m := {t: #2} in
-        let n' := {t: #1} in
-        let c' := {t: #0} in
-        (* End scoped parameters *)
-        let: # := (slc, CSLSend $ n' $ (c', m)) in: (* or *)
-        (* Begin scoped parameters *)
-        let n := {t: #8} in
-        let s := {t: #7} in
-        let ir := {t: #6} in
-        let r := {t: #5} in
-        let c := {t: #4} in
-        let m := {t: #3} in
-        let n' := {t: #2} in
-        let c' := {t: #1} in
-        let or_ := {t: #0} in
-        (* End scoped parameters *)
-        ((c', r), [or_], [])
-      }}
-    } in
+    {-t fun: fun: fun: (* n, s, ir *)
+      let: ($0, $1) := $$1 in: (* {c, r} *)
+      match: $$1 with:
+      { CPLSend ' $0 ' $1 (* {n', m} *) ->
+        let: $0 := $(1, 0).+1 in: (* c' *)
+        let: $0 := (term_of_nat slc, CSLSend ' $(1, 0) ' ($$0, $(1, 1))) in: (* or *)
+        (($$1, $(3, 1)), [$$0], [])
+       }
+    -} in
   let indication :=
-    {t: fun: fun: fun:
-      (* Begin scoped parameters *)
-      let n' := {t: #2} in
-      let s := {t: #1} in
-      let ii := {t: #0} in
-      (* End scoped parameters *)
-      let: (#, #) := s in: (* c, r *)
-      (* Begin scoped parameters *)
-      let n' := {t: #4} in
-      let s := {t: #3} in
-      let ii := {t: #2} in
-      let r := {t: #1} in
-      let c := {t: #0} in
-      (* End scoped parameters *)
-      match: ii with:
-      {{ (slc, CSLDeliver $ # $ (#, #)) (* n, c', m *) ->
-        (* Begin scoped parameters *)
-        let n' := {t: #7} in
-        let s := {t: #6} in
-        let ii := {t: #5} in
-        let r := {t: #4} in
-        let c := {t: #3} in
-        let m := {t: #2} in
-        let c' := {t: #1} in
-        let n := {t: #0} in
-        (* End scoped parameters *)
-        if: (n, c') \in r
+    {-t fun: fun: fun: (* n', s, ii *)
+      let: ($0, $1) := $$1 in: (* {c, r} *)
+      match: $$1 with:
+      { (pattern_of_nat slc, CSLDeliver ' $0 ' ($1, $2)) (* {n, c', m} *) ->
+        if: ($0, $1) \in $(1, 1)
         then:
-          (s, [], [])
+          ($$4, [], [])
         else:
-          let: # := r \union [(n, c')] in: (* r' *)
-          (* Begin scoped parameters *)
-          let n' := {t: #8} in
-          let s := {t: #7} in
-          let ii := {t: #6} in
-          let r := {t: #5} in
-          let c := {t: #4} in
-          let m := {t: #3} in
-          let c' := {t: #2} in
-          let n := {t: #1} in
-          let r' := {t: #0} in
-          (* End scoped parameters *)
-          let: # := CPLDeliver $ n $ m in: (* oi *)
-          (* Begin scoped parameters *)
-          let n' := {t: #9} in
-          let s := {t: #8} in
-          let ii := {t: #7} in
-          let r := {t: #6} in
-          let c := {t: #5} in
-          let m := {t: #4} in
-          let c' := {t: #3} in
-          let n := {t: #2} in
-          let r' := {t: #1} in
-          let oi := {t: #0} in
-          (* End scoped parameters *)
-          ((c, r'), [], [oi])
-      }}
-    } in
+          let: $0 := $(2, 1) :|: [($(1, 0), $(1, 1))] in: (* r' *)
+          let: $0 := CPLDeliver ' $(2, 0) ' $(2, 2) in: (* oi *)
+          (($(4, 0), $$1), [], [$$0])
+       }
+    -} in
   let periodic :=
-    {t: fun: fun:
-      (* Begin scoped parameters *)
-      let n' := {t: #1} in
-      let s := {t: #0} in
-      (* End scoped parameters *)
-      (s, [], [])
-    } in
+    {-t fun: fun: (* n, s *)
+      ($$0, [], [])
+    -} in
   Component
-    (Logic.eq_refl : is_term_concrete 0 [::] initialize)
-    (Logic.eq_refl : is_term_concrete 0 [::] request)
-    (Logic.eq_refl : is_term_concrete 0 [::] indication)
-    (Logic.eq_refl : is_term_concrete 0 [::] periodic).
+    (Logic.eq_refl : term_computable initialize)
+    (Logic.eq_refl : term_computable request)
+    (Logic.eq_refl : term_computable indication)
+    (Logic.eq_refl : term_computable periodic).
 
 (* Specification *)
 
 (* Lowered stubborn link properties *)
-Lemma PL_SL_1 : empty_context |- perfect_link, {A:
+Lemma PL_SL_1 : empty_context |- perfect_link, {-A
   forall: forall:
   correct #1 /\ correct #0 ->
   forall: (* 2:n, 1:n', 0:m *)
-  on #2, event[0]-> CSLSend $ #1 $ #0 =>>
-  always eventually on #1, event[0]<- CSLDeliver $ #2 $ #0
-}.
+  on #2, event[0]-> CSLSend ' #1 ' #0 =>>
+  always eventually on #1, event[0]<- CSLDeliver ' #2 ' #0
+ -}.
 Proof.
   d_forallc n Hf_n; d_forallc n' Hf_n'; simpl_embed.
   d_ifc; d_splitp; d_forallc m Hf_m; simpl_embed.
@@ -177,62 +83,62 @@ Proof.
   d_ifp; first by d_splitc; d_assumption.
 
   eapply DARewriteEntailsP; first by apply DTL124 with
-    (Ap := {A: Fd <<< [0]})
-    (Ac := {A: eventually on n', event[0]<- CSLDeliver $ n $ m}).
+    (Ap := {-A Fd <<< [0] -})
+    (Ac := {-A eventually on n', event[0]<- CSLDeliver ' n ' m -}).
   simpl_embed.
 
   eapply DARewriteEntailsP; first by apply DTL124 with
-    (Ap := {A: Fd <<< [0]})
-    (Ac := {A:
-      on n, event[0]-> CSLSend $ n' $ m ->
+    (Ap := {-A Fd <<< [0] -})
+    (Ac := {-A
+      on n, event[0]-> CSLSend ' n' ' m ->
       Fd <<< [0] ~>
-           on n', event[0]<- CSLDeliver $ n $ m}).
+           on n', event[0]<- CSLDeliver ' n ' m -}).
   simpl_embed.
 
   eapply DARewriteIffPL; first by apply DSMergeIf with
-    (Ap1 := {A: Fd <<< [0]})
-    (Ap2 := {A: on n, event[0]-> CSLSend $ n' $ m})
-    (Ac := {A:
+    (Ap1 := {-A Fd <<< [0] -})
+    (Ap2 := {-A on n, event[0]-> CSLSend ' n' ' m -})
+    (Ac := {-A
       Fd <<< [0] ~>
-      on n', event[0]<- CSLDeliver $ n $ m
-    }).
+      on n', event[0]<- CSLDeliver ' n ' m
+     -}).
   simpl_embed.
 
-  set A := {A: Fd <<< [0]}.
-  set B := {A: on n, event[0]-> CSLSend $ n' $ m}.
-  set D := {A: on n', event[0]<- CSLDeliver $ n $ m}.
-  d_have {A:
+  set A := {-A Fd <<< [0] -}.
+  set B := {-A on n, event[0]-> CSLSend ' n' ' m -}.
+  set D := {-A on n', event[0]<- CSLDeliver ' n ' m -}.
+  d_have {-A
     always (A -> eventually D) =>>
     ((always A) -> always (eventually D))
-  }; first by eapply DT4.
+   -}; first by eapply DT4.
   d_swap. eapply DARewriteEntailsP; first by d_head. simpl_embed.
-  set A1 := {A: Fd <<< [0]}.
-  set B1 := {A: on n, event[0]-> CSLSend $ n' $ m}.
-  set D1 := {A: (on n', event[0]<- CSLDeliver $ n $ m)}.
-  set AB := {A: A1 /\ B1}.
+  set A1 := {-A Fd <<< [0] -}.
+  set B1 := {-A on n, event[0]-> CSLSend ' n' ' m -}.
+  set D1 := {-A (on n', event[0]<- CSLDeliver ' n ' m) -}.
+  set AB := {-A A1 /\ B1 -}.
   eapply DARewriteIffPL; first by apply DSMergeIf with
-    (Ap1 := {A: AB})
-    (Ap2 := {A: always A1})
-    (Ac := {A: always eventually D1}).
+    (Ap1 := {-A AB -})
+    (Ap2 := {-A always A1 -})
+    (Ac := {-A always eventually D1 -}).
   simpl_embed.
-  d_have {A: (AB /\ A1) =>> (AB /\ always A1)}.
+  d_have {-A (AB /\ A1) =>> (AB /\ always A1) -}.
   {
     eapply DSCut; first by apply DTL132 with
-      (A1 := {A: AB})
-      (A2 := {A: A1})
-      (B1 := {A: AB})
-      (B2 := {A: A1}).
+      (A1 := {-A AB -})
+      (A2 := {-A A1 -})
+      (B1 := {-A AB -})
+      (B2 := {-A A1 -}).
     d_ifp. d_splitc. eapply DTGeneralization; first by repeat constructor.
     d_ifc. d_head. eapply DTGeneralization; first by repeat constructor.
     d_ifc. d_head.
 
-    d_have {A: A1 -> always A1}.
+    d_have {-A A1 -> always A1 -}.
     {
       d_ifc. eapply DTGeneralization; first by repeat constructor.
       d_head.
     }
     d_swap.
-    d_have {A: (AB /\ A1) -> (AB /\ always A1)}.
+    d_have {-A (AB /\ A1) -> (AB /\ always A1) -}.
     {
       d_ifc; d_splitc; d_splitp; first by d_head.
       eapply DTGeneralization; first by repeat constructor.
@@ -240,16 +146,16 @@ Proof.
     }
 
     d_swap. eapply DARewriteIfP with
-      (Arp := {A: AB /\ A1})
-      (Arc := {A: AB /\ always A1}); first by d_head.
+      (Arp := {-A AB /\ A1 -})
+      (Arc := {-A AB /\ always A1 -}); first by d_head.
     simpl_embed.
     by do 2 (d_swap; d_clear).
   }
   eapply DARewriteEntailsP; first by d_head. simpl_embed.
 
-  set A2 := {A: Fd <<< [0]}.
-  set B2 := {A: on n, event[0]-> CSLSend $ n' $ m}.
-  d_have {A: B1 =>> ((A2 /\ B2) /\ A2)}.
+  set A2 := {-A Fd <<< [0] -}.
+  set B2 := {-A on n, event[0]-> CSLSend ' n' ' m -}.
+  d_have {-A B1 =>> ((A2 /\ B2) /\ A2) -}.
   {
     eapply DTGeneralization; first by repeat constructor.
     d_ifc; d_splitc; first by
@@ -260,16 +166,16 @@ Proof.
       eapply DAPExtension; repeat constructor.
   }
   eapply DARewriteEntailsP; first by d_head. simpl_embed.
-  set A3 := {A: Fd <<< [0]}.
-  set B3 := {A: on n, event[0]-> CSLSend $ n' $ m}.
+  set A3 := {-A Fd <<< [0] -}.
+  set B3 := {-A on n, event[0]-> CSLSend ' n' ' m -}.
   d_head.
 Qed.
 
-Lemma PL_SL_2 : empty_context |- perfect_link, {A:
+Lemma PL_SL_2 : empty_context |- perfect_link, {-A
   forall: forall: forall: (* 2:n, 1:n', 0:m *)
-  on #2, event[0]<- CSLDeliver $ #1 $ #0 <~
-  on #1, event[0]-> CSLSend $ #2 $ #0
-}.
+  on #2, event[0]<- CSLDeliver ' #1 ' #0 <~
+  on #1, event[0]-> CSLSend ' #2 ' #0
+ -}.
 Proof.
   d_forallc n Hf_n; d_forallc n' Hf_n'; d_forallc m Hf_m.
 
@@ -278,23 +184,23 @@ Proof.
   rewrite /lower_assertion /=; d_forallp n; d_forallp n'; d_forallp m; simpl_embed.
 
   eapply DARewriteEntailsP; first by apply DTL124 with
-    (Ap := {A: Fd <<< [0]})
-    (Ac := {A: on n, event[0]<- CSLDeliver $ n' $ m ->
-      eventuallyp on n', event[0]-> CSLSend $ n $ m}).
+    (Ap := {-A Fd <<< [0] -})
+    (Ac := {-A on n, event[0]<- CSLDeliver ' n' ' m ->
+      eventuallyp on n', event[0]-> CSLSend ' n ' m -}).
   eapply DARewriteEntailsP; first by apply DTL125 with
-    (Ap := {A: Fd <<< [0]})
-    (Ac := {A: on n, event[0]<- CSLDeliver $ n' $ m ->
-      eventuallyp on n', event[0]-> CSLSend $ n $ m}).
+    (Ap := {-A Fd <<< [0] -})
+    (Ac := {-A on n, event[0]<- CSLDeliver ' n' ' m ->
+      eventuallyp on n', event[0]-> CSLSend ' n ' m -}).
   eapply DARewriteIffPL; first by apply DSMergeIf with
-    (Ap1 := {A: Fd <<< [0]})
-    (Ap2 := {A: on n, event[0]<- CSLDeliver $ n' $ m})
-    (Ac := {A: eventuallyp on n', event[0]-> CSLSend $ n $ m}).
+    (Ap1 := {-A Fd <<< [0] -})
+    (Ap2 := {-A on n, event[0]<- CSLDeliver ' n' ' m -})
+    (Ac := {-A eventuallyp on n', event[0]-> CSLSend ' n ' m -}).
   simpl_embed.
 
-  d_have {A:
-    Fd <<< [0] /\ on n, event[0]<- CSLDeliver $ n' $ m <->
-    on n, event[0]<- CSLDeliver $ n' $ m
-  }.
+  d_have {-A
+    Fd <<< [0] /\ on n, event[0]<- CSLDeliver ' n' ' m <->
+    on n, event[0]<- CSLDeliver ' n' ' m
+   -}.
   {
     d_splitc; d_ifc.
     - by d_splitp; d_swap; d_head.
@@ -305,22 +211,22 @@ Proof.
 
   d_swap; eapply DARewriteIffPL; first by d_head.
 
-  eapply DARewriteEntailsP; first by apply DTL80 with (A := {A:
-    on n, event[0]<- CSLDeliver $ n' $ m <~
-    on n', event[0]-> CSLSend $ n $ m
-  }).
+  eapply DARewriteEntailsP; first by apply DTL80 with (A := {-A
+    on n, event[0]<- CSLDeliver ' n' ' m <~
+    on n', event[0]-> CSLSend ' n ' m
+   -}).
   by simpl_embed.
 Qed.
 
 (* Lemmas used in proving PL_1 *)
 
-Lemma L37_1 : empty_context |- perfect_link, {A:
+Lemma L37_1 : empty_context |- perfect_link, {-A
   forall: forall:
   correct #1 /\ correct #0 ->
   forall: forall: forall: (* 4:n, 3:n', 2:m, 1:m', 0:c *)
-  self-event /\ on #4, ((0, CSLSend $ #3 $ (#0, #2)) \in Fors) =>>
-  always^ ~(self-event /\ on #4, ((0, CSLSend $ #3 $ (#0, #1)) \in Fors))
-  }.
+  self-event /\ on #4, ((0, CSLSend ' #3 ' (#0, #2)) \in Fors) =>>
+  always^ ~(self-event /\ on #4, ((0, CSLSend ' #3 ' (#0, #1)) \in Fors))
+   -}.
 Proof.
   (* Introduce context *)
   set C := perfect_link; rewrite -/C /empty_context.
@@ -331,27 +237,27 @@ Proof.
     simpl_embed.
 
   (* By InvL *)
-  d_have {A:
-    self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors) =>>
-    ((TLeft (Fs' $ n)) = c)
-  }.
+  d_have {-A
+    self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) =>>
+    ((TLeft (Fs' ' n)) = c)
+   -}.
   {
     repeat d_clear. (* Clean up context *)
 
     (* Instantiate InvL *)
-    eapply DSCut; first by apply DSEmptyContext; apply DPInvL with (A := {A:
-        on n, ((0, CSLSend $ n' $ (c, m)) \in Fors) ->
-        (TLeft (Fs' $ n)) = c
-      }); first by repeat constructor.
+    eapply DSCut; first by apply DSEmptyContext; apply DPInvL with (A := {-A
+        on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) ->
+        (TLeft (Fs' ' n)) = c
+       -}); first by repeat constructor.
 
     (* request *)
     d_ifp.
       d_forallc e Hf_e; simpl_embed.
       d_ifc; d_splitp; d_swap; d_evalp.
 
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp r Hf_r; d_existsp c_ Hf_c_; d_splitp; d_swap; d_substp; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp m_ Hf_m_; d_existsp n'_ Hf_n'_; d_splitp;
         d_swap; d_substp; distinguish_variables; d_evalp.
       d_destructpairp; repeat d_splitp.
@@ -372,12 +278,12 @@ Proof.
       d_forallc i Hf_i; d_forallc e Hf_e; simpl_embed.
       d_ifc; d_splitp; d_swap; d_evalp.
 
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp r Hf_r; d_existsp c_ Hf_c_; d_splitp; d_swap; d_substp; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp m_ Hf_m_; d_existsp c' Hf_c'; d_existsp n_ Hf_n_;
         d_splitp; d_swap; d_substp; distinguish_variables; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
 
       d_orp.
         (* true case *)
@@ -386,10 +292,10 @@ Proof.
         d_destructpairp; repeat d_splitp.
         d_swap; do 2 d_rotate; d_swap; d_substp; d_splitp; d_clear.
         eapply DSCut; first by eapply DAPInNil.
-        d_forallp {t: CPair $ 0 $ (CSLSend $ n' $ (c, m))}.
-        eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
-            (CPair $ 0 $ (CSLSend $ n' $ (c, m)) \in CNil)
-          }).
+        d_forallp {-t CPair ' 0 ' (CSLSend ' n' ' (c, m)) -}.
+        eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
+            (CPair ' 0 ' (CSLSend ' n' ' (c, m)) \in CNil)
+           -}).
         d_swap. eapply DARewriteIffPL; first by d_head.
         simpl_embed.
         by d_ifp; first by d_clear; do 5 (d_swap; d_clear); d_substp.
@@ -406,10 +312,10 @@ Proof.
       d_destructpairp; repeat d_splitp.
       d_swap; d_ifc; d_substp; d_splitp; d_swap.
       eapply DSCut; first by eapply DAPInNil.
-      d_forallp {t: CPair $ 0 $ (CSLSend $ n' $ (c, m))}.
-      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
-          (CPair $ 0 $ (CSLSend $ n' $ (c, m)) \in CNil)
-        }).
+      d_forallp {-t CPair ' 0 ' (CSLSend ' n' ' (c, m)) -}.
+      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
+          (CPair ' 0 ' (CSLSend ' n' ' (c, m)) \in CNil)
+         -}).
       d_swap. eapply DARewriteIffPL; first by d_head.
       simpl_embed.
       by d_ifp; first by d_clear.
@@ -420,17 +326,17 @@ Proof.
   }
 
   (* By InvS *)
-  d_have {A:
-    self-event /\ ((TLeft (Fs $ n)) = c) =>>
-    (self-event =>> (TLeft (Fs $ n) = c))
-  }.
+  d_have {-A
+    self-event /\ ((TLeft (Fs ' n)) = c) =>>
+    (self-event =>> (TLeft (Fs ' n) = c))
+   -}.
   {
     repeat d_clear. (* Clean up the context *)
 
-    d_have {A:
-      (self-event -> TLeft (Fs $ n) = c) ->
-      self-event =>> TLeft (Fs $ n) = c
-    }; first by d_ifc; eapply DTGeneralization; first by repeat constructor.
+    d_have {-A
+      (self-event -> TLeft (Fs ' n) = c) ->
+      self-event =>> TLeft (Fs ' n) = c
+     -}; first by d_ifc; eapply DTGeneralization; first by repeat constructor.
 
     eapply DARewriteIfC; first by d_head.
     simpl_embed.
@@ -440,24 +346,24 @@ Proof.
   }
 
   (* By ASA on (1) and (2) *)
-  d_have {A:
-    on n, self-event /\ ((0, CSLSend $ n' $ (c, m)) \in Fors) =>>
-    always^ (self-event -> TLeft (Fs $ n) = c)
-  }.
+  d_have {-A
+    on n, self-event /\ ((0, CSLSend ' n' ' (c, m)) \in Fors) =>>
+    always^ (self-event -> TLeft (Fs ' n) = c)
+   -}.
   {
     eapply DSCut; first by repeat d_clear; eapply DPASA with
-      (S := {A: forall: (* ts *) TLeft #0 = c})
-      (A := {A: on n, (CPair $ 0 $ (CSLSend $ n' $ (c, m)) \in Fors)})
-      (A' := {A: TLeft (Fs $ n) = c});
+      (S := {-A forall: (* ts *) TLeft #0 = c -})
+      (A := {-A on n, (CPair ' 0 ' (CSLSend ' n' ' (c, m)) \in Fors) -})
+      (A' := {-A TLeft (Fs ' n) = c -});
       [by auto_is_closed | by repeat constructor | by repeat constructor].
     d_forallp n; d_evalp.
     d_ifp; first by d_swap.
     d_ifp; first by d_head.
 
-    d_have {A:
-      (on n, self-event) /\ ((0, CSLSend $ n' $ (c, m)) \in Fors) =>>
-      self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)
-    }.
+    d_have {-A
+      (on n, self-event) /\ ((0, CSLSend ' n' ' (c, m)) \in Fors) =>>
+      self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)
+     -}.
     {
       eapply DTGeneralization; first by repeat constructor.
       d_ifc; d_splitc; first by repeat d_splitp; d_swap.
@@ -472,23 +378,23 @@ Proof.
   }
 
   (* By InvL *)
-  d_have {A:
-    self-event /\ (TLeft ( Fs $ n)) = c =>>
-    ~(on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))
-  }.
+  d_have {-A
+    self-event /\ (TLeft ( Fs ' n)) = c =>>
+    ~(on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
+   -}.
   {
     (* Instantiate InvL *)
-    eapply DSCut; first by apply DSEmptyContext; apply DPInvL with (A := {A:
-        (TLeft (Fs $ n)) = c ->
-        ~(on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))
-      }); first by repeat constructor.
+    eapply DSCut; first by apply DSEmptyContext; apply DPInvL with (A := {-A
+        (TLeft (Fs ' n)) = c ->
+        ~(on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
+       -}); first by repeat constructor.
 
     (* request *)
     d_ifp.
       d_forallc e Hf_e; d_ifc; d_splitp; d_swap; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp r Hf_r; d_existsp c_ Hf_c_; d_splitp; d_swap; d_substp; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp m'_ Hf_m'_; d_existsp n'_ Hf_n'_;
         d_splitp; d_swap; d_substp; distinguish_variables; d_evalp.
       d_destructpairp; repeat d_splitp.
@@ -507,12 +413,12 @@ Proof.
     (* indication *)
     d_ifp.
       d_forallc i Hf_i; d_forallc e Hf_e; d_ifc; d_splitp; d_swap; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp r Hf_r; d_existsp c_ Hf_c_; d_splitp; d_swap; d_substp; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp m'_ Hf_m'_; d_existsp c' Hf_c'; d_existsp n_ Hf_n_;
         d_splitp; d_swap; d_substp; distinguish_variables; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
 
       d_orp.
         (* true case *)
@@ -520,18 +426,18 @@ Proof.
         d_ifc; d_swap.
         d_destructpairp; repeat d_splitp; d_swap.
         eapply DARewriteIffCL with
-          (Arp := {A: ~(on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))})
-          (Arc := {A: (on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) -> AFalse});
+          (Arp := {-A ~(on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -})
+          (Arc := {-A (on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -> AFalse -});
           first by eapply DSNotImpliesFalse.
         simpl_embed.
         d_ifc; d_splitp; d_swap.
         do 1 (d_swap; d_clear); d_substp.
 
         eapply DSCut; first by eapply DAPInNil.
-        d_forallp {t: (0, CSLSend $ n' $ (c, m'))}.
-        eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
-            (0, CSLSend $ n' $ (c, m')) \in CNil
-          }).
+        d_forallp {-t (0, CSLSend ' n' ' (c, m')) -}.
+        eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
+            (0, CSLSend ' n' ' (c, m')) \in CNil
+           -}).
         d_swap; eapply DARewriteIffPL; first by d_head.
         by simpl_embed; d_ifp; first by d_swap.
 
@@ -540,18 +446,18 @@ Proof.
       d_destructpairp; repeat d_splitp.
       d_ifc; d_rotate 2.
       eapply DARewriteIffCL with
-        (Arp := {A: ~(on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))})
-        (Arc := {A: (on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) -> AFalse});
+        (Arp := {-A ~(on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -})
+        (Arc := {-A (on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -> AFalse -});
         first by eapply DSNotImpliesFalse.
       simpl_embed.
       d_ifc; d_splitp; d_swap.
       do 1 (d_swap; d_clear); d_substp.
 
       eapply DSCut; first by eapply DAPInNil.
-      d_forallp {t: (0, CSLSend $ n' $ (c, m'))}.
-      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
-          (0, CSLSend $ n' $ (c, m')) \in CNil
-        }).
+      d_forallp {-t (0, CSLSend ' n' ' (c, m')) -}.
+      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
+          (0, CSLSend ' n' ' (c, m')) \in CNil
+         -}).
       d_swap; eapply DARewriteIffPL; first by d_head.
       by simpl_embed; d_ifp; first by d_swap.
 
@@ -561,18 +467,18 @@ Proof.
       d_destructpairp; repeat d_splitp; d_swap.
       d_ifc.
       eapply DARewriteIffCL with
-        (Arp := {A: ~(on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))})
-        (Arc := {A: (on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) -> AFalse});
+        (Arp := {-A ~(on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -})
+        (Arc := {-A (on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -> AFalse -});
         first by eapply DSNotImpliesFalse.
       simpl_embed.
       d_ifc; d_splitp; d_swap.
       do 2 (d_swap; d_clear); d_substp.
 
       eapply DSCut; first by eapply DAPInNil.
-      d_forallp {t: (0, CSLSend $ n' $ (c, m'))}.
-      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
-          (0, CSLSend $ n' $ (c, m')) \in CNil
-        }).
+      d_forallp {-t (0, CSLSend ' n' ' (c, m')) -}.
+      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
+          (0, CSLSend ' n' ' (c, m')) \in CNil
+         -}).
       d_swap; eapply DARewriteIffPL; first by d_head.
       by simpl_embed; d_ifp; first by d_swap.
 
@@ -582,10 +488,10 @@ Proof.
     by d_ifp; d_assumption.
   }
 
-  d_have {A:
-    (self-event -> TLeft (Fs $ n) = c) ->
-    (self-event -> (self-event /\ TLeft (Fs $ n) = c))
-  }.
+  d_have {-A
+    (self-event -> TLeft (Fs ' n) = c) ->
+    (self-event -> (self-event /\ TLeft (Fs ' n) = c))
+   -}.
   {
     repeat d_ifc; d_splitc; first by d_head.
     by d_swap; d_ifp.
@@ -599,22 +505,22 @@ Proof.
   eapply DARewriteEntailsP; first by d_rotate 5; d_head.
   simpl_embed.
 
-  d_have {A:
-    (self-event -> ~ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) ->
-    ~ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))
-  }.
+  d_have {-A
+    (self-event -> ~ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) ->
+    ~ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
+   -}.
   {
     d_ifc.
     eapply DARewriteIffCL with
-      (Arp := {A: ~(self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))})
-      (Arc := {A: (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) -> AFalse});
+      (Arp := {-A ~(self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -})
+      (Arc := {-A (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -> AFalse -});
       first by eapply DSNotImpliesFalse.
     simpl_embed.
     d_ifc; d_splitp; d_rotate 2; d_ifp; first by d_assumption.
     d_rotate 9; d_swap.
-    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
-        on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)
-      }).
+    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
+        on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)
+       -}).
     d_splitp; d_swap; d_clear.
     d_ifp; first by d_head.
     by d_ifp; first by d_swap.
@@ -624,10 +530,10 @@ Proof.
   eapply DARewriteIfP; first by d_head.
   simpl_embed.
 
-  d_have {A:
-    self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors) =>>
-    (on n, self-event) /\ ((0, CSLSend $ n' $ (c, m)) \in Fors)
-  }.
+  d_have {-A
+    self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) =>>
+    (on n, self-event) /\ ((0, CSLSend ' n' ' (c, m)) \in Fors)
+   -}.
   {
     eapply DTGeneralization; first by repeat constructor.
     d_ifc; d_splitp; d_swap; d_splitp; d_splitc; first by d_splitc; d_assumption.
@@ -638,13 +544,13 @@ Proof.
   by simpl_embed.
 Qed.
 
-Lemma L37_2 : empty_context |- perfect_link, {A:
+Lemma L37_2 : empty_context |- perfect_link, {-A
   forall: forall:
   correct #1 /\ correct #0 ->
   forall: forall: forall: (* 4:n, 3:n', 2:m, 1:m', 0:c *)
-  self-event /\ on #4, ((0, CSLSend $ #3 $ (#0, #2)) \in Fors) =>>
-  alwaysp^ ~(self-event /\ on #4, ((0, CSLSend $ #3 $ (#0, #1)) \in Fors))
-  }.
+  self-event /\ on #4, ((0, CSLSend ' #3 ' (#0, #2)) \in Fors) =>>
+  alwaysp^ ~(self-event /\ on #4, ((0, CSLSend ' #3 ' (#0, #1)) \in Fors))
+   -}.
 Proof.
   (* Introduce context *)
   set C := perfect_link; rewrite -/C /empty_context.
@@ -663,7 +569,7 @@ Proof.
     simpl_embed.
 
   eapply DSCut; first by repeat d_clear; eapply DTL134 with
-    (A := {A: forall: self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)})
+    (A := {-A forall: self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) -})
     (t := TVariable m);
     [rewrite /is_assertion_closed /=; auto_in_seq_and | repeat constructor].
   d_forallp m'; d_evalp.
@@ -671,14 +577,14 @@ Proof.
   by d_ifp.
 Qed.
 
-Lemma L39 : empty_context |- perfect_link, {A:
+Lemma L39 : empty_context |- perfect_link, {-A
   forall: forall:
   correct #1 /\ correct #0 ->
   forall: forall: (* 3:n, 2:n', 1:m, 0:c *)
-  on #2, event[0]<- CSLDeliver $ #3 $ (#0, #1) /\
-    (#3, #0) \notin (TRight (Fs $ #2)) =>>
-  eventually on #2, event[]<- CPLDeliver $ #3 $ #1
-}.
+  on #2, event[0]<- CSLDeliver ' #3 ' (#0, #1) /\
+    (#3, #0) \notin (TRight (Fs ' #2)) =>>
+  eventually on #2, event[]<- CPLDeliver ' #3 ' #1
+ -}.
 Proof.
   (* Introduce context *)
   set C := perfect_link; rewrite -/C /empty_context.
@@ -689,21 +595,21 @@ Proof.
     simpl_embed.
 
   (* By rule II *)
-  d_have {A:
-    on n', event[0]<- CSLDeliver $ n $ (c, m) /\
-    (n, c) \notin (TRight (Fs $ n')) =>>
-    (self-event /\ (CPLDeliver $ n $ m) \in Fois)
-  }.
+  d_have {-A
+    on n', event[0]<- CSLDeliver ' n ' (c, m) /\
+    (n, c) \notin (TRight (Fs ' n')) =>>
+    (self-event /\ (CPLDeliver ' n ' m) \in Fois)
+   -}.
   {
     eapply DTGeneralization; first by repeat constructor.
     d_ifc; d_splitp; d_evalp.
 
     (* Instantiate II *)
-    d_use DPII; d_forallp 0; d_forallp {t: CSLDeliver $ n $ (c, m)}; d_evalp.
+    d_use DPII; d_forallp 0; d_forallp {-t CSLDeliver ' n ' (c, m) -}; d_evalp.
 
     eapply DTEntailsModusPonensP; first by d_splitp; d_assumption.
 
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
       d_existsp r Hf_r; d_existsp c' Hf_c'; simpl_embed.
 
     d_swap; d_splitp;
@@ -717,7 +623,7 @@ Proof.
     do 4 (d_swap; d_rotate 1); d_substp; d_evalp.
 
     d_rotate 5.
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
 
     d_orp.
 
@@ -730,44 +636,44 @@ Proof.
     d_destructpairp; repeat d_splitp.
 
     d_splitc; first by d_use_empty DPSecondIndicationSelf;
-      d_forallp {t: CSLDeliver $ n $ (c, m)}; simpl_embed;
+      d_forallp {-t CSLDeliver ' n ' (c, m) -}; simpl_embed;
       d_splitp; d_swap; d_clear; d_ifp; d_assumption.
 
     by d_rotate 2; d_substc; d_evalc.
   }
 
   (* By rule OI *)
-  d_have {A:
-    on n', (self-event /\ (CPLDeliver $ n $ m) \in Fois) =>>
-    (eventually^  on n', (event[]<- CPLDeliver $ n $ m))
-  }.
+  d_have {-A
+    on n', (self-event /\ (CPLDeliver ' n ' m) \in Fois) =>>
+    (eventually^  on n', (event[]<- CPLDeliver ' n ' m))
+   -}.
   {
     (* Instantiate OI *)
-    d_use DPOI; d_forallp n'; d_forallp {t: CPLDeliver $ n $ m}; d_evalp.
+    d_use DPOI; d_forallp n'; d_forallp {-t CPLDeliver ' n ' m -}; d_evalp.
 
     eapply DARewriteIfP; first by apply DTL121 with
-      (A := {A: on n', ((CPLDeliver $ n $ m) \in Fois)}).
+      (A := {-A on n', ((CPLDeliver ' n ' m) \in Fois) -}).
     by simpl_embed; rewrite andbF.
   }
 
   (* Clean up and derive the final goal *)
   d_rotate 2; do 2 d_clear; d_swap.
-  d_have {A:
-    (on n', event[0]<- CSLDeliver $ n $ (c, m) /\ (n, c) \notin TRight (Fs $ n') =>>
-      self-event /\ CPLDeliver $ n $ m \in Fois) ->
-    (on n', event[0]<- CSLDeliver $ n $ (c, m) /\ (n, c) \notin TRight (Fs $ n') =>>
-      on n', (self-event /\ CPLDeliver $ n $ m \in Fois))
-  }.
+  d_have {-A
+    (on n', event[0]<- CSLDeliver ' n ' (c, m) /\ (n, c) \notin TRight (Fs ' n') =>>
+      self-event /\ CPLDeliver ' n ' m \in Fois) ->
+    (on n', event[0]<- CSLDeliver ' n ' (c, m) /\ (n, c) \notin TRight (Fs ' n') =>>
+      on n', (self-event /\ CPLDeliver ' n ' m \in Fois))
+   -}.
   {
     d_ifc; eapply DTGeneralization; first by repeat constructor.
     d_ifc; repeat d_splitp; d_splitc; first by [].
 
     d_rotate 3.
     eapply DARewriteIfP with
-      (Arp := {A: (on n', event[0]<- CSLDeliver $ n $ (c, m) /\ (n, c) \notin TRight (Fs $ n') =>>
-        self-event /\ CPLDeliver $ n $ m \in Fois)})
-      (Arc := {A: (on n', event[0]<- CSLDeliver $ n $ (c, m) /\ (n, c) \notin TRight (Fs $ n') ->
-        self-event /\ CPLDeliver $ n $ m \in Fois)}); first by eapply DT1.
+      (Arp := {-A (on n', event[0]<- CSLDeliver ' n ' (c, m) /\ (n, c) \notin TRight (Fs ' n') =>>
+        self-event /\ CPLDeliver ' n ' m \in Fois) -})
+      (Arc := {-A (on n', event[0]<- CSLDeliver ' n ' (c, m) /\ (n, c) \notin TRight (Fs ' n') ->
+        self-event /\ CPLDeliver ' n ' m \in Fois) -}); first by eapply DT1.
     simpl_embed.
     by d_ifp; first by d_splitc; [d_splitc |]; d_assumption.
   }
@@ -778,8 +684,8 @@ Proof.
 
   d_swap; d_clear; d_swap.
   eapply DARewriteIfP with
-    (Arp := {A: eventually^ on n', event[]<- CPLDeliver $ n $ m})
-    (Arc := {A: eventually on n', event[]<- CPLDeliver $ n $ m});
+    (Arp := {-A eventually^ on n', event[]<- CPLDeliver ' n ' m -})
+    (Arc := {-A eventually on n', event[]<- CPLDeliver ' n ' m -});
     first by eapply DTL121.
   simpl_embed.
 
@@ -789,15 +695,15 @@ Proof.
   by simpl_embed; rewrite andbF.
 Qed.
 
-Lemma L41 : empty_context |- perfect_link, {A:
+Lemma L41 : empty_context |- perfect_link, {-A
   forall: forall:
   correct #1 /\ correct #0 ->
   forall: (* 2:n, 1:n', 0:c *)
-  self-event /\ (#2, #0) \in TRight (Fs $ #1) =>>
+  self-event /\ (#2, #0) \in TRight (Fs ' #1) =>>
   exists: (* m *)
-    eventuallyp (on #2, event[0]<- CSLDeliver $ #3 $ (#1, #0) /\
-      CPLDeliver $ #3 $ #0 \in Fois)
-}.
+    eventuallyp (on #2, event[0]<- CSLDeliver ' #3 ' (#1, #0) /\
+      CPLDeliver ' #3 ' #0 \in Fois)
+ -}.
 Proof.
   (* Introduce context *)
   set C := perfect_link; rewrite -/C /empty_context.
@@ -806,10 +712,10 @@ Proof.
 
   (* Instantiate InvSA *)
   eapply DSCut; first by repeat d_clear; apply DPInvSA with
-    (S0 := {A: forall: (* s *) (n, c) \in TRight #0})
-    (A := {A: exists: (* m *)
-      (on n', event[0]<- CSLDeliver $ n $ (c, #0) /\
-        CPLDeliver $ n $ #0 \in Fois)});
+    (S0 := {-A forall: (* s *) (n, c) \in TRight #0 -})
+    (A := {-A exists: (* m *)
+      (on n', event[0]<- CSLDeliver ' n ' (c, #0) /\
+        CPLDeliver ' n ' #0 \in Fois) -});
     [by auto_is_closed | by repeat econstructor | by repeat econstructor].
   d_forallp n'; simpl_embed.
 
@@ -823,13 +729,13 @@ Proof.
     d_rotate 4; do 5 (d_swap; d_rotate 1); d_substp; d_evalp.
     d_splitp; d_swap; d_splitp.
 
-    d_destructp (fun t => {A: (n, c) \notin t});
+    d_destructp (fun t => {-A (n, c) \notin t -});
       d_existsp r Hf_r; d_existsp c_ Hf_c_; simpl_embed; d_splitp.
     d_swap; d_substp; d_evalp.
 
     d_swap; do 2 (d_swap; d_rotate 1); d_swap.
     d_substp; d_evalp.
-    d_destructp (fun t => {A: (Fs' $ n', Fors, Fois) = t});
+    d_destructp (fun t => {-A (Fs' ' n', Fors, Fois) = t -});
       d_existsp m Hf_m; d_existsp n'_ Hf_n'_; simpl_embed; d_splitp.
     d_swap; d_substp; distinguish_variables; d_evalp.
 
@@ -845,18 +751,18 @@ Proof.
     d_rotate 4; do 5 (d_swap; d_rotate 1); d_substp; d_evalp.
     d_splitp; d_swap; d_splitp.
 
-    d_destructp (fun t => {A: (n, c) \notin t});
+    d_destructp (fun t => {-A (n, c) \notin t -});
       d_existsp r Hf_r; d_existsp c_ Hf_c_; simpl_embed; d_splitp.
     d_swap; d_substp; d_evalp.
 
     d_swap; do 2 (d_swap; d_rotate 1); d_swap.
     d_substp; d_evalp.
-    d_destructp (fun t => {A: (Fs' $ n', Fors, Fois) = t});
+    d_destructp (fun t => {-A (Fs' ' n', Fors, Fois) = t -});
       d_existsp m Hf_m; d_existsp c' Hf_c'; d_existsp n_ Hf_n_; simpl_embed;
       repeat d_splitp.
     d_swap; d_substp; distinguish_variables; d_evalp.
 
-    d_destructp (fun t => {A: (Fs' $ n', Fors, Fois) = t}); d_orp; d_splitp;
+    d_destructp (fun t => {-A (Fs' ' n', Fors, Fois) = t -}); d_orp; d_splitp;
       d_swap; d_substp; d_evalp; d_destructpairp; repeat d_splitp;
       do 12 (d_swap; d_rotate 1); d_swap; d_substp; d_evalp.
       do 12 (d_swap; d_clear).
@@ -887,7 +793,7 @@ Proof.
     do 4 (d_swap; d_rotate 1); d_substp; d_swap; d_substc; d_swap; d_evalp.
     d_splitp; d_destructpairp; repeat d_splitp.
     do 2 (d_swap; d_rotate 1); d_swap; d_substp; d_splitp.
-    d_destructp (fun t => {A: (n, c) \notin t});
+    d_destructp (fun t => {-A (n, c) \notin t -});
       d_existsp r Hf_r; d_existsp c_ Hf_c_; simpl_embed; d_splitp.
     d_swap; d_substp; d_evalp.
     d_rotate 1; d_swap; d_substp; d_evalp.
@@ -896,10 +802,10 @@ Proof.
 
   d_evalp.
 
-  d_have {A:
-    (on n', exists: (on n', event[0]<- CSLDeliver $ n $ (c, #0) /\ CPLDeliver $ n $ #0 \in Fois)) ->
-    (exists: on n', (on n', event[0]<- CSLDeliver $ n $ (c, #0) /\ CPLDeliver $ n $ #0 \in Fois))
-  }.
+  d_have {-A
+    (on n', exists: (on n', event[0]<- CSLDeliver ' n ' (c, #0) /\ CPLDeliver ' n ' #0 \in Fois)) ->
+    (exists: on n', (on n', event[0]<- CSLDeliver ' n ' (c, #0) /\ CPLDeliver ' n ' #0 \in Fois))
+   -}.
   {
     d_ifc; d_splitp; d_swap; d_existsp m_ Hf_m_; d_existsc m_; simpl_embed.
     d_splitc; first by d_assumption.
@@ -910,10 +816,10 @@ Proof.
   simpl_embed.
 
   d_swap; d_clear.
-  d_have {A:
-    eventuallyp^ (exists: on n', (on n', event[0]<- CSLDeliver $ n $ (c, #0) /\ CPLDeliver $ n $ #0 \in Fois)) ->
-    eventuallyp (exists: on n', (on n', event[0]<- CSLDeliver $ n $ (c, #0) /\ CPLDeliver $ n $ #0 \in Fois))
-  }.
+  d_have {-A
+    eventuallyp^ (exists: on n', (on n', event[0]<- CSLDeliver ' n ' (c, #0) /\ CPLDeliver ' n ' #0 \in Fois)) ->
+    eventuallyp (exists: on n', (on n', event[0]<- CSLDeliver ' n ' (c, #0) /\ CPLDeliver ' n ' #0 \in Fois))
+   -}.
   {
     by d_ifc; d_right.
   }
@@ -921,12 +827,12 @@ Proof.
   d_swap; eapply DARewriteIfP; first by d_head.
   simpl_embed.
 
-  set A := {A:
-    on n', event[0]<- CSLDeliver $ n $ (c, #0) /\ CPLDeliver $ n $ #0 \in Fois
-  }.
-  d_have {A:
+  set A := {-A
+    on n', event[0]<- CSLDeliver ' n ' (c, #0) /\ CPLDeliver ' n ' #0 \in Fois
+   -}.
+  d_have {-A
     (exists: on n', A) =>> exists: A
-  }.
+   -}.
   {
     eapply DTGeneralization; first by repeat constructor.
     d_ifc; d_existsp m_ Hf_m_; d_existsc m_; simpl_embed.
@@ -939,24 +845,24 @@ Proof.
   d_swap; eapply DARewriteEntailsP; first by d_head.
   simpl_embed.
 
-  d_have {A:
+  d_have {-A
     (eventuallyp exists: A) <=> (exists: eventuallyp A)
-  }; first by apply DTL127_3.
+   -}; first by apply DTL127_3.
 
   d_swap; eapply DARewriteCongruentPL; first by d_head.
   by simpl_embed.
 Qed.
 
-Lemma L40 : empty_context |- perfect_link, {A:
+Lemma L40 : empty_context |- perfect_link, {-A
   forall: forall:
   correct #1 /\ correct #0 ->
   forall: (* 2: n, 1:n', 0:c *)
-  self-event /\ on #1, ((#2, #0) \in TRight (Fs $ #1)) =>>
+  self-event /\ on #1, ((#2, #0) \in TRight (Fs ' #1)) =>>
   exists: (* m *)
-    eventuallyp (on #3, ((0, CSLSend $ #2 $ (#1, #0)) \in Fors) /\
+    eventuallyp (on #3, ((0, CSLSend ' #2 ' (#1, #0)) \in Fors) /\
       self-event /\
-      eventually on #2, event[]<- CPLDeliver $ #3 $ #0)
-}.
+      eventually on #2, event[]<- CPLDeliver ' #3 ' #0)
+ -}.
 Proof.
   (* Introduce context *)
   set C := perfect_link; rewrite -/C /empty_context.
@@ -974,75 +880,75 @@ Proof.
     d_forallp n'; d_forallp n; simpl_embed.
 (*  admit.
  (*
-    d_forallp {t: (c, m)}; simpl_embed.*)*)
+    d_forallp {-t (c, m) -}; simpl_embed.*)*)
 
   (* By OR' *)
-  d_have {A:
+  d_have {-A
     forall: (* m *)
-    on n, event[0]-> CSLSend $ n' $ (c, #0) =>>
-    eventuallyp (self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors))
-  }.
+    on n, event[0]-> CSLSend ' n' ' (c, #0) =>>
+    eventuallyp (self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors))
+   -}.
   {
     d_forallc m Hf_m; simpl_embed.
     d_use DPOR';
       d_forallp n;
       d_forallp 0;
-      d_forallp {t: CSLSend $ n' $ (c, m)};
+      d_forallp {-t CSLSend ' n' ' (c, m) -};
       simpl_embed.
 
     eapply DARewriteIfP; first by apply DTL123 with
-      (A := {A: self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)}).
+      (A := {-A self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) -}).
     by simpl_embed.
   }
 
   (* By Lemma 85 on (2) and (3) *)
-  d_have {A:
+  d_have {-A
     forall: (* m *)
-    on n', event[0]<- CSLDeliver $ n $ (c, #0) =>>
-    eventuallyp (self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors))
-  }.
+    on n', event[0]<- CSLDeliver ' n ' (c, #0) =>>
+    eventuallyp (self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors))
+   -}.
   {
-    d_forallc m Hf_m; d_swap; d_forallp {t: (c, m)}; simpl_embed.
+    d_forallc m Hf_m; d_swap; d_forallp {-t (c, m) -}; simpl_embed.
     eapply DTL85; first by d_head.
     by d_swap; d_forallp m; simpl_embed.
   }
 
   (* By OI *)
-  d_have {A:
+  d_have {-A
     forall: (* m *)
-    (on n', (self-event /\ (CPLDeliver $ n $ #0) \in Fois)) =>>
-    eventually (on n', (event[]<- CPLDeliver $ n $ #0))
-  }.
+    (on n', (self-event /\ (CPLDeliver ' n ' #0) \in Fois)) =>>
+    eventually (on n', (event[]<- CPLDeliver ' n ' #0))
+   -}.
   {
     d_forallc m Hf_m; simpl_embed.
     d_use DPOI;
-      d_forallp n'; d_forallp {t: CPLDeliver $ n $ m};
+      d_forallp n'; d_forallp {-t CPLDeliver ' n ' m -};
       simpl_embed.
 
     eapply DARewriteIfP; first by apply DTL121 with
-      (A := {A: on n', event[]<- CPLDeliver $ n $ m}).
+      (A := {-A on n', event[]<- CPLDeliver ' n ' m -}).
     by simpl_embed.
   }
 
   (* By (1), (4), and (5) *)
-  d_have {A:
-    self-event /\ (n, c) \in TRight (Fs $ n') =>>
+  d_have {-A
+    self-event /\ (n, c) \in TRight (Fs ' n') =>>
      exists: (* m *)
-      eventuallyp (eventuallyp (self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-        eventually on n', event []<- CPLDeliver $ n $ #0)
-  }.
+      eventuallyp (eventuallyp (self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+        eventually on n', event []<- CPLDeliver ' n ' #0)
+   -}.
   {
     d_rotate 4.
-    d_have {A:
+    d_have {-A
       forall: (* m *)
-      (on n', event[0]<- CSLDeliver $ n $ (c, #0) /\ CPLDeliver $ n $ #0 \in Fois) ->
-      (on n', event[0]<- CSLDeliver $ n $ (c, #0) /\ (on n', (self-event /\ CPLDeliver $ n $ #0 \in Fois)))
-    }.
+      (on n', event[0]<- CSLDeliver ' n ' (c, #0) /\ CPLDeliver ' n ' #0 \in Fois) ->
+      (on n', event[0]<- CSLDeliver ' n ' (c, #0) /\ (on n', (self-event /\ CPLDeliver ' n ' #0 \in Fois)))
+     -}.
     {
       d_forallc m Hf_m; simpl_embed.
       d_ifc; d_splitc; first by d_splitp.
       d_use_empty DPSecondIndicationSelf;
-        d_forallp {t: CSLDeliver $ n $ (c, m)};
+        d_forallp {-t CSLDeliver ' n ' (c, m) -};
         simpl_embed.
       d_splitp; d_swap; d_clear.
       d_ifp; first by repeat d_splitp; d_assumption.
@@ -1053,10 +959,10 @@ Proof.
 
     d_swap.
     eapply DARewriteIfInExistsP with
-      (Arp := {A: on n', event [0]<- CSLDeliver $ n $ (c, #0) /\
-        CPLDeliver $ n $ #0 \in Fois})
-      (Arc := {A: on n', event [0]<- CSLDeliver $ n $ (c, #0) /\
-        on n', (self-event /\ CPLDeliver $ n $ #0 \in Fois)}).
+      (Arp := {-A on n', event [0]<- CSLDeliver ' n ' (c, #0) /\
+        CPLDeliver ' n ' #0 \in Fois -})
+      (Arc := {-A on n', event [0]<- CSLDeliver ' n ' (c, #0) /\
+        on n', (self-event /\ CPLDeliver ' n ' #0 \in Fois) -}).
     admit.
 (*
       first by d_existsc m; simpl_embed.
@@ -1064,14 +970,14 @@ Proof.
     d_swap; d_clear.
 
     eapply DARewriteEntailsInExistsP with
-      (Arp := {A: on n', (self-event /\ CPLDeliver $ n $ #0 \in Fois)})
-      (Arc := {A: eventually (on n', event[]<- CPLDeliver $ n $ #0)});
+      (Arp := {-A on n', (self-event /\ CPLDeliver ' n ' #0 \in Fois) -})
+      (Arc := {-A eventually (on n', event[]<- CPLDeliver ' n ' #0) -});
       first by d_existsc m; simpl_embed; d_assumption.
     rewrite /rewrite_pos_in_exists /=; simpl_embed; rewrite !andbT !andbF.
 
     eapply DARewriteEntailsInExistsP with
-      (Arp := {A: on n', event[0]<- CSLDeliver $ n $ (c, #0)})
-      (Arc := {A: eventuallyp (self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors))});
+      (Arp := {-A on n', event[0]<- CSLDeliver ' n ' (c, #0) -})
+      (Arc := {-A eventuallyp (self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) -});
       first by d_existsc m; simpl_embed; d_assumption.
     rewrite /rewrite_pos_in_exists /=; simpl_embed; rewrite !andbT !andbF.
 
@@ -1081,29 +987,29 @@ Proof.
 
 (*
   eapply DARewriteIfInExistsP with
-    (Arp := {A: self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)})
-    (Arc := {A: (on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors) /\ self-event)}).
+    (Arp := {-A self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) -})
+    (Arc := {-A (on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) /\ self-event) -}).
     first by d_existsc m; d_ifc; d_splitp; d_splitc; d_assumption.
   rewrite /rewrite_pos_in_exists /=; simpl_embed.
 
-  set A1 := {A: on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)}.
-  set A2 := {A: on n', event[]<- CPLDeliver $ n $ #0}.
+  set A1 := {-A on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) -}.
+  set A2 := {-A on n', event[]<- CPLDeliver ' n ' #0 -}.
   eapply DARewriteEntailsInExistsP with
-    (Arp := {A: eventuallyp (A1 /\ self-event) /\ eventually A2})
-    (Arc := {A: eventuallyp ((A1 /\ self-event) /\ eventually A2)});
+    (Arp := {-A eventuallyp (A1 /\ self-event) /\ eventually A2 -})
+    (Arc := {-A eventuallyp ((A1 /\ self-event) /\ eventually A2) -});
     first by d_existsc m; simpl_embed; eapply DTL102_3.
   rewrite /rewrite_pos_in_exists /=; simpl_embed.
   eapply DARewriteCongruentInExistsPR with
-    (Arp := {A: eventuallyp ((A1 /\ self-event) /\ eventually A2)})
-    (Arc := {A: eventuallyp (eventuallyp ((A1 /\ self-event) /\ eventually A2))});
+    (Arp := {-A eventuallyp ((A1 /\ self-event) /\ eventually A2) -})
+    (Arc := {-A eventuallyp (eventuallyp ((A1 /\ self-event) /\ eventually A2)) -});
     first by d_existsc m; simpl_embed; eapply DTL83_1.
   rewrite /rewrite_any_in_exists /=; simpl_embed.
 
   (* Take care of the right associativity of /\ *)
-  d_have {A:
+  d_have {-A
     ((A1 /\ self-event) /\ eventually A2) ->
     (A1 /\ (self-event /\ eventually A2))
-  }.
+   -}.
   {
     d_ifc; d_splitc; first by d_splitp; d_splitp.
     d_splitp; d_splitc; first by d_splitp; d_swap.
@@ -1114,10 +1020,10 @@ Proof.
   eapply DARewriteIfP; first by d_head.
   simpl_embed.
 
-  d_have {A:
-    (self-event /\ on n', ((n, c) \in TRight (Fs $ n'))) =>>
-    self-event /\ (n, c) \in TRight (Fs $ n')
-  }.
+  d_have {-A
+    (self-event /\ on n', ((n, c) \in TRight (Fs ' n'))) =>>
+    self-event /\ (n, c) \in TRight (Fs ' n')
+   -}.
   {
     eapply DTGeneralization; first by repeat constructor.
     d_ifc; d_splitc; first by d_splitp.
@@ -1125,29 +1031,29 @@ Proof.
   }
 
   eapply DTL77 with
-    (A1 := {A: self-event /\ on n', ((n, c) \in TRight (Fs $ n'))})
-    (A2 := {A: self-event /\ (n, c) \in TRight (Fs $ n')})
-    (A3 := {A: exists:
-      eventuallyp (on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors) /\
+    (A1 := {-A self-event /\ on n', ((n, c) \in TRight (Fs ' n')) -})
+    (A2 := {-A self-event /\ (n, c) \in TRight (Fs ' n') -})
+    (A3 := {-A exists:
+      eventuallyp (on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) /\
       self-event /\
-      eventually on n', event[]<- CPLDeliver $ n $ #0)});
+      eventually on n', event[]<- CPLDeliver ' n ' #0) -});
     first by d_head.
   by d_swap.
 Qed.
 *)
 Admitted.
 
-Lemma L38 : empty_context |- perfect_link, {A:
+Lemma L38 : empty_context |- perfect_link, {-A
   forall: forall:
   correct #1 /\ correct #0 ->
   forall: forall: (* 3:n, 2:n', 1:m, 0:c *)
-  on #2, event[0]<- CSLDeliver $ #3 $ (#0, #1) =>>
+  on #2, event[0]<- CSLDeliver ' #3 ' (#0, #1) =>>
   eventually on #2,
-    event[]<- CPLDeliver $ #3 $ #1 \/
+    event[]<- CPLDeliver ' #3 ' #1 \/
     exists: (* m' *)
-      (eventuallyp ((on #4, self-event /\ (0, CSLSend $ #3 $ (#1, #0)) \in Fors) /\
-      eventually on #3, event[]<- CPLDeliver $ #4 $ #0))
-}.
+      (eventuallyp ((on #4, self-event /\ (0, CSLSend ' #3 ' (#1, #0)) \in Fors) /\
+      eventually on #3, event[]<- CPLDeliver ' #4 ' #0))
+ -}.
 Proof.
   (* Introduce context *)
   set C := perfect_link; rewrite -/C /empty_context.
@@ -1159,12 +1065,12 @@ Proof.
   d_ifp; first by d_splitc; d_assumption.
   d_forallp m; d_forallp c; simpl_embed.
 
-  d_have {A:
-    self-event /\ on n', ((n, c) \in TRight (Fs $ n')) =>>
+  d_have {-A
+    self-event /\ on n', ((n, c) \in TRight (Fs ' n')) =>>
     exists: (* m *)
-      eventuallyp ((on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors) /\ self-event) /\
-        eventually on n', event[]<- CPLDeliver $ n $ #0)
-  }.
+      eventuallyp ((on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) /\ self-event) /\
+        eventually on n', event[]<- CPLDeliver ' n ' #0)
+   -}.
   {
     d_clear; d_evalc.
 
@@ -1173,12 +1079,12 @@ Proof.
     d_ifp; first by d_splitc; d_assumption.
     d_forallp c; simpl_embed.
 
-    d_have {A:
-      (on n, ((0, CSLSend $ n' $ (c, m)) \in Fors) /\ self-event /\
-        eventually on n', event[]<- CPLDeliver $ n $ m) ->
-      (on n, ((0, CSLSend $ n' $ (c, m)) \in Fors) /\ self-event) /\
-        eventually on n', event[]<- CPLDeliver $ n $ m
-    }.
+    d_have {-A
+      (on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) /\ self-event /\
+        eventually on n', event[]<- CPLDeliver ' n ' m) ->
+      (on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) /\ self-event) /\
+        eventually on n', event[]<- CPLDeliver ' n ' m
+     -}.
     {
       d_ifc; d_splitp; d_splitc; first by d_splitc; [| d_swap; d_splitp].
       by d_swap; d_splitp; d_swap.
@@ -1186,26 +1092,26 @@ Proof.
 
     d_swap.
     eapply DARewriteIfInExistsP with
-      (Arp := {A: on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors) /\
-          self-event /\ eventually on n', event []<- CPLDeliver $ n $ #0
-        })
-      (Arc := {A: (on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors) /\ self-event) /\
-          eventually on n', event []<- CPLDeliver $ n $ #0
-        });
+      (Arp := {-A on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) /\
+          self-event /\ eventually on n', event []<- CPLDeliver ' n ' #0
+         -})
+      (Arc := {-A (on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) /\ self-event) /\
+          eventually on n', event []<- CPLDeliver ' n ' #0
+         -});
       first by d_existsc m; simpl_embed; d_assumption.
     by rewrite /rewrite_pos_in_exists /=; simpl_embed.
   }
 
-  d_have {A:
-    on n', event[0]<- CSLDeliver $ n $ (c, m) /\ (n, c) \in TRight (Fs $ n') =>>
-    self-event /\ on n', ((n, c) \in TRight (Fs $ n'))
-  }.
+  d_have {-A
+    on n', event[0]<- CSLDeliver ' n ' (c, m) /\ (n, c) \in TRight (Fs ' n') =>>
+    self-event /\ on n', ((n, c) \in TRight (Fs ' n'))
+   -}.
   {
     eapply DTGeneralization; first by repeat constructor.
     d_ifc.
     d_splitc.
       d_splitp.
-      d_use_empty DPSecondIndicationSelf; d_forallp {t: CSLDeliver $ n $ (c, m)};
+      d_use_empty DPSecondIndicationSelf; d_forallp {-t CSLDeliver ' n ' (c, m) -};
         simpl_embed.
       eapply DARewriteEntailsC; first by d_head.
       simpl_embed.
@@ -1216,10 +1122,10 @@ Proof.
   eapply DARewriteEntailsP; first by d_head.
   simpl_embed.
 
-  d_have {A:
-    (on n, ((0, CSLSend $ n' $ (c, m)) \in Fors) /\ self-event) =>>
-    (on n, self-event /\ (0, CSLSend $ n' $ (c, m)) \in Fors)
-  }.
+  d_have {-A
+    (on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) /\ self-event) =>>
+    (on n, self-event /\ (0, CSLSend ' n' ' (c, m)) \in Fors)
+   -}.
   {
     eapply DTGeneralization; first by repeat constructor.
     by d_ifc; repeat d_splitp; d_splitc; [d_splitc |]; d_assumption.
@@ -1227,17 +1133,17 @@ Proof.
 
   d_swap.
   eapply DARewriteEntailsInExistsP with
-    (Arp := {A: on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors) /\ self-event})
-    (Arc := {A: on n, self-event /\ (0, CSLSend $ n' $ (c, #0)) \in Fors});
+    (Arp := {-A on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) /\ self-event -})
+    (Arc := {-A on n, self-event /\ (0, CSLSend ' n' ' (c, #0)) \in Fors -});
     first by d_existsc m; simpl_embed; d_assumption.
   rewrite /rewrite_pos_in_exists /=; simpl_embed.
 
-  set A := {A: on n', event[0]<- CSLDeliver $ n $ (c, m)}.
-  set B := {A: (n, c) \notin TRight (Fs $ n')}.
-  set D := {A: (n, c) \in TRight (Fs $ n')}.
-  d_have {A:
+  set A := {-A on n', event[0]<- CSLDeliver ' n ' (c, m) -}.
+  set B := {-A (n, c) \notin TRight (Fs ' n') -}.
+  set D := {-A (n, c) \in TRight (Fs ' n') -}.
+  d_have {-A
     A =>> A /\ (B \/ D)
-  }.
+   -}.
   {
     eapply DTGeneralization; first by repeat constructor.
     d_ifc; d_splitc; first by d_head.
@@ -1245,12 +1151,12 @@ Proof.
   }
 
   eapply DARewriteIffPL with
-    (Arp := {A: A /\ (B \/ D)})
-    (Arc := {A: (A /\ B) \/ (A /\ D)}).
+    (Arp := {-A A /\ (B \/ D) -})
+    (Arc := {-A (A /\ B) \/ (A /\ D) -}).
   eapply DSOrDistributesAnd with
-    (A := {A: A})
-    (Al := {A: B})
-    (Ar := {A: D}).
+    (A := {-A A -})
+    (Al := {-A B -})
+    (Ar := {-A D -}).
   simpl_embed.
 
   eapply DARewriteEntailsP; first by d_rotate 3; d_head.
@@ -1264,12 +1170,12 @@ Qed.
  * If a correct node n sends a message m to a correct node n', then n' will
  * eventually deliver m.
  *)
-Theorem PL_1 : empty_context |- perfect_link, {A:
+Theorem PL_1 : empty_context |- perfect_link, {-A
   forall: forall: forall: (* 2:n, 1:n', 0:m *)
   correct #2 /\ correct #1 ->
-  on #2, event[]-> CPLSend $ #1 $ #0 ~>
-  on #1, event[]<- CPLDeliver $ #2 $ #0
-}.
+  on #2, event[]-> CPLSend ' #1 ' #0 ~>
+  on #1, event[]<- CPLDeliver ' #2 ' #0
+ -}.
 Proof.
   (* Introduce context *)
   set C := perfect_link; rewrite -/C /empty_context.
@@ -1279,20 +1185,20 @@ Proof.
   d_ifc; d_splitp.
 
   (* By IR *)
-  d_have {A:
+  d_have {-A
     exists: (* c *)
-    on n, event[]-> CPLSend $ n' $ m =>>
-    self-event /\ on n, ((0, CSLSend $ n' $ (#0, m)) \in Fors)
-  }.
+    on n, event[]-> CPLSend ' n' ' m =>>
+    self-event /\ on n, ((0, CSLSend ' n' ' (#0, m)) \in Fors)
+   -}.
   {
 (*
     d_forallc c Hf_c; simpl_embed.
     eapply DTGeneralization; first by repeat constructor.
     d_ifc.
-    d_use DPIR; d_forallp {t: CPLSend $ n' $ m}; d_evalp.
+    d_use DPIR; d_forallp {-t CPLSend ' n' ' m -}; d_evalp.
     d_splitp; d_swap; d_clear; d_ifp; first by d_splitp; d_clear.
 
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
       d_existsp r Hf_r; d_existsp c_ Hf_c_; simpl_embed;
       d_splitp; d_swap; d_substp; d_evalp.
     d_destructpairp; repeat d_splitp.
@@ -1312,22 +1218,22 @@ Proof.
   d_existsp c Hf_c; simpl_embed.
 
   (* By OR *)
-  d_have {A:
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) =>>
-    eventually (on n, event[0]-> CSLSend $ n' $ (c, m))
-  }.
+  d_have {-A
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) =>>
+    eventually (on n, event[0]-> CSLSend ' n' ' (c, m))
+   -}.
   {
-    d_use DPOR; d_forallp n; d_forallp 0; d_forallp {t: CSLSend $ n' $ (c, m)};
+    d_use DPOR; d_forallp n; d_forallp 0; d_forallp {-t CSLSend ' n' ' (c, m) -};
       simpl_embed.
     eapply DARewriteIfP; first by apply DTL121 with
-      (A := {A: on n, event[0]-> CSLSend $ n' $ (c, m)}).
+      (A := {-A on n, event[0]-> CSLSend ' n' ' (c, m) -}).
     simpl_embed.
 
     d_swap; d_clear.
-    d_have {A:
-      self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors) =>>
-      on n, (self-event /\ (0, CSLSend $ n' $ (c, m)) \in Fors)
-    }.
+    d_have {-A
+      self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) =>>
+      on n, (self-event /\ (0, CSLSend ' n' ' (c, m)) \in Fors)
+     -}.
     {
       eapply DTGeneralization; first by repeat constructor.
       d_ifc; d_splitc; first by d_splitp; d_swap; d_splitp.
@@ -1340,70 +1246,70 @@ Proof.
   }
 
   (* Apply DTL96 on above assumptions *)
-  d_have {A:
-    on n, event[]-> CPLSend $ n' $ m ~>
-    on n, event[0]-> CSLSend $ n' $ (c, m)
-  }.
+  d_have {-A
+    on n, event[]-> CPLSend ' n' ' m ~>
+    on n, event[0]-> CSLSend ' n' ' (c, m)
+   -}.
   {
     d_swap.
-    set A := {A: self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)}.
-    set B := {A: on n, event[0]-> CSLSend $ n' $ (c, m)}.
-    set D := {A: on n, event[]-> CPLSend $ n' $ m}.
+    set A := {-A self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) -}.
+    set B := {-A on n, event[0]-> CSLSend ' n' ' (c, m) -}.
+    set D := {-A on n, event[]-> CPLSend ' n' ' m -}.
 
     eapply DTL77; first by d_head.
     by d_assumption.
   }
 
   (* By SL_1 and Axiom 1 *)
-  d_have {A:
-    on n, event[0]-> CSLSend $ n' $ (c, m) =>>
-    eventually (on n', event[0]<- CSLDeliver $ n $ (c, m))
-  }.
+  d_have {-A
+    on n, event[0]-> CSLSend ' n' ' (c, m) =>>
+    eventually (on n', event[0]<- CSLDeliver ' n ' (c, m))
+   -}.
   {
     d_use_empty PL_SL_1; d_forallp n; d_forallp n'; simpl_embed.
     d_ifp; first by d_splitc; d_assumption.
-    d_forallp {t: (c, m)}; simpl_embed.
+    d_forallp {-t (c, m) -}; simpl_embed.
 
     eapply DARewriteIfP; first by apply DT1 with
-      (A := {A: eventually on n', event[0]<- CSLDeliver $ n $ (c, m)}).
+      (A := {-A eventually on n', event[0]<- CSLDeliver ' n ' (c, m) -}).
     by simpl_embed.
   }
 
   (* By Lemma 86 on (1) and (2) *)
-  d_have {A:
-    on n, event[]-> CPLSend $ n' $ m =>>
-    eventually on n', event[0]<- CSLDeliver $ n $ (c, m)
-  }.
+  d_have {-A
+    on n, event[]-> CPLSend ' n' ' m =>>
+    eventually on n', event[0]<- CSLDeliver ' n ' (c, m)
+   -}.
   {
     by eapply DTL86; first by d_swap; d_head.
   }
 
-  d_have {A:
-    on n, event[]-> CPLSend $ n' $ m =>>
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-    (eventually on n', event[0]<- CSLDeliver $ n $ (c, m))}.
+  d_have {-A
+    on n, event[]-> CPLSend ' n' ' m =>>
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+    (eventually on n', event[0]<- CSLDeliver ' n ' (c, m)) -}.
   {
     eapply DARewriteIffCR with
-      (Arc := {A: (on n, event[]-> CPLSend $ n' $ m) ->
-        ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-        (eventually on n', event[0]<- CSLDeliver $ n $ (c, m)))})
-      (Arp := {A: ((on n, event[]-> CPLSend $ n' $ m) ->
-        (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors))) /\
-        ((on n, event[]-> CPLSend $ n' $ m) ->
-          (eventually on n', event[0]<- CSLDeliver $ n $ (c, m)))}).
+      (Arc := {-A (on n, event[]-> CPLSend ' n' ' m) ->
+        ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+        (eventually on n', event[0]<- CSLDeliver ' n ' (c, m))) -})
+      (Arp := {-A ((on n, event[]-> CPLSend ' n' ' m) ->
+        (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors))) /\
+        ((on n, event[]-> CPLSend ' n' ' m) ->
+          (eventually on n', event[0]<- CSLDeliver ' n ' (c, m))) -}).
     eapply DSIfAndSplit with
-      (Ap := {A: on n, event[]-> CPLSend $ n' $ m})
-      (Acl := {A: self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)})
-      (Acr := {A: eventually on n', event[0]<- CSLDeliver $ n $ (c, m)}).
+      (Ap := {-A on n, event[]-> CPLSend ' n' ' m -})
+      (Acl := {-A self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) -})
+      (Acr := {-A eventually on n', event[0]<- CSLDeliver ' n ' (c, m) -}).
     simpl_embed.
 
-    set A := {A: on n, event[]-> CPLSend $ n' $ m ->
-      self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)}.
-    set B := {A: on n, event[]-> CPLSend $ n' $ m ->
-      eventually on n', event[0]<- CSLDeliver $ n $ (c, m)}.
+    set A := {-A on n, event[]-> CPLSend ' n' ' m ->
+      self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) -}.
+    set B := {-A on n, event[]-> CPLSend ' n' ' m ->
+      eventually on n', event[0]<- CSLDeliver ' n ' (c, m) -}.
     eapply DARewriteCongruentCL with
-      (Arp := {A: always (A /\ B)})
-      (Arc := {A: (always A) /\ (always B)});
+      (Arp := {-A always (A /\ B) -})
+      (Arc := {-A (always A) /\ (always B) -});
       first by eapply DTL128_1.
     simpl_embed.
 
@@ -1411,19 +1317,19 @@ Proof.
   }
 
   (* By Lemma 96 on (3) and Lemma 38 *)
-  d_have {A:
-    on n, event[]-> CPLSend $ n' $ m =>>
-    (self-event /\ (on n, ((0, CSLSend $ n' $ (c, m)) \in Fors))) /\
-    eventually ((eventually (on n', event[]<- CPLDeliver $ n $ m)) \/
-      exists: (* m *) (eventuallyp ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-        (eventually on n', event[]<- CPLDeliver $ n $ #0))))
-  }.
+  d_have {-A
+    on n, event[]-> CPLSend ' n' ' m =>>
+    (self-event /\ (on n, ((0, CSLSend ' n' ' (c, m)) \in Fors))) /\
+    eventually ((eventually (on n', event[]<- CPLDeliver ' n ' m)) \/
+      exists: (* m *) (eventuallyp ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+        (eventually on n', event[]<- CPLDeliver ' n ' #0))))
+   -}.
   {
     eapply DARewriteEntailsP with
-      (Arp := {A: on n', event[0]<- CSLDeliver $ n $ (c, m)})
-      (Arc := {A: (eventually on n', event[]<- CPLDeliver $ n $ m) \/ exists: (* m *)
-        (eventuallyp ((on n, self-event /\ (0, CSLSend $ n' $ (c, #0)) \in Fors) /\
-          (eventually on n', event[]<- CPLDeliver $ n $ #0)))}).
+      (Arp := {-A on n', event[0]<- CSLDeliver ' n ' (c, m) -})
+      (Arc := {-A (eventually on n', event[]<- CPLDeliver ' n ' m) \/ exists: (* m *)
+        (eventuallyp ((on n, self-event /\ (0, CSLSend ' n' ' (c, #0)) \in Fors) /\
+          (eventually on n', event[]<- CPLDeliver ' n ' #0))) -}).
     {
       do 5 d_clear.
       d_use_empty L38; d_forallp n; d_forallp n'; simpl_embed.
@@ -1432,11 +1338,11 @@ Proof.
     }
     simpl_embed; rewrite andbF.
 
-    d_have {A:
-      ((on n, self-event /\ ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-        eventually on n', event[]<- CPLDeliver $ n $ m) ->
-      ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-        eventually on n', event[]<- CPLDeliver $ n $ m)}.
+    d_have {-A
+      ((on n, self-event /\ ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+        eventually on n', event[]<- CPLDeliver ' n ' m) ->
+      ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+        eventually on n', event[]<- CPLDeliver ' n ' m) -}.
     {
       d_ifc; repeat d_splitp; d_splitc;
         first by d_splitc; [| d_splitc]; d_assumption.
@@ -1445,140 +1351,140 @@ Proof.
 
     d_swap.
     eapply DARewriteIfInExistsP with
-      (Arp := {A: (on n, self-event /\ ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-        eventually on n', event[]<- CPLDeliver $ n $ #0})
-      (Arc := {A: (self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-        eventually on n', event[]<- CPLDeliver $ n $ #0});
+      (Arp := {-A (on n, self-event /\ ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+        eventually on n', event[]<- CPLDeliver ' n ' #0 -})
+      (Arc := {-A (self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+        eventually on n', event[]<- CPLDeliver ' n ' #0 -});
       first by d_existsc m; simpl_embed; d_head.
     by rewrite /rewrite_pos_in_exists /=; simpl_embed.
   }
 
-  d_have {A:
-    on n, event[]-> CPLSend $ n' $ m =>>
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-    ((eventually (eventually (on n', event[]<- CPLDeliver $ n $ m))) \/
+  d_have {-A
+    on n, event[]-> CPLSend ' n' ' m =>>
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+    ((eventually (eventually (on n', event[]<- CPLDeliver ' n ' m))) \/
       (eventually (exists: (* m *)
-        eventuallyp ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-          eventually (on n', event[]<- CPLDeliver $ n $ #0)))))
-  }.
+        eventuallyp ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+          eventually (on n', event[]<- CPLDeliver ' n ' #0)))))
+   -}.
   {
-    set A := {A: exists: (* m *)
-      eventuallyp ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-        (eventually on n', event[]<- CPLDeliver $ n $ #0))}.
-    set B := {A: eventually (on n', event[]<- CPLDeliver $ n $ m)}.
+    set A := {-A exists: (* m *)
+      eventuallyp ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+        (eventually on n', event[]<- CPLDeliver ' n ' #0)) -}.
+    set B := {-A eventually (on n', event[]<- CPLDeliver ' n ' m) -}.
 
     eapply DARewriteCongruentPL with
-      (Arp := {A: eventually (B \/ A)})
-      (Arc := {A: (eventually B) \/ (eventually A)});
+      (Arp := {-A eventually (B \/ A) -})
+      (Arc := {-A (eventually B) \/ (eventually A) -});
       first by eapply DTL127_1.
     by simpl_embed.
   }
 
-  d_have {A:
-    on n, event[]-> CPLSend $ n' $ m =>>
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-    ((eventually (on n', event[]<- CPLDeliver $ n $ m)) \/
+  d_have {-A
+    on n, event[]-> CPLSend ' n' ' m =>>
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+    ((eventually (on n', event[]<- CPLDeliver ' n ' m)) \/
       (exists: (* m *)
-        eventually (eventuallyp ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-          eventually (on n', event[]<- CPLDeliver $ n $ #0)))))
-  }.
+        eventually (eventuallyp ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+          eventually (on n', event[]<- CPLDeliver ' n ' #0)))))
+   -}.
   {
-    set A1 := {A: self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)}.
-    set A2 := {A: (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      (eventually on n', event[]<- CPLDeliver $ n $ m)}.
-    set B1 := {A: eventually eventually (on n', event[]<- CPLDeliver $ n $ m)}.
-    set B2 := {A: eventually (on n', event[]<- CPLDeliver $ n $ m)}.
+    set A1 := {-A self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) -}.
+    set A2 := {-A (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      (eventually on n', event[]<- CPLDeliver ' n ' m) -}.
+    set B1 := {-A eventually eventually (on n', event[]<- CPLDeliver ' n ' m) -}.
+    set B2 := {-A eventually (on n', event[]<- CPLDeliver ' n ' m) -}.
 
     eapply DARewriteCongruentPR with
-      (Arc := {A: eventually eventually on n', event[]<- CPLDeliver $ n $ m})
-      (Arp := {A: eventually on n', event[]<- CPLDeliver $ n $ m});
-      first by eapply DTL84 with (A := {A: on n', event[]<- CPLDeliver $ n $ m}).
+      (Arc := {-A eventually eventually on n', event[]<- CPLDeliver ' n ' m -})
+      (Arp := {-A eventually on n', event[]<- CPLDeliver ' n ' m -});
+      first by eapply DTL84 with (A := {-A on n', event[]<- CPLDeliver ' n ' m -}).
     simpl_embed.
 
-    set A3 := {A: self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)}.
-    set A4 := {A: (self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ #0}.
-    set B3 := {A: eventually eventually (on n', event[]<- CPLDeliver $ n $ m)}.
-    set B4 := {A: eventually (on n', event[]<- CPLDeliver $ n $ m)}.
+    set A3 := {-A self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) -}.
+    set A4 := {-A (self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' #0 -}.
+    set B3 := {-A eventually eventually (on n', event[]<- CPLDeliver ' n ' m) -}.
+    set B4 := {-A eventually (on n', event[]<- CPLDeliver ' n ' m) -}.
 
     eapply DARewriteCongruentPL with
-      (Arp := {A: eventually (exists: (* m *) eventuallyp A4)})
-      (Arc := {A: (exists: (* m *) (eventually eventuallyp A4))});
-      first by eapply DTL127_2 with (A := {A: eventuallyp A4}).
+      (Arp := {-A eventually (exists: (* m *) eventuallyp A4) -})
+      (Arc := {-A (exists: (* m *) (eventually eventuallyp A4)) -});
+      first by eapply DTL127_2 with (A := {-A eventuallyp A4 -}).
     by simpl_embed.
   }
 
-  d_have {A:
-    on n, event[]-> CPLSend $ n' $ m =>>
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-    ((eventually (on n', event[]<- CPLDeliver $ n $ m)) \/
+  d_have {-A
+    on n, event[]-> CPLSend ' n' ' m =>>
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+    ((eventually (on n', event[]<- CPLDeliver ' n ' m)) \/
       (exists: (* m *)
-        ((eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-          eventually (on n', event[]<- CPLDeliver $ n $ #0))) \/
-        ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-          eventually (on n', event[]<- CPLDeliver $ n $ #0)) \/
-        (eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-          eventually (on n', event[]<- CPLDeliver $ n $ #0))))))
-  }.
+        ((eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+          eventually (on n', event[]<- CPLDeliver ' n ' #0))) \/
+        ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+          eventually (on n', event[]<- CPLDeliver ' n ' #0)) \/
+        (eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+          eventually (on n', event[]<- CPLDeliver ' n ' #0))))))
+   -}.
   {
-    set A1 := {A: self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)}.
-    set A2 := {A: ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-      (eventually on n', event[]<- CPLDeliver $ n $ #0))}.
-    set B1 := {A: eventually (on n', event[]<- CPLDeliver $ n $ #0)}.
+    set A1 := {-A self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) -}.
+    set A2 := {-A ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+      (eventually on n', event[]<- CPLDeliver ' n ' #0)) -}.
+    set B1 := {-A eventually (on n', event[]<- CPLDeliver ' n ' #0) -}.
     eapply DARewriteEntailsInExistsP with
-      (Arp := {A: eventually eventuallyp A2})
-      (Arc := {A: eventually^ A2 \/ A2 \/ eventuallyp^ A2});
+      (Arp := {-A eventually eventuallyp A2 -})
+      (Arc := {-A eventually^ A2 \/ A2 \/ eventuallyp^ A2 -});
       first by d_existsc m; simpl_embed; eapply DTL109_3_a.
     by rewrite /rewrite_pos_in_exists /=; simpl_embed.
   }
 
 (*
-  d_have {A:
+  d_have {-A
     (exists: (* m *)
-      ((eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-        eventually (on n', event[]<- CPLDeliver $ n $ #0))) \/
-      ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-        eventually (on n', event[]<- CPLDeliver $ n $ #0)) \/
-      (eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-        eventually (on n', event[]<- CPLDeliver $ n $ #0))))) ->
-    ((eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-      eventually (on n', event[]<- CPLDeliver $ n $ m'))) \/
-    ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually (on n', event[]<- CPLDeliver $ n $ m)) \/
-    (eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-      eventually (on n', event[]<- CPLDeliver $ n $ m'))))
-  }.
+      ((eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+        eventually (on n', event[]<- CPLDeliver ' n ' #0))) \/
+      ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+        eventually (on n', event[]<- CPLDeliver ' n ' #0)) \/
+      (eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+        eventually (on n', event[]<- CPLDeliver ' n ' #0))))) ->
+    ((eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+      eventually (on n', event[]<- CPLDeliver ' n ' m'))) \/
+    ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually (on n', event[]<- CPLDeliver ' n ' m)) \/
+    (eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+      eventually (on n', event[]<- CPLDeliver ' n ' m'))))
+   -}.
   {
-    d_have {A:
+    d_have {-A
       (exists: (* m *)
-        ((eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-          eventually (on n', event[]<- CPLDeliver $ n $ #0))) \/
-        ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-          eventually (on n', event[]<- CPLDeliver $ n $ #0)) \/
-        (eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-          eventually (on n', event[]<- CPLDeliver $ n $ #0))))) ->
+        ((eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+          eventually (on n', event[]<- CPLDeliver ' n ' #0))) \/
+        ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+          eventually (on n', event[]<- CPLDeliver ' n ' #0)) \/
+        (eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+          eventually (on n', event[]<- CPLDeliver ' n ' #0))))) ->
       (exists: (* m *)
-        (eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-          eventually (on n', event[]<- CPLDeliver $ n $ #0)))) \/
+        (eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+          eventually (on n', event[]<- CPLDeliver ' n ' #0)))) \/
       (exists: (* m *)
-        ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-          eventually (on n', event[]<- CPLDeliver $ n $ #0))) \/
+        ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+          eventually (on n', event[]<- CPLDeliver ' n ' #0))) \/
       (exists: (* m *)
-        eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-          eventually (on n', event[]<- CPLDeliver $ n $ #0)))
-    }.
+        eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+          eventually (on n', event[]<- CPLDeliver ' n ' #0)))
+     -}.
     {
-      set A1 := {A: eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-        eventually on n', event[]<- CPLDeliver $ n $ #0)}.
-      set A2 := {A: ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-        eventually (on n', event[]<- CPLDeliver $ n $ #0))}.
-      set A3 := {A: (eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-        eventually (on n', event[]<- CPLDeliver $ n $ #0)))}.
+      set A1 := {-A eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+        eventually on n', event[]<- CPLDeliver ' n ' #0) -}.
+      set A2 := {-A ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+        eventually (on n', event[]<- CPLDeliver ' n ' #0)) -}.
+      set A3 := {-A (eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+        eventually (on n', event[]<- CPLDeliver ' n ' #0))) -}.
       d_ifc.
 
       eapply DARewriteIffPL with
-        (Arp := {A: exists: (* m *) (A1 \/ A2 \/ A3)})
-        (Arc := {A: (exists: (* m *) A1) \/ (exists: (* m *) A2) \/ (exists: (* m *) A3)});
+        (Arp := {-A exists: (* m *) (A1 \/ A2 \/ A3) -})
+        (Arc := {-A (exists: (* m *) A1) \/ (exists: (* m *) A2) \/ (exists: (* m *) A3) -});
         first by eapply DSCut; first by repeat d_clear; eapply DSExistsDistributesOr3 with
           (A1 := A1)
           (A2 := A2)
@@ -1588,12 +1494,12 @@ Proof.
     }
 
     d_ifc.
-    set A1 := {A: eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ #0)}.
-    set A2 := {A: ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-      eventually (on n', event[]<- CPLDeliver $ n $ #0))}.
-    set A3 := {A: (eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-      eventually (on n', event[]<- CPLDeliver $ n $ #0)))}.
+    set A1 := {-A eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' #0) -}.
+    set A2 := {-A ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+      eventually (on n', event[]<- CPLDeliver ' n ' #0)) -}.
+    set A3 := {-A (eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+      eventually (on n', event[]<- CPLDeliver ' n ' #0))) -}.
     d_swap.
     eapply DSModusPonensP; first by d_head.
     admit.
@@ -1604,97 +1510,97 @@ Proof.
   simpl_embed.
   do 2 (d_swap; d_clear).
 
-  d_have {A:
-    on n, event []-> CPLSend $ n' $ m =>>
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ m \/
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ m') \/
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ m \/
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ m')
-  }.
+  d_have {-A
+    on n, event []-> CPLSend ' n' ' m =>>
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' m \/
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' m') \/
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' m \/
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' m')
+   -}.
   {
-    set D1 := {A: eventually on n', event[]<- CPLDeliver $ n $ m}.
-    set D2 := {A: eventually on n', event[]<- CPLDeliver $ n $ m'}.
+    set D1 := {-A eventually on n', event[]<- CPLDeliver ' n ' m -}.
+    set D2 := {-A eventually on n', event[]<- CPLDeliver ' n ' m' -}.
 
-    set A1 := {A: self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)}.
-    set A2 := {A: self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)}.
+    set A1 := {-A self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) -}.
+    set A2 := {-A self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors) -}.
 
-    set E1 := {A: eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually (on n', event[]<- CPLDeliver $ n $ m))}.
-    set E2 := {A: eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-      eventually (on n', event[]<- CPLDeliver $ n $ m'))}.
+    set E1 := {-A eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually (on n', event[]<- CPLDeliver ' n ' m)) -}.
+    set E2 := {-A eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+      eventually (on n', event[]<- CPLDeliver ' n ' m')) -}.
 
-    set F1 := {A: eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually (on n', event[]<- CPLDeliver $ n $ m))}.
-    set F2 := {A: eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-      eventually (on n', event[]<- CPLDeliver $ n $ m'))}.
+    set F1 := {-A eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually (on n', event[]<- CPLDeliver ' n ' m)) -}.
+    set F2 := {-A eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+      eventually (on n', event[]<- CPLDeliver ' n ' m')) -}.
 
-    set G1 := {A: (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually (on n', event[]<- CPLDeliver $ n $ m)}.
-    set G2 := {A: ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-      eventually (on n', event[]<- CPLDeliver $ n $ m'))}.
+    set G1 := {-A (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually (on n', event[]<- CPLDeliver ' n ' m) -}.
+    set G2 := {-A ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+      eventually (on n', event[]<- CPLDeliver ' n ' m')) -}.
 
     eapply DARewriteIffPL with
-      (Arp := {A: A1 /\ (D1 \/ E2 \/ G1 \/ F2)})
-      (Arc := {A: (A1 /\ D1) \/ (A1 /\ E2) \/ (A1 /\ G1) \/ (A1 /\ F2)});
+      (Arp := {-A A1 /\ (D1 \/ E2 \/ G1 \/ F2) -})
+      (Arc := {-A (A1 /\ D1) \/ (A1 /\ E2) \/ (A1 /\ G1) \/ (A1 /\ F2) -});
       first by eapply DSOrDistributesAnd4.
     by simpl_embed.
   }
 
-  d_have {A:
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-        eventually on n', event []<- CPLDeliver $ n $ m') \/
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually on n', event []<- CPLDeliver $ n $ m \/
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-        eventually on n', event []<- CPLDeliver $ n $ m') ->
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually^ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) \/
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually on n', event []<- CPLDeliver $ n $ m \/
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventuallyp^ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))
-  }.
+  d_have {-A
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+        eventually on n', event []<- CPLDeliver ' n ' m') \/
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually on n', event []<- CPLDeliver ' n ' m \/
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+        eventually on n', event []<- CPLDeliver ' n ' m') ->
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually^ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) \/
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually on n', event []<- CPLDeliver ' n ' m \/
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventuallyp^ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
+   -}.
   {
-    set A1 := {A: self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)}.
-    set B1 := {A: eventually on n', event[]<- CPLDeliver $ n $ m}.
+    set A1 := {-A self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) -}.
+    set B1 := {-A eventually on n', event[]<- CPLDeliver ' n ' m -}.
 
-    d_have {A:
-      eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-        eventually (on n', event[]<- CPLDeliver $ n $ m')) ->
-      eventually^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)))
-    }.
+    d_have {-A
+      eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+        eventually (on n', event[]<- CPLDeliver ' n ' m')) ->
+      eventually^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)))
+     -}.
     {
-      d_have {A:
-        (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-          eventually on n', event []<- CPLDeliver $ n $ m' ->
-        self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)
-      }; first by d_ifc; d_splitp.
+      d_have {-A
+        (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+          eventually on n', event []<- CPLDeliver ' n ' m' ->
+        self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)
+       -}; first by d_ifc; d_splitp.
       d_ifc.
       eapply DARewriteIfP; first by d_head.
       by simpl_embed.
     }
 
-    d_have {A:
-      eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-        eventually (on n', event[]<- CPLDeliver $ n $ m')) ->
-      eventuallyp^ ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)))
-    }.
+    d_have {-A
+      eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+        eventually (on n', event[]<- CPLDeliver ' n ' m')) ->
+      eventuallyp^ ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)))
+     -}.
     {
-      d_have {A:
-        ((self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) /\
-          eventually (on n', event[]<- CPLDeliver $ n $ m')) ->
-        (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))
-      }; first by d_ifc; d_splitp.
+      d_have {-A
+        ((self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) /\
+          eventually (on n', event[]<- CPLDeliver ' n ' m')) ->
+        (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
+       -}; first by d_ifc; d_splitp.
       d_ifc.
       eapply DARewriteIfP; first by d_head.
       by simpl_embed.
@@ -1704,16 +1610,16 @@ Proof.
     eapply DARewriteIfP; first by d_head.
     simpl_embed.
 
-    set A2 := {A: self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)}.
-    set B2 := {A: eventually on n', event[]<- CPLDeliver $ n $ m'}.
+    set A2 := {-A self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors) -}.
+    set B2 := {-A eventually on n', event[]<- CPLDeliver ' n ' m' -}.
     eapply DARewriteIfP; first by d_swap; d_head.
     simpl_embed.
 
-    set A3 := {A: self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)}.
-    set B3 := {A: eventually on n', event[]<- CPLDeliver $ n $ m}.
-    d_have {A:
+    set A3 := {-A self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) -}.
+    set B3 := {-A eventually on n', event[]<- CPLDeliver ' n ' m -}.
+    d_have {-A
       A3 /\ A3 /\ B3 -> A3 /\ B3
-    }.
+     -}.
     {
       d_ifc; d_splitp; d_splitc; first by d_head.
       by d_clear; d_splitp; d_clear.
@@ -1723,17 +1629,17 @@ Proof.
     by simpl_embed; rewrite andbF.
   }
 
-  d_have {A:
-    on n, event []-> CPLSend $ n' $ m =>>
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ m \/
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually^ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) \/
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ m \/
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventuallyp^ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))
-  }.
+  d_have {-A
+    on n, event []-> CPLSend ' n' ' m =>>
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' m \/
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually^ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) \/
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' m \/
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventuallyp^ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
+   -}.
   {
     d_swap.
     eapply DARewriteIfP; first by d_head.
@@ -1741,23 +1647,23 @@ Proof.
   }
 *)
 
-  d_have {A:
-    (on n, event []-> CPLSend $ n' $ m =>>
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-    (eventually on n', event []<- CPLDeliver $ n $ m \/
+  d_have {-A
+    (on n, event []-> CPLSend ' n' ' m =>>
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+    (eventually on n', event []<- CPLDeliver ' n ' m \/
       exists:
-        (self-event /\ on n, ((0, CSLSend $ n' $ (c, #0)) \in Fors)) /\
-        eventually on n', event []<- CPLDeliver $ n $ #0))
-  }.
+        (self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors)) /\
+        eventually on n', event []<- CPLDeliver ' n ' #0))
+   -}.
   {
     d_use_empty L37_1; d_forallp n; d_forallp n'; simpl_embed.
     d_ifp; first by d_splitc; d_assumption.
     d_forallp m; simpl_embed.
     (*
-    d_have {A:
-      self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors) =>>
-      always^ ~(self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))
-    }.
+    d_have {-A
+      self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) =>>
+      always^ ~(self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
+     -}.
     {
       do 12 d_clear.
       d_use_empty L37_1;
@@ -1769,28 +1675,28 @@ Proof.
       by d_ifp; first by d_splitc; d_assumption.
     }
 
-    d_have {A:
-      (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually^ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) ->
+    d_have {-A
+      (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually^ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) ->
       AFalse
-    }.
+     -}.
     {
       d_ifc; d_splitp.
       eapply DARewriteEntailsP; first by d_swap; d_head.
       simpl_embed.
 
-      d_have {A:
-        ~ eventually^ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))
-      }.
+      d_have {-A
+        ~ eventually^ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
+       -}.
       {
         eapply DARewriteCongruentPR with
-          (Arc := {A: always^ (~ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)))})
-          (Arp := {A: ~ eventually^ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))});
+          (Arc := {-A always^ (~ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))) -})
+          (Arp := {-A ~ eventually^ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -});
           first by eapply DTL114_1.
         by simpl_embed.
       }
 
-      set F := {A: eventually^ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))}.
+      set F := {-A eventually^ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -}.
       eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := F).
       d_splitp; d_swap; d_clear; d_swap.
       eapply DARewriteIfP; first by d_head.
@@ -1801,10 +1707,10 @@ Proof.
       by simpl_embed.
     }
 
-    d_have {A:
-      self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors) =>>
-      alwaysp^ ~(self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))
-    }.
+    d_have {-A
+      self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) =>>
+      alwaysp^ ~(self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
+     -}.
     {
       do 14 d_clear.
       d_use_empty L37_2;
@@ -1816,28 +1722,28 @@ Proof.
       by d_ifp; first by d_splitc; d_assumption.
     }
 
-    d_have {A:
-      (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-        eventuallyp^ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)) ->
+    d_have {-A
+      (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+        eventuallyp^ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) ->
       AFalse
-    }.
+     -}.
     {
       d_ifc; d_splitp.
       eapply DARewriteEntailsP; first by d_swap; d_head.
       simpl_embed.
 
-      d_have {A:
-        ~ eventuallyp^ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))
-      }.
+      d_have {-A
+        ~ eventuallyp^ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
+       -}.
       {
         eapply DARewriteCongruentPR with
-          (Arc := {A: alwaysp^ (~ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors)))})
-          (Arp := {A: ~ eventuallyp^ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))});
+          (Arc := {-A alwaysp^ (~ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))) -})
+          (Arp := {-A ~ eventuallyp^ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -});
           first by eapply DTL114.
         by simpl_embed.
       }
 
-      set F := {A: eventuallyp^ (self-event /\ on n, ((0, CSLSend $ n' $ (c, m')) \in Fors))}.
+      set F := {-A eventuallyp^ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -}.
       eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := F).
       d_splitp; d_swap; d_clear; d_swap.
 
@@ -1858,17 +1764,17 @@ Proof.
   }
 
   do 10 (d_swap; d_clear).
-  d_have {A:
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ m \/
+  d_have {-A
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' m \/
     AFalse \/
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ m \/
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' m \/
     AFalse ->
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ m \/
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ m}.
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' m \/
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' m -}.
   {
     d_ifc.
     d_orp; first by d_left.
@@ -1881,21 +1787,21 @@ Proof.
   simpl_embed.
 
   d_swap; d_clear.
-  d_have {A:
-    (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-      eventually on n', event[]<- CPLDeliver $ n $ m ->
-    eventually on n', event[]<- CPLDeliver $ n $ m
-  }.
+  d_have {-A
+    (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+      eventually on n', event[]<- CPLDeliver ' n ' m ->
+    eventually on n', event[]<- CPLDeliver ' n ' m
+   -}.
   {
     by d_ifc; d_splitp; d_assumption.
   }
 
   d_swap.
-  set X := {A: (self-event /\ on n, ((0, CSLSend $ n' $ (c, m)) \in Fors)) /\
-    eventually on n', event[]<- CPLDeliver $ n $ m}.
-  d_have {A:
+  set X := {-A (self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)) /\
+    eventually on n', event[]<- CPLDeliver ' n ' m -}.
+  d_have {-A
     X \/ X -> X
-  }.
+   -}.
   {
     by d_ifc; d_orp.
   }
@@ -1911,14 +1817,14 @@ Admitted. (* TODO *)
 
 (* Lemmas used in proving PL_2 *)
 
-Lemma L43 : empty_context |- perfect_link, {A:
+Lemma L43 : empty_context |- perfect_link, {-A
   forall: forall: forall: forall: forall: forall: forall: (* 6:n, 5:n', 4:m, 3:m', 2:c, 1:c', 0:r *)
     self (
-      (#5, #2) \in TRight (Fs $ #6) /\
-      eventuallyp on #6, event[0]<- CSLDeliver $ #5 $ (#2, #4) =>>
-      Fn = #6 -> (CPLDeliver $ #5 $ #4) \notin Fois
+      (#5, #2) \in TRight (Fs ' #6) /\
+      eventuallyp on #6, event[0]<- CSLDeliver ' #5 ' (#2, #4) =>>
+      Fn = #6 -> (CPLDeliver ' #5 ' #4) \notin Fois
     )
-  }.
+   -}.
 Proof.
   (* Introduce context *)
   set C := perfect_link; rewrite -/C /empty_context.
@@ -1928,46 +1834,46 @@ Proof.
     d_forallc r Hf_r;
     simpl_embed.
 
-  d_have {A:
+  d_have {-A
     self (
-      (n', c) \in TRight (Fs $ n) /\
-      eventuallyp on n, event[0]<- CSLDeliver $ n' $ (c, m) =>>
-      Fn = n -> (CPLDeliver $ n' $ m) \notin Fois
+      (n', c) \in TRight (Fs ' n) /\
+      eventuallyp on n, event[0]<- CSLDeliver ' n' ' (c, m) =>>
+      Fn = n -> (CPLDeliver ' n' ' m) \notin Fois
     )
-  }.
+   -}.
   {
-    set A := {A: (n', c) \in TRight (Fs $ n) /\
-      eventuallyp on n, event[0]<- CSLDeliver $ n' $ (c, m) ->
-      Fn = n -> CPLDeliver $ n' $ m \notin Fois}.
+    set A := {-A (n', c) \in TRight (Fs ' n) /\
+      eventuallyp on n, event[0]<- CSLDeliver ' n' ' (c, m) ->
+      Fn = n -> CPLDeliver ' n' ' m \notin Fois -}.
     eapply DSCut; first by apply DPInvSe with (A := A).
 
     (* request *)
     d_ifp.
-      d_have {A:
+      d_have {-A
         (forall: (* e *) event[]-> #0 =>> A) ->
         self (forall: (* e *) event[]-> #0 =>> A)
-      }; first by eapply DTL129.
+       -}; first by eapply DTL129.
       eapply DARewriteIfC; first by d_head.
       simpl_embed.
       d_forallc e Hf_e; simpl_embed.
       d_clear.
 
       d_use DPIR; d_forallp e; d_evalp.
-      d_have {A:
-        ((Fs' $ Fn, Fors, Fois) =
-          let: (#, #) := Fs $ Fn
-          in: let: CPLSend $ # $ # := e
+      d_have {-A
+        ((Fs' ' Fn, Fors, Fois) =
+          let: (#, #) := Fs ' Fn
+          in: let: CPLSend ' # ' # := e
             in: let: # := #2.+1
-              in: let: # := (0, CSLSend $ #1 $ (#0, #2))
+              in: let: # := (0, CSLSend ' #1 ' (#0, #2))
                 in: (#1, #5, [#0], [])) ->
         A
-      }.
+       -}.
       {
         d_ifc.
-        d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+        d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
           d_existsp r_ Hf_r_; d_existsp c_ Hf_c_; simpl_embed;
           d_splitp; d_swap; d_substp; d_evalp.
-        d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+        d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
           d_existsp m_ Hf_m_; d_existsp n'_ Hf_n'_; simpl_embed;
           d_splitp; d_swap; d_substp; distinguish_variables; d_evalp.
         d_destructpairp; repeat d_splitp.
@@ -1984,12 +1890,12 @@ Proof.
 
     (* indication *)
     d_ifp.
-      d_have {A:
+      d_have {-A
         (forall: forall: (* 1:i, 0:e *)
           event[#1]<- #0 =>> A) ->
         self (forall: forall: (* 1:i, 0:e *)
           event[#1]<- #0 =>> A)
-      }; first by eapply DTL129.
+       -}; first by eapply DTL129.
       eapply DARewriteIfC; first by d_head.
       simpl_embed.
       d_forallc i Hf_i; d_forallc e Hf_e; simpl_embed.
@@ -1997,35 +1903,35 @@ Proof.
 
       d_use DPII; d_forallp i; d_forallp e; d_evalp.
 
-      d_have {A:
-        ((Fs' $ Fn, Fors, Fois) =
-          let: (#, #) := Fs $ Fn
-          in: let: (0, CSLDeliver $ # $ (#, #)) := 
+      d_have {-A
+        ((Fs' ' Fn, Fors, Fois) =
+          let: (#, #) := Fs ' Fn
+          in: let: (0, CSLDeliver ' # ' (#, #)) := 
             (i, e)
-            in: if: (#(0), #(1)) \in #(4) then: (Fs $ Fn, [ ], [ ])
+            in: if: (#(0), #(1)) \in #(4) then: (Fs ' Fn, [ ], [ ])
               else: let: # := #(4) \union [(#(0), #(1))]
-                in: let: # := CPLDeliver $ #(1) $ #(3)
+                in: let: # := CPLDeliver ' #(1) ' #(3)
                   in: (#(5), #(1), [ ], [#(0)])) ->
         A
-      }.
+       -}.
       {
         d_ifc.
-        d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+        d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
           d_existsp r_ Hf_r_; d_existsp c'_ Hf_c'_; simpl_embed;
           d_splitp; d_swap; d_substp; d_evalp.
-        d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+        d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
           d_existsp m_ Hf_m_; d_existsp c_ Hf_c_; d_existsp n_ Hf_n_; simpl_embed;
           d_splitp; d_swap; d_substp; distinguish_variables; d_evalp.
-        d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+        d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
           d_orp; d_splitp; d_swap; d_substp; d_evalp;
           d_destructpairp; repeat d_splitp.
         - by repeat d_ifc; d_rotate 4; d_substc; d_notc; d_evalp.
         repeat d_ifc; d_notc.
         do 4 (d_swap; d_rotate 1); d_substp.
         eapply DSCut; first by eapply DAPNotInCons.
-        d_forallp {t: CPLDeliver $ n' $ m};
-          d_forallp {t: CPLDeliver $ n $ m};
-          d_forallp {t: []};
+        d_forallp {-t CPLDeliver ' n' ' m -};
+          d_forallp {-t CPLDeliver ' n ' m -};
+          d_forallp {-t [] -};
           simpl_embed.
         d_splitp; d_clear; d_ifp.
           d_splitc; first by
@@ -2046,19 +1952,19 @@ Proof.
 
     (* periodic *)
     d_ifp.
-      d_have {A:
+      d_have {-A
         (event[]~> periodic_event.PE =>> A) ->
         self (event[]~> periodic_event.PE =>> A)
-      }; first by eapply DTL129.
+       -}; first by eapply DTL129.
       eapply DARewriteIfC; first by d_head.
       simpl_embed.
       d_clear.
 
       d_use DPPe.
-      d_have {A:
-        ((Fs' $ Fn, Fors, Fois) = periodic C $ Fn $ (Fs $ Fn)) ->
+      d_have {-A
+        ((Fs' ' Fn, Fors, Fois) = periodic C ' Fn ' (Fs ' Fn)) ->
         A
-      }.
+       -}.
       {
         d_ifc.
         d_evalp.
@@ -2066,7 +1972,7 @@ Proof.
         repeat d_ifc; d_notc.
         do 4 (d_swap; d_rotate 1); d_substp.
         eapply DSCut; first by eapply DAPInNil.
-        d_forallp {t: CPLDeliver $ n' $ m}.
+        d_forallp {-t CPLDeliver ' n' ' m -}.
         simpl_embed.
         by d_notp.
       }
@@ -2082,14 +1988,14 @@ Proof.
   by d_head.
 Qed.
 
-Lemma L42 : empty_context |- perfect_link, {A:
+Lemma L42 : empty_context |- perfect_link, {-A
   forall: forall: forall: (* 2:n, 1:n', 0:m *)
     self (
-      on #2, (CPLDeliver $ #1 $ #0 \in Fois) =>>
-      always^ (Fn = #2 -> CPLDeliver $ #1 $ #0 \notin Fois) /\
-      alwaysp^ (Fn = #2 -> CPLDeliver $ #1 $ #0 \notin Fois)
+      on #2, (CPLDeliver ' #1 ' #0 \in Fois) =>>
+      always^ (Fn = #2 -> CPLDeliver ' #1 ' #0 \notin Fois) /\
+      alwaysp^ (Fn = #2 -> CPLDeliver ' #1 ' #0 \notin Fois)
     )
-  }.
+   -}.
 Proof.
   (* Introduce context *)
   set C := perfect_link; rewrite -/C /empty_context.
@@ -2098,30 +2004,30 @@ Proof.
     simpl_embed.
 
   (* By InvLSE *)
-  d_have {A:
+  d_have {-A
     exists: (* c *)
     self always (
-      on n, (CPLDeliver $ n' $ m \in Fois) ->
-      ((n', #0) \in TRight (Fs' $ n)) /\
-      on n, event[0]<- CSLDeliver $ n' $ (#0, m)
+      on n, (CPLDeliver ' n' ' m \in Fois) ->
+      ((n', #0) \in TRight (Fs' ' n)) /\
+      on n, event[0]<- CSLDeliver ' n' ' (#0, m)
     )
-  }.
+   -}.
   {
     eapply DSCut; first by apply DSEmptyContext; apply DPInvLSE with
-      (A := {A:
+      (A := {-A
           exists: (* c *)
-          (on n, (CPLDeliver $ n' $ m \in Fois)) ->
-          ((n', #0) \in TRight (Fs' $ n)) /\
-          on n, event[0]<- CSLDeliver $ n' $ (#0, m)
-        }); first by repeat constructor.
+          (on n, (CPLDeliver ' n' ' m \in Fois)) ->
+          ((n', #0) \in TRight (Fs' ' n)) /\
+          on n, event[0]<- CSLDeliver ' n' ' (#0, m)
+         -}); first by repeat constructor.
 
     (* request *)
     d_ifp.
       d_forallc e Hf_e; simpl_embed.
       d_ifc; d_splitp; d_swap; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
         d_existsp r Hf_r; d_existsp c Hf_c; d_splitp; d_swap; d_substp; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp pm Hf_pm; d_existsp n'_ Hf_n'_; d_splitp; d_swap;
         d_substp; distinguish_variables; d_evalp.
       d_existsc c; simpl_embed.
@@ -2135,12 +2041,12 @@ Proof.
     d_ifp.
       d_forallc i Hf_i; d_forallc e Hf_e; simpl_embed.
       d_ifc; d_splitp; d_swap; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp r Hf_r; d_existsp c Hf_c; d_splitp; d_swap; d_substp; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp m_ Hf_m_; d_existsp c_ Hf_c_; d_existsp n'_ Hf_n'_;
         d_splitp; d_swap; d_substp; distinguish_variables; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
 
       by d_orp; d_splitp; d_swap; d_substp; d_evalp;
         d_destructpairp; repeat d_splitp;
@@ -2162,29 +2068,29 @@ Proof.
   d_existsp c Hf_c.
 
   (* By lemma 87 *)
-  d_have {A:
+  d_have {-A
     self (
-      on n, (CPLDeliver $ n' $ m \in Fois) =>>
-      ((n', c) \in TRight (Fs' $ n)) /\
-      eventuallyp (on n, event[0]<- CSLDeliver $ n' $ (c, m))
+      on n, (CPLDeliver ' n' ' m \in Fois) =>>
+      ((n', c) \in TRight (Fs' ' n)) /\
+      eventuallyp (on n, event[0]<- CSLDeliver ' n' ' (c, m))
     )
-  }.
+   -}.
   {
     eapply DARewriteEntailsP with
-      (Arp := {A: on n, event[0]<- CSLDeliver $ n' $ (c, m)})
-      (Arc := {A: eventuallyp (on n, event[0]<- CSLDeliver $ n' $ (c, m))});
+      (Arp := {-A on n, event[0]<- CSLDeliver ' n' ' (c, m) -})
+      (Arc := {-A eventuallyp (on n, event[0]<- CSLDeliver ' n' ' (c, m)) -});
       first by eapply DTL87.
     by simpl_embed; rewrite andbF.
   }
 
   (* By lemma 43 *)
-  d_have {A:
+  d_have {-A
     self (
-      (n', c) \in TRight (Fs $ n) /\
-      eventuallyp on n, event[0]<- CSLDeliver $ n' $ (c, m) =>>
-      Fn = n -> CPLDeliver $ n' $ m \notin Fois
+      (n', c) \in TRight (Fs ' n) /\
+      eventuallyp on n, event[0]<- CSLDeliver ' n' ' (c, m) =>>
+      Fn = n -> CPLDeliver ' n' ' m \notin Fois
     )
-  }.
+   -}.
   {
     do 2 d_clear.
     d_use_empty L43.
@@ -2197,29 +2103,29 @@ Proof.
   }
 
   (* By InvSSe *)
-  d_have {A:
+  d_have {-A
     self (
-      (n', c) \in TRight (Fs $ n) =>>
-      always ((n', c) \in TRight (Fs $ n))
+      (n', c) \in TRight (Fs ' n) =>>
+      always ((n', c) \in TRight (Fs ' n))
     )
-  }.
+   -}.
   {
     eapply DSCut; first by repeat d_clear; apply DPInvSSe with
-      (S0 := {A: forall: (* ts *) (n', c) \in TRight #0});
+      (S0 := {-A forall: (* ts *) (n', c) \in TRight #0 -});
       [by auto_is_closed | by repeat constructor].
     d_forallp n; simpl_embed.
 
     (* request *)
     d_ifp.
       d_forallc s Hf_s; d_forallc e Hf_e; d_ifc; d_eval.
-      d_destructc (fun t => {A: (n', c) \in t});
+      d_destructc (fun t => {-A (n', c) \in t -});
         d_forallc r_ Hf_r_; d_forallc c_ Hf_c_; d_ifc; d_substc; d_evalc.
       admit.
 
     (* indication *)
     d_ifp.
       d_forallc s Hf_s; d_forallc i Hf_i; d_forallc e Hf_e; d_ifc; d_eval.
-      d_destructc (fun t => {A: (n', c) \in t});
+      d_destructc (fun t => {-A (n', c) \in t -});
         d_forallc r_ Hf_r_; d_forallc c_ Hf_c_; d_ifc; d_substc; d_evalc.
       admit.
 
@@ -2231,36 +2137,36 @@ Proof.
   }
 
   (* By lemma 104 *)
-  d_have {A:
+  d_have {-A
     self (
-      eventuallyp (on n, event[0]<- CSLDeliver $ n' $ (c, m)) =>>
-        always (eventuallyp (on n, event[0]<- CSLDeliver $ n' $ (c, m)))
+      eventuallyp (on n, event[0]<- CSLDeliver ' n' ' (c, m)) =>>
+        always (eventuallyp (on n, event[0]<- CSLDeliver ' n' ' (c, m)))
     )
-  }.
+   -}.
   {
-    set A := {A: eventuallyp (on n, event[0]<- CSLDeliver $ n' $ (c, m))}.
-    d_have {A:
+    set A := {-A eventuallyp (on n, event[0]<- CSLDeliver ' n' ' (c, m)) -}.
+    d_have {-A
       (A =>> always A) -> self (A =>> always A)
-    }; first by eapply DTL129.
+     -}; first by eapply DTL129.
     by d_ifp; first by eapply DTL104.
   }
 
   (* By (3) and (4) *)
-  d_have {A:
+  d_have {-A
     self (
-      ((n', c) \in TRight (Fs $ n)) /\
-      eventuallyp on n, event[0]<- CSLDeliver $ n' $ (c, m) =>>
-      always (((n', c) \in TRight (Fs $ n)) /\
-      eventuallyp on n, event[0]<- CSLDeliver $ n' $ (c, m))
+      ((n', c) \in TRight (Fs ' n)) /\
+      eventuallyp on n, event[0]<- CSLDeliver ' n' ' (c, m) =>>
+      always (((n', c) \in TRight (Fs ' n)) /\
+      eventuallyp on n, event[0]<- CSLDeliver ' n' ' (c, m))
     )
-  }.
+   -}.
   {
-    set A := {A: (n', c) \in TRight (Fs $ n)}.
-    set B := {A: eventuallyp on n, event[0]<- CSLDeliver $ n' $ (c, m)}.
-    d_have {A:
+    set A := {-A (n', c) \in TRight (Fs ' n) -}.
+    set B := {-A eventuallyp on n, event[0]<- CSLDeliver ' n' ' (c, m) -}.
+    d_have {-A
       (A =>> always A) /\ (B =>> always B) ->
       (A /\ B =>> (always A) /\ (always B))
-    }.
+     -}.
     {
       d_ifc; d_splitp; d_splitc.
         d_ifc; d_splitp; d_rotate 2; d_splitp; d_swap; d_clear; d_swap;
@@ -2268,10 +2174,10 @@ Proof.
         d_swap; d_ifp; first by d_assumption.
         d_splitc; d_assumption.
       d_splitp; d_clear; d_swap; d_splitp; d_clear.
-      d_have {A:
+      d_have {-A
         (A -> always A) /\ (B -> always B) ->
         (A /\ B -> always A /\ always B)
-      }.
+       -}.
       {
         d_ifc; d_ifc; d_swap; d_splitp; d_ifp; first by d_swap; d_splitp.
         d_splitc; first by d_head.
@@ -2281,27 +2187,27 @@ Proof.
       eapply DARewriteIfC; first by d_head.
       simpl_embed.
       eapply DARewriteCongruentCL; first by eapply DTL128_3 with
-        (A := {A: A -> always A})
-        (B := {A: B -> always B}).
+        (A := {-A A -> always A -})
+        (B := {-A B -> always B -}).
       simpl_embed.
 
       by d_splitc; d_assumption.
     }
 
     eapply DARewriteCongruentPR with
-      (Arc := {A: always A /\ always B})
-      (Arp := {A: always (A /\ B)});
+      (Arc := {-A always A /\ always B -})
+      (Arp := {-A always (A /\ B) -});
       first by eapply DTL128_1.
     simpl_embed.
 
-    set A1 := {A: (n', c) \in TRight (Fs $ n)}.
-    set B1 := {A: eventuallyp on n, event[0]<- CSLDeliver $ n' $ (c, m)}.
+    set A1 := {-A (n', c) \in TRight (Fs ' n) -}.
+    set B1 := {-A eventuallyp on n, event[0]<- CSLDeliver ' n' ' (c, m) -}.
     eapply DARewriteIfC; first by d_head.
     simpl_embed.
 
     eapply DARewriteIffCL with
-      (Arp := {A: self ((A1 =>> always A1) /\ (B1 =>> always B1))})
-      (Arc := {A: self ((A1 =>> always A1)) /\ self ((B1 =>> always B1))});
+      (Arp := {-A self ((A1 =>> always A1) /\ (B1 =>> always B1)) -})
+      (Arc := {-A self ((A1 =>> always A1)) /\ self ((B1 =>> always B1)) -});
       first by eapply DTL130.
     simpl_embed.
 
@@ -2309,44 +2215,44 @@ Proof.
   }
 
   (* By lemma 97 on (5) and (2) *)
-  d_have {A:
+  d_have {-A
     self (
-      (n', c) \in TRight (Fs $ n) /\
-      eventuallyp on n, event[0]<- CSLDeliver $ n' $ (c, m) =>>
-      always (Fn = n -> CPLDeliver $ n' $ m \notin Fois)
+      (n', c) \in TRight (Fs ' n) /\
+      eventuallyp on n, event[0]<- CSLDeliver ' n' ' (c, m) =>>
+      always (Fn = n -> CPLDeliver ' n' ' m \notin Fois)
     )
-  }.
+   -}.
   {
-    set A := {A: (n', c) \in TRight (Fs $ n)}.
-    set B := {A: eventuallyp on n, event[0]<- CSLDeliver $ n' $ (c, m)}.
-    set D := {A: (Fn = n -> CPLDeliver $ n' $ m \notin Fois)}.
-    d_have {A:
+    set A := {-A (n', c) \in TRight (Fs ' n) -}.
+    set B := {-A eventuallyp on n, event[0]<- CSLDeliver ' n' ' (c, m) -}.
+    set D := {-A (Fn = n -> CPLDeliver ' n' ' m \notin Fois) -}.
+    d_have {-A
       self (
         (A /\ B =>> always (A /\ B)) /\ (A /\ B =>> D) ->
         (A /\ B =>> always D)
       )
-    }.
+     -}.
     {
-      d_have {A:
+      d_have {-A
         ((A /\ B =>> always (A /\ B)) /\ (A /\ B =>> D) -> A /\ B =>> always D) ->
         self ((A /\ B =>> always (A /\ B)) /\ (A /\ B =>> D) -> A /\ B =>> always D)
-      }; first by eapply DTL129.
+       -}; first by eapply DTL129.
 
       by d_ifp; first by eapply DTL97 with
-        (A1 := {A: A /\ B})
-        (A2 := {A: A /\ B})
-        (A3 := {A: D}).
+        (A1 := {-A A /\ B -})
+        (A2 := {-A A /\ B -})
+        (A3 := {-A D -}).
     }
 
     eapply DSCut; first by apply DTL131 with
-      (A := {A: (A /\ B =>> always (A /\ B)) /\ (A /\ B =>> D)})
-      (B := {A: A /\ B =>> always D}).
+      (A := {-A (A /\ B =>> always (A /\ B)) /\ (A /\ B =>> D) -})
+      (B := {-A A /\ B =>> always D -}).
     d_ifp; first by d_head.
 
     d_ifp.
       eapply DARewriteIffCL; first by eapply DTL130 with
-        (A := {A: (A /\ B =>> always (A /\ B))})
-        (B := {A: (A /\ B =>> D)}).
+        (A := {-A (A /\ B =>> always (A /\ B)) -})
+        (B := {-A (A /\ B =>> D) -}).
       simpl_embed.
       by d_splitc; d_assumption.
 
@@ -2354,27 +2260,27 @@ Proof.
   }
 
   (* By rule ASASe on (1) and (6) *)
-  d_have {A:
-    self ((on n, (CPLDeliver $ n' $ m \in Fois)) =>>
-    always^ (Fn = n -> CPLDeliver $ n' $ m \notin Fois))
-  }.
+  d_have {-A
+    self ((on n, (CPLDeliver ' n' ' m \in Fois)) =>>
+    always^ (Fn = n -> CPLDeliver ' n' ' m \notin Fois))
+   -}.
   {
     eapply DSCut; first by repeat d_clear; eapply DPASASe with
-      (S := {A: forall: (n', c) \in (TRight #0) /\
-          eventuallyp on n, event[0]<- CSLDeliver $ n' $ (c, m)
-        })
-      (A := {A: on n, (CPLDeliver $ n' $ m \in Fois)})
-      (A' := {A: (Fn = n -> CPLDeliver $ n' $ m \notin Fois)});
+      (S := {-A forall: (n', c) \in (TRight #0) /\
+          eventuallyp on n, event[0]<- CSLDeliver ' n' ' (c, m)
+         -})
+      (A := {-A on n, (CPLDeliver ' n' ' m \in Fois) -})
+      (A' := {-A (Fn = n -> CPLDeliver ' n' ' m \notin Fois) -});
       [by auto_is_closed].
     d_forallp n; d_evalp.
     d_ifp; first by d_assumption.
     by d_ifp; d_assumption.
   }
 
-  d_have {A:
-    (Fn = n -> CPLDeliver $ n' $ m \notin Fois) ->
-    ~(on n, (CPLDeliver $ n' $ m \in Fois))
-  }.
+  d_have {-A
+    (Fn = n -> CPLDeliver ' n' ' m \notin Fois) ->
+    ~(on n, (CPLDeliver ' n' ' m \in Fois))
+   -}.
   {
     repeat d_clear.
     d_ifc; d_notc.
@@ -2386,34 +2292,34 @@ Proof.
   eapply DARewriteIfP; first by d_head.
   simpl_embed.
 
-  set P := {A: on n, (CPLDeliver $ n' $ m \in Fois)}.
-  d_have {A:
+  set P := {-A on n, (CPLDeliver ' n' ' m \in Fois) -}.
+  d_have {-A
     self (P =>> alwaysp^ (~ P))
-  }.
+   -}.
   {
     eapply DARewriteIfP; first by apply DTL105_1 with (A := P).
     by simpl_embed.
   }
 
-  d_have {A:
+  d_have {-A
     self (
       P =>> always^ (~ P) /\ alwaysp^ (~ P)
     )
-  }.
+   -}.
   {
-    d_have {A:
+    d_have {-A
       (P =>> always^ (~ P)) /\ (P =>> alwaysp^ (~ P)) ->
       (P =>> always^ (~ P) /\ alwaysp^ (~ P))
-    }.
+     -}.
     {
       d_ifc; d_splitp; d_splitc.
         d_ifc; d_swap; d_splitp; d_splitc; first by d_ifp; d_assumption.
         by do 2 d_clear; d_swap; d_splitp; d_swap; d_clear; d_ifp.
 
-      d_have {A:
+      d_have {-A
         ((P -> always^ ~P) /\ (P -> alwaysp^ ~P)) ->
         (P ->  (always^ (~ P) /\ alwaysp^ (~ P)))
-      }.
+       -}.
       {
         d_ifc; d_ifc; d_swap; d_splitp; d_ifp; first by d_assumption.
         d_splitc; first by d_head.
@@ -2424,8 +2330,8 @@ Proof.
       simpl_embed.
 
       eapply DARewriteCongruentCL; first by eapply DTL128_3 with
-        (A := {A: P -> always^ ~P})
-        (B := {A: P -> alwaysp^ (~ P)}).
+        (A := {-A P -> always^ ~P -})
+        (B := {-A P -> alwaysp^ (~ P) -}).
       simpl_embed.
 
       d_ifp; first by d_splitc; [d_splitp | d_swap; d_splitp]; d_assumption.
@@ -2437,18 +2343,18 @@ Proof.
     simpl_embed.
 
     eapply DARewriteIffCL with
-      (Arp := {A: self ((P =>> always^ (~ P)) /\ (P =>> alwaysp^ (~ P)))})
-      (Arc := {A: self ((P =>> always^ (~ P))) /\ self ((P =>> alwaysp^ (~ P)))});
+      (Arp := {-A self ((P =>> always^ (~ P)) /\ (P =>> alwaysp^ (~ P))) -})
+      (Arc := {-A self ((P =>> always^ (~ P))) /\ self ((P =>> alwaysp^ (~ P))) -});
       first by eapply DTL130.
     simpl_embed.
 
     by d_splitc; d_assumption.
   }
 
-  d_have {A:
-    ~(on n, (CPLDeliver $ n' $ m \in Fois)) ->
-    (Fn = n -> CPLDeliver $ n' $ m \notin Fois)
-  }; first by repeat d_clear; d_ifc; d_ifc; d_notc; d_rotate 2;
+  d_have {-A
+    ~(on n, (CPLDeliver ' n' ' m \in Fois)) ->
+    (Fn = n -> CPLDeliver ' n' ' m \notin Fois)
+   -}; first by repeat d_clear; d_ifc; d_ifc; d_notc; d_rotate 2;
       d_notp; d_splitc; d_assumption.
 
   d_swap.
@@ -2456,17 +2362,17 @@ Proof.
   by simpl_embed.
 Admitted.
 
-Lemma L44 : empty_context |- perfect_link, {A:
+Lemma L44 : empty_context |- perfect_link, {-A
   forall: forall: forall: forall: forall: (* 4:n, 3:n', 2:m, 1:c, 0:c' *)
     correct #4 /\ correct #3 ->
-    (on #3, event[]-> CPLSend $ #4 $ #2 =>>
-      alwaysp^ (~ on #3, event[]-> CPLSend $ #4 $ #2)) ->
+    (on #3, event[]-> CPLSend ' #4 ' #2 =>>
+      alwaysp^ (~ on #3, event[]-> CPLSend ' #4 ' #2)) ->
     self (
-      on #4, event[0]<- CSLDeliver $ #3 $ (#1, #2) /\
-      eventuallyp on #4, event[0]<- CSLDeliver $ #3 $ (#0, #2) =>>
+      on #4, event[0]<- CSLDeliver ' #3 ' (#1, #2) /\
+      eventuallyp on #4, event[0]<- CSLDeliver ' #3 ' (#0, #2) =>>
       #1 = #0
     )
-  }.
+   -}.
 Proof.
   (* Introduce context *)
   set C := perfect_link; rewrite -/C /empty_context.
@@ -2477,26 +2383,26 @@ Proof.
   d_ifc; d_splitp; d_ifc.
 
   (* By SL_2 *)
-  d_have {A:
+  d_have {-A
     forall: forall: forall: (* 2:n, 1:n', 0:m *)
-    on #2, event[0]<- CSLDeliver $ #1 $ #0 <~
-    on #1, event[0]-> CSLSend $ #2 $ #0
-  }; first by d_use_empty PL_SL_2.
-  d_forallp n; d_forallp n'; d_forallp {t: (c, m)}; simpl_embed.
+    on #2, event[0]<- CSLDeliver ' #1 ' #0 <~
+    on #1, event[0]-> CSLSend ' #2 ' #0
+   -}; first by d_use_empty PL_SL_2.
+  d_forallp n; d_forallp n'; d_forallp {-t (c, m) -}; simpl_embed.
 
   (* By OR' *)
-  d_have {A:
-    (on n', event[0]-> CSLSend $ n $ (c, m)) =>>
-    eventuallyp (on n', ((0, (CSLSend $ n $ (c, m))) \in Fors) /\ self-event)
-  }.
+  d_have {-A
+    (on n', event[0]-> CSLSend ' n ' (c, m)) =>>
+    eventuallyp (on n', ((0, (CSLSend ' n ' (c, m))) \in Fors) /\ self-event)
+   -}.
   {
     d_swap; d_clear.
     d_use DPOR';
-      d_forallp n'; d_forallp 0; d_forallp {t: CSLSend $ n $ (c, m)};
+      d_forallp n'; d_forallp 0; d_forallp {-t CSLSend ' n ' (c, m) -};
       simpl_embed.
     eapply DARewriteIfP with
-      (Arp := {A: self-event /\ on n', ((0, CSLSend $ n $ (c, m)) \in Fors)})
-      (Arc := {A: on n', ((0, (CSLSend $ n $ (c, m))) \in Fors) /\ self-event}).
+      (Arp := {-A self-event /\ on n', ((0, CSLSend ' n ' (c, m)) \in Fors) -})
+      (Arc := {-A on n', ((0, (CSLSend ' n ' (c, m))) \in Fors) /\ self-event -}).
     {
       d_ifc; d_splitc;
         first by d_splitp; d_swap; d_splitp; d_swap; d_splitc; d_assumption.
@@ -2505,28 +2411,28 @@ Proof.
     simpl_embed.
 
     eapply DARewriteIfP; first by apply DTL123 with
-      (A := {A: on n', ((0, (CSLSend $ n $ (c, m))) \in Fors) /\ self-event}).
+      (A := {-A on n', ((0, (CSLSend ' n ' (c, m))) \in Fors) /\ self-event -}).
     by simpl_embed.
   }
 
   (* By InvL *)
-  d_have {A:
-    (on n', ((0, (CSLSend $ n $ (c, m))) \in Fors) /\ self-event) =>>
-    (on n', event[]-> CPLSend $ n $ m) /\ (TLeft (Fs' $ n) = c)
-  }.
+  d_have {-A
+    (on n', ((0, (CSLSend ' n ' (c, m))) \in Fors) /\ self-event) =>>
+    (on n', event[]-> CPLSend ' n ' m) /\ (TLeft (Fs' ' n) = c)
+   -}.
   {
     eapply DSCut; first by eapply DSEmptyContext; apply DPInvL with
-      (A := {A: on n', ((0, CSLSend $ n $ (c, m)) \in Fors) ->
-        ((on n', event[]-> CPLSend $ n $ m) /\ (TLeft (Fs' $ n) = c))});
+      (A := {-A on n', ((0, CSLSend ' n ' (c, m)) \in Fors) ->
+        ((on n', event[]-> CPLSend ' n ' m) /\ (TLeft (Fs' ' n) = c)) -});
       first by repeat constructor.
 
     (* request *)
     d_ifp.
       d_forallc e Hf_e; simpl_embed.
       d_ifc; d_splitp; d_swap; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp r Hf_r; d_existsp c_ Hf_c_; d_splitp; d_swap; d_substp; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp m_ Hf_m_; d_existsp n_ Hf_n_; d_splitp; d_swap;
         d_substp; distinguish_variables; d_evalp.
       d_destructpairp; repeat d_splitp.
@@ -2538,12 +2444,12 @@ Proof.
     d_ifp.
       d_forallc i Hf_i; d_forallc e Hf_e; simpl_embed.
       d_ifc; d_splitp; d_swap; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp r Hf_r; d_existsp c_ Hf_c_; d_splitp; d_swap; d_substp; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
         d_existsp m' Hf_m'; d_existsp c'_ Hf_c'_; d_existsp n'_ Hf_n'_;
         d_splitp; d_swap; d_substp; distinguish_variables; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
       by d_orp; d_splitp; d_swap; d_substp; d_evalp; d_ifc; d_swap;
         d_destructpairp; repeat d_splitp;
         d_swap; do 2 (d_swap; d_rotate 1); d_swap; d_substp; d_splitp;
@@ -2562,84 +2468,84 @@ Proof.
   }
 
   (* By lemma 86 and lemma 96 on (1), (2), and (3) *)
-  d_have {A:
-    (on n, event[0]<- CSLDeliver $ n' $ (c, m)) =>>
-    eventuallyp (on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c)
-  }.
+  d_have {-A
+    (on n, event[0]<- CSLDeliver ' n' ' (c, m)) =>>
+    eventuallyp (on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c)
+   -}.
   {
     eapply DSCut; first by eapply DTL96_2 with
-      (A1 := {A: on n, event[0]<- CSLDeliver $ n' $ (c, m)})
-      (A2 := {A: on n', event[0]-> CSLSend $ n $ (c, m)})
-      (A3 := {A: eventuallyp (on n', ((0, CSLSend $ n $ (c, m)) \in Fors) /\ self-event)}).
+      (A1 := {-A on n, event[0]<- CSLDeliver ' n' ' (c, m) -})
+      (A2 := {-A on n', event[0]-> CSLSend ' n ' (c, m) -})
+      (A3 := {-A eventuallyp (on n', ((0, CSLSend ' n ' (c, m)) \in Fors) /\ self-event) -}).
     d_ifp; first by d_splitc; d_assumption.
     eapply DARewriteCongruentPR; first by apply DTL83_1 with
-      (A := {A: on n', ((0, CSLSend $ n $ (c, m)) \in Fors) /\ self-event}).
+      (A := {-A on n', ((0, CSLSend ' n ' (c, m)) \in Fors) /\ self-event -}).
     simpl_embed.
 
     eapply DSCut; first by eapply DTL96_2 with
-      (A1 := {A: on n, event[0]<- CSLDeliver $ n' $ (c, m)})
-      (A2 := {A: on n', ((0, CSLSend $ n $ (c, m)) \in Fors) /\ self-event})
-      (A3 := {A: on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c}).
+      (A1 := {-A on n, event[0]<- CSLDeliver ' n' ' (c, m) -})
+      (A2 := {-A on n', ((0, CSLSend ' n ' (c, m)) \in Fors) /\ self-event -})
+      (A3 := {-A on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c -}).
     by d_ifp; first by d_splitc; d_assumption.
   }
 
   (* By rule SInv on (4) *)
-  d_have {A:
+  d_have {-A
     self (
-      (on n, event[0]<- CSLDeliver $ n' $ (c, m)) =>>
-      eventuallyp (on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c)
+      (on n, event[0]<- CSLDeliver ' n' ' (c, m)) =>>
+      eventuallyp (on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c)
     )
-  }.
+   -}.
   {
     eapply DARewriteIfP with
-      (Arp := {A: self (
-          (on n, event[0]<- CSLDeliver $ n' $ (c, m)) =>>
-          eventuallyp (on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c)
-        )})
+      (Arp := {-A self (
+          (on n, event[0]<- CSLDeliver ' n' ' (c, m)) =>>
+          eventuallyp (on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c)
+        ) -})
       (Arc := restrict_assertion
-        {A: self-event}
-        {A: (on n, event[0]<- CSLDeliver $ n' $ (c, m)) =>>
-            eventuallyp (on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c)
-          }); first by eapply DPSInv_1.
+        {-A self-event -}
+        {-A (on n, event[0]<- CSLDeliver ' n' ' (c, m)) =>>
+            eventuallyp (on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c)
+           -}); first by eapply DPSInv_1.
     simpl_embed.
 
-    d_have {A:
-      (on n, event[0]<- CSLDeliver $ n' $ (c, m) <~
-        (on n', event[]-> CPLSend $ n $ m) /\ TLeft (Fs' $ n) = c) ->
+    d_have {-A
+      (on n, event[0]<- CSLDeliver ' n' ' (c, m) <~
+        (on n', event[]-> CPLSend ' n ' m) /\ TLeft (Fs' ' n) = c) ->
       self (
-        on n, event[0]<- CSLDeliver $ n' $ (c, m) <~
-        (on n', event[]-> CPLSend $ n $ m) /\ TLeft (Fs' $ n) = c
+        on n, event[0]<- CSLDeliver ' n' ' (c, m) <~
+        (on n', event[]-> CPLSend ' n ' m) /\ TLeft (Fs' ' n) = c
       )
-    }; first by eapply DTL129.
+     -}; first by eapply DTL129.
     by d_ifp.
   }
 
   (* Similarly for c' *)
-  d_have {A:
-    (on n, event[0]<- CSLDeliver $ n' $ (c', m)) =>>
-    eventuallyp (on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c')
-  }.
+  d_have {-A
+    (on n, event[0]<- CSLDeliver ' n' ' (c', m)) =>>
+    eventuallyp (on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c')
+   -}.
   {
     do 5 d_clear.
-    d_have {A:
+    d_have {-A
       forall: forall: forall: (* 2:n, 1:n', 0:m *)
-      on #2, event[0]<- CSLDeliver $ #1 $ #0 <~
-      on #1, event[0]-> CSLSend $ #2 $ #0
-    }; first by by d_use_empty PL_SL_2.
-    d_forallp n; d_forallp n'; d_forallp {t: (c', m)}; simpl_embed.
+      on #2, event[0]<- CSLDeliver ' #1 ' #0 <~
+      on #1, event[0]-> CSLSend ' #2 ' #0
+     -}; first by by d_use_empty PL_SL_2.
+    d_forallp n; d_forallp n'; d_forallp {-t (c', m) -}; simpl_embed.
 
     (* By OR' *)
-    d_have {A:
-      (on n', event[0]-> CSLSend $ n $ (c', m)) =>>
-      eventuallyp (on n', ((0, (CSLSend $ n $ (c', m))) \in Fors) /\ self-event)
-    }.
+    d_have {-A
+      (on n', event[0]-> CSLSend ' n ' (c', m)) =>>
+      eventuallyp (on n', ((0, (CSLSend ' n ' (c', m))) \in Fors) /\ self-event)
+     -}.
     {
       d_use DPOR';
-        d_forallp n'; d_forallp 0; d_forallp {t: CSLSend $ n $ (c', m)};
+        d_forallp n'; d_forallp 0; d_forallp {-t CSLSend ' n ' (c', m) -};
         simpl_embed.
       eapply DARewriteIfP with
-        (Arp := {A: self-event /\ on n', ((0, CSLSend $ n $ (c', m)) \in Fors)})
-        (Arc := {A: on n', ((0, (CSLSend $ n $ (c', m))) \in Fors) /\ self-event}).
+        (Arp := {-A self-event /\ on n', ((0, CSLSend ' n ' (c', m)) \in Fors) -})
+        (Arc := {-A on n', ((0, (CSLSend ' n ' (c', m))) \in Fors) /\ self-event -}).
       {
         d_ifc; d_splitc; first by d_splitp; d_swap; d_splitp; d_swap; d_splitc;
           d_assumption.
@@ -2647,28 +2553,28 @@ Proof.
       }
       simpl_embed.
       eapply DARewriteIfP; first by apply DTL123 with
-        (A := {A: on n', ((0, (CSLSend $ n $ (c', m))) \in Fors) /\ self-event}).
+        (A := {-A on n', ((0, (CSLSend ' n ' (c', m))) \in Fors) /\ self-event -}).
       by simpl_embed.
     }
 
     (* By InvL *)
-    d_have {A:
-      (on n', ((0, (CSLSend $ n $ (c', m))) \in Fors) /\ self-event) =>>
-      (on n', event[]-> CPLSend $ n $ m) /\ (TLeft (Fs' $ n) = c')
-    }.
+    d_have {-A
+      (on n', ((0, (CSLSend ' n ' (c', m))) \in Fors) /\ self-event) =>>
+      (on n', event[]-> CPLSend ' n ' m) /\ (TLeft (Fs' ' n) = c')
+     -}.
     {
       eapply DSCut; first by eapply DSEmptyContext; apply DPInvL with
-        (A := {A: on n', ((0, CSLSend $ n $ (c', m)) \in Fors) ->
-          ((on n', event[]-> CPLSend $ n $ m) /\ (TLeft (Fs' $ n) = c'))});
+        (A := {-A on n', ((0, CSLSend ' n ' (c', m)) \in Fors) ->
+          ((on n', event[]-> CPLSend ' n ' m) /\ (TLeft (Fs' ' n) = c')) -});
         first by repeat constructor.
 
       (* request *)
       d_ifp.
         d_forallc e Hf_e; simpl_embed.
         d_ifc; d_splitp; d_swap; d_evalp.
-        d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+        d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
           d_existsp r Hf_r; d_existsp c'_ Hf_c'_; d_splitp; d_swap; d_substp; d_evalp.
-        d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+        d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
           d_existsp m_ Hf_m_; d_existsp n_ Hf_n_; d_splitp; d_swap;
           d_substp; distinguish_variables; d_evalp.
         d_destructpairp; repeat d_splitp.
@@ -2680,12 +2586,12 @@ Proof.
       d_ifp.
         d_forallc i Hf_i; d_forallc e Hf_e; simpl_embed.
         d_ifc; d_splitp; d_swap; d_evalp.
-        d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+        d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
           d_existsp r Hf_r; d_existsp c'_ Hf_c'_; d_splitp; d_swap; d_substp; d_evalp.
-        d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t});
+        d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
           d_existsp m' Hf_m'; d_existsp c_ Hf_c_; d_existsp n'_ Hf_n'_;
           d_splitp; d_swap; d_substp; distinguish_variables; d_evalp.
-        d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+        d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
         by d_orp; d_splitp; d_swap; d_substp; d_evalp; d_ifc; d_swap;
           d_destructpairp; repeat d_splitp;
           d_swap; do 2 (d_swap; d_rotate 1); d_swap; d_substp; d_splitp;
@@ -2704,24 +2610,24 @@ Proof.
     }
 
     (* By lemma 86 and lemma 96 *)
-    d_have {A:
-      (on n, event[0]<- CSLDeliver $ n' $ (c', m)) =>>
-      eventuallyp (on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c')
-    }.
+    d_have {-A
+      (on n, event[0]<- CSLDeliver ' n' ' (c', m)) =>>
+      eventuallyp (on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c')
+     -}.
     {
       eapply DSCut; first by eapply DTL96_2 with
-        (A1 := {A: on n, event[0]<- CSLDeliver $ n' $ (c', m)})
-        (A2 := {A: on n', event[0]-> CSLSend $ n $ (c', m)})
-        (A3 := {A: eventuallyp (on n', ((0, CSLSend $ n $ (c', m)) \in Fors) /\ self-event)}).
+        (A1 := {-A on n, event[0]<- CSLDeliver ' n' ' (c', m) -})
+        (A2 := {-A on n', event[0]-> CSLSend ' n ' (c', m) -})
+        (A3 := {-A eventuallyp (on n', ((0, CSLSend ' n ' (c', m)) \in Fors) /\ self-event) -}).
       d_ifp; first by d_splitc; d_assumption.
       eapply DARewriteCongruentPR; first by apply DTL83_1 with
-        (A := {A: on n', ((0, CSLSend $ n $ (c', m)) \in Fors) /\ self-event}).
+        (A := {-A on n', ((0, CSLSend ' n ' (c', m)) \in Fors) /\ self-event -}).
       simpl_embed.
 
       eapply DSCut; first by eapply DTL96_2 with
-        (A1 := {A: on n, event[0]<- CSLDeliver $ n' $ (c', m)})
-        (A2 := {A: on n', ((0, CSLSend $ n $ (c', m)) \in Fors) /\ self-event})
-        (A3 := {A: on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c'}).
+        (A1 := {-A on n, event[0]<- CSLDeliver ' n' ' (c', m) -})
+        (A2 := {-A on n', ((0, CSLSend ' n ' (c', m)) \in Fors) /\ self-event -})
+        (A3 := {-A on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c' -}).
       by d_ifp; first by d_splitc; d_assumption.
     }
 
@@ -2729,64 +2635,64 @@ Proof.
   }
 
   (* By rule SInv on (4) *)
-  d_have {A:
+  d_have {-A
     self (
-      (on n, event[0]<- CSLDeliver $ n' $ (c', m)) =>>
-      eventuallyp (on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c')
+      (on n, event[0]<- CSLDeliver ' n' ' (c', m)) =>>
+      eventuallyp (on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c')
     )
-  }.
+   -}.
   {
-    d_have {A:
-      (on n, event[0]<- CSLDeliver $ n' $ (c', m) <~
-      (on n', event[]-> CPLSend $ n $ m) /\ TLeft (Fs' $ n) = c') ->
-      self (on n, event[0]<- CSLDeliver $ n' $ (c', m) <~
-      (on n', event[]-> CPLSend $ n $ m) /\ TLeft (Fs' $ n) = c')
-    }; first by eapply DTL129.
+    d_have {-A
+      (on n, event[0]<- CSLDeliver ' n' ' (c', m) <~
+      (on n', event[]-> CPLSend ' n ' m) /\ TLeft (Fs' ' n) = c') ->
+      self (on n, event[0]<- CSLDeliver ' n' ' (c', m) <~
+      (on n', event[]-> CPLSend ' n ' m) /\ TLeft (Fs' ' n) = c')
+     -}; first by eapply DTL129.
     by d_ifp.
   }
 
-  d_have {A:
-    eventuallyp (on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c) /\
-    eventuallyp (on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c') =>>
+  d_have {-A
+    eventuallyp (on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c) /\
+    eventuallyp (on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c') =>>
     c = c'
-  }.
+   -}.
   {
-    set B1 := {A: on n', event[]-> CPLSend $ n $ m}.
-    set C1 := {A: TLeft (Fs' $ n) = c}.
-    set C2 := {A: TLeft (Fs' $ n) = c'}.
-    d_have {A:
+    set B1 := {-A on n', event[]-> CPLSend ' n ' m -}.
+    set C1 := {-A TLeft (Fs' ' n) = c -}.
+    set C2 := {-A TLeft (Fs' ' n) = c' -}.
+    d_have {-A
       eventuallyp (B1 /\ C1) /\ eventuallyp (B1 /\ C2) =>>
       eventuallyp ((B1 /\ C1) /\ eventuallyp (B1 /\ C2)) \/
       eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1))
-    }.
+     -}.
     {
       by eapply DSCut; first by eapply DTL102_2 with
-        (A1 := {A: on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c})
-        (A2 := {A: on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c'}).
+        (A1 := {-A on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c -})
+        (A2 := {-A on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c' -}).
     }
 
-    set P1 := {A: eventuallyp ((B1 /\ C1) /\ eventuallyp (B1 /\ C2))}.
-    set P2 := {A: eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1))}.
-    d_have {A:
+    set P1 := {-A eventuallyp ((B1 /\ C1) /\ eventuallyp (B1 /\ C2)) -}.
+    set P2 := {-A eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1)) -}.
+    d_have {-A
       eventuallyp ((B1 /\ C1)) /\ eventuallyp (B1 /\ C2) =>>
       eventuallyp (B1 /\ C1 /\ eventuallyp C2) \/
       eventuallyp (B1 /\ C2 /\ eventuallyp C1)
-    }.
+     -}.
     {
-      d_have {A:
+      d_have {-A
         B1 /\ C1 -> (alwaysp^ (~ B1)) /\ C1
-      }.
+       -}.
       {
         d_ifc.
         eapply DARewriteEntailsP with
-          (Arp := {A: B1})
-          (Arc := {A: alwaysp^ (~ B1)}); first by d_assumption.
+          (Arp := {-A B1 -})
+          (Arc := {-A alwaysp^ (~ B1) -}); first by d_assumption.
         by simpl_embed.
       }
 
-      d_have {A:
+      d_have {-A
         P1 -> eventuallyp ((alwaysp^ (~ B1) /\ C1) /\ eventuallyp (B1 /\ C2))
-      }.
+       -}.
       {
         d_ifc.
         eapply DARewriteIfP; first by d_head.
@@ -2799,12 +2705,12 @@ Proof.
       simpl_embed; rewrite /eq_op /= !eq_refl !andTb /eq_op /= /eq_op /=;
         distinguish_variables.
       d_swap; d_clear.
-      set P1' := {A: eventuallyp ((alwaysp^ (~ B1) /\ C1) /\ eventuallyp (B1 /\ C2))}.
-      set P2' := {A: eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1))}.
-      d_have {A:
+      set P1' := {-A eventuallyp ((alwaysp^ (~ B1) /\ C1) /\ eventuallyp (B1 /\ C2)) -}.
+      set P2' := {-A eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1)) -}.
+      d_have {-A
         eventuallyp (B1 /\ C2) ->
         eventuallyp B1 /\ eventuallyp C2
-      }.
+       -}.
       {
         d_ifc.
         eapply DARewriteEntailsP; first by apply DTL127_5 with
@@ -2816,13 +2722,13 @@ Proof.
       simpl_embed; rewrite /eq_op /= !eq_refl !andTb /eq_op /= /eq_op /=;
         distinguish_variables.
 
-      set P1'' := {A: eventuallyp ((alwaysp^ (~ B1) /\ C1) /\
-        eventuallyp B1 /\ eventuallyp C2)}.
-      set P2'' := {A: eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1))}.
-      d_have {A:
+      set P1'' := {-A eventuallyp ((alwaysp^ (~ B1) /\ C1) /\
+        eventuallyp B1 /\ eventuallyp C2) -}.
+      set P2'' := {-A eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1)) -}.
+      d_have {-A
         (alwaysp^ (~ B1) /\ C1) /\ eventuallyp B1 /\ eventuallyp C2 ->
         (eventuallyp B1 /\ alwaysp^ (~ B1)) /\ C1 /\ eventuallyp C2
-      }.
+       -}.
       {
         d_ifc.
         d_splitp; d_splitp; d_splitc; first by d_rotate 2; d_splitp; d_splitc;
@@ -2833,12 +2739,12 @@ Proof.
       d_swap; eapply DARewriteIfP; first by d_head.
       simpl_embed.
 
-      set F1 := {A: (eventuallyp B1 /\ alwaysp^ (~ B1)) /\ C1 /\ eventuallyp C2}.
-      set G1 := {A: eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1))}.
-      d_have {A:
+      set F1 := {-A (eventuallyp B1 /\ alwaysp^ (~ B1)) /\ C1 /\ eventuallyp C2 -}.
+      set G1 := {-A eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1)) -}.
+      d_have {-A
         (eventuallyp B1 /\ alwaysp^ (~ B1)) /\ C1 /\
         eventuallyp C2 -> B1 /\ C1 /\ eventuallyp C2
-      }.
+       -}.
       {
         d_ifc.
         eapply DARewriteEntailsP; first by apply DTL103_2 with (A := B1).
@@ -2847,28 +2753,28 @@ Proof.
       d_swap; eapply DARewriteIfP; first by d_head.
       simpl_embed.
 
-      set F2 := {A: eventuallyp (B1 /\ C1 /\ eventuallyp C2)}.
-      set G2 := {A: eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1))}.
-      d_have {A:
+      set F2 := {-A eventuallyp (B1 /\ C1 /\ eventuallyp C2) -}.
+      set G2 := {-A eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1)) -}.
+      d_have {-A
         eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1)) ->
         eventuallyp (B1 /\ C2 /\ eventuallyp C1)
-      }.
+       -}.
       {
         d_ifc.
-        d_have {A:
+        d_have {-A
           B1 /\ C2 -> (alwaysp^ (~ B1)) /\ C2
-        }.
+         -}.
         {
           d_ifc.
           eapply DARewriteEntailsP with
-            (Arp := {A: B1})
-            (Arc := {A: alwaysp^ (~ B1)}); first by d_assumption.
+            (Arp := {-A B1 -})
+            (Arc := {-A alwaysp^ (~ B1) -}); first by d_assumption.
           by simpl_embed.
         }
 
-        d_have {A:
+        d_have {-A
           P2 -> eventuallyp ((alwaysp^ (~ B1) /\ C2) /\ eventuallyp (B1 /\ C1))
-        }.
+         -}.
         {
           d_ifc.
           eapply DARewriteIfP; first by d_head.
@@ -2880,10 +2786,10 @@ Proof.
         simpl_embed.
 
         d_swap; d_clear.
-        d_have {A:
+        d_have {-A
           eventuallyp (B1 /\ C1) ->
           eventuallyp B1 /\ eventuallyp C1
-        }.
+         -}.
         {
           d_ifc.
           eapply DARewriteEntailsP; first by apply DTL127_5 with
@@ -2894,10 +2800,10 @@ Proof.
         d_swap; eapply DARewriteIfP; first by d_head.
         simpl_embed.
 
-        d_have {A:
+        d_have {-A
           (alwaysp^ (~ B1) /\ C2) /\ eventuallyp B1 /\ eventuallyp C1 ->
           (eventuallyp B1 /\ alwaysp^ (~ B1)) /\ C2 /\ eventuallyp C1
-        }.
+         -}.
         {
           d_ifc.
           d_splitp; d_splitp; d_splitc; first by d_rotate 2; d_splitp; d_splitc;
@@ -2908,10 +2814,10 @@ Proof.
         d_swap; eapply DARewriteIfP; first by d_head.
         simpl_embed.
 
-        d_have {A:
+        d_have {-A
           (eventuallyp B1 /\ alwaysp^ (~ B1)) /\ C2 /\
           eventuallyp C1 -> B1 /\ C2 /\ eventuallyp C1
-        }.
+         -}.
         {
           d_ifc.
           eapply DARewriteEntailsP; first by apply DTL103_2 with (A := B1).
@@ -2921,10 +2827,10 @@ Proof.
         by simpl_embed.
       }
 
-      d_have {A:
+      d_have {-A
         F2 \/ eventuallyp ((B1 /\ C2) /\ eventuallyp (B1 /\ C1)) ->
         F2 \/ eventuallyp (B1 /\ C2 /\ eventuallyp C1)
-      }.
+       -}.
       {
         d_ifc; d_orp; first by d_left.
         d_right.
@@ -2936,76 +2842,76 @@ Proof.
       by simpl_embed.
     }
 
-    set E := {A:
+    set E := {-A
         eventuallyp (B1 /\ C1 /\ eventuallyp C2) \/
         eventuallyp (B1 /\ C2 /\ eventuallyp C1)
-      }.
+       -}.
 
-    d_have {A:
+    d_have {-A
       eventuallyp (B1 /\ C1 /\ eventuallyp C2) \/
       eventuallyp (B1 /\ C2 /\ eventuallyp C1) ->
       eventuallyp (C1 /\ C2)
-    }.
+     -}.
     {
-      set E1 := {A:
+      set E1 := {-A
           eventuallyp (B1 /\ C1 /\ eventuallyp C2) \/
           eventuallyp (B1 /\ C2 /\ eventuallyp C1)
-        }.
+         -}.
       d_ifc.
-      set D1 := {A: B1 /\ C1 /\ eventuallyp C2}.
-      set D2 := {A: B1 /\ C2 /\ eventuallyp C1}.
-      d_have {A:
+      set D1 := {-A B1 /\ C1 /\ eventuallyp C2 -}.
+      set D2 := {-A B1 /\ C2 /\ eventuallyp C1 -}.
+      d_have {-A
         D1 -> C1 /\ C2
-      }.
+       -}.
       {
         d_ifc; d_splitp; d_swap; d_splitp; d_splitc; first by d_head.
         d_swap.
-        eapply DSCut; first by eapply DTL133 with (P := {A: c = c'}).
+        eapply DSCut; first by eapply DTL133 with (P := {-A c = c' -}).
         admit.
       }
       d_swap; eapply DARewriteIfP; first by d_head.
       simpl_embed; rewrite /eq_op /= !eq_refl !andTb /eq_op /= /eq_op /=;
         distinguish_variables.
 
-      set E2 := {A:
+      set E2 := {-A
           eventuallyp (C1 /\ C2) \/ eventuallyp (B1 /\ C2 /\ eventuallyp C1)
-        }.
-      d_have {A:
+         -}.
+      d_have {-A
         D2 -> C1 /\ C2
-      }.
+       -}.
       {
         d_ifc. d_splitp. d_swap. d_splitp. d_swap. d_splitc.
-        eapply DSCut; first by eapply DTL133 with (P := {A: c' = c}).
+        eapply DSCut; first by eapply DTL133 with (P := {-A c' = c -}).
         admit.
       }
       d_swap; eapply DARewriteIfP; first by d_head.
       simpl_embed.
 
-      set E3 := {A:
+      set E3 := {-A
           eventuallyp (C1 /\ C2) \/
           eventuallyp (C1 /\ C2)
-        }.
-      set E4 := {A:
+         -}.
+      set E4 := {-A
           eventuallyp (C1 /\ C2) \/
           eventuallyp (C1 /\ C2)
-        }.
-      d_have {A:
+         -}.
+      d_have {-A
         E4 -> eventuallyp (C1 /\ C2)
-      }; first by d_ifc; d_orp.
+       -}; first by d_ifc; d_orp.
       d_swap; eapply DARewriteIfP; first by d_head.
       by simpl_embed.
     }
 
-    set E5 := {A:
+    set E5 := {-A
         eventuallyp (B1 /\ C1 /\ eventuallyp C2) \/
         eventuallyp (B1 /\ C2 /\ eventuallyp C1)
-      }.
+       -}.
     d_swap; eapply DARewriteIfP; first by d_head.
     simpl_embed.
 
-    d_have {A:
+    d_have {-A
       C1 /\ C2 -> c = c'
-    }.
+     -}.
     {
       d_ifc; d_splitp; d_substp.
       eapply DSCut; first by apply DAPEqualSymmetric.
@@ -3015,43 +2921,43 @@ Proof.
     d_swap; eapply DARewriteIfP; first by d_head.
     simpl_embed.
 
-    d_have {A:
+    d_have {-A
       eventuallyp (c = c') -> c = c'
-    }; first by eapply DSCut; first by eapply DTL133 with (P := {A: c = c'}).
+     -}; first by eapply DSCut; first by eapply DTL133 with (P := {-A c = c' -}).
     d_swap; eapply DARewriteIfP; first by d_head.
     by simpl_embed.
   }
 
-  set A1 := {A: on n, event[0]<- CSLDeliver $ n' $ (c, m)}.
-  set A2 := {A: on n, event[0]<- CSLDeliver $ n' $ (c', m)}.
-  set B1 := {A: on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c}.
-  set B2 := {A: on n', event[]-> CPLSend $ n $ m /\ TLeft (Fs' $ n) = c'}.
-  d_have {A:
+  set A1 := {-A on n, event[0]<- CSLDeliver ' n' ' (c, m) -}.
+  set A2 := {-A on n, event[0]<- CSLDeliver ' n' ' (c', m) -}.
+  set B1 := {-A on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c -}.
+  set B2 := {-A on n', event[]-> CPLSend ' n ' m /\ TLeft (Fs' ' n) = c' -}.
+  d_have {-A
     eventuallyp A2 =>> eventuallyp eventuallyp A2
-  }.
+   -}.
   {
-    eapply DSCut; first by apply DTL83_1 with (A := {A: A2}).
+    eapply DSCut; first by apply DTL83_1 with (A := {-A A2 -}).
     by d_splitp.
   }
   eapply DARewriteEntailsP; first by d_rotate 2; d_head.
-  eapply DARewriteCongruentPR; first by apply DTL83_1 with (A := {A: B2}).
-  eapply DARewriteCongruentPR; first by apply DTL83_1 with (A := {A: B2}).
+  eapply DARewriteCongruentPR; first by apply DTL83_1 with (A := {-A B2 -}).
+  eapply DARewriteCongruentPR; first by apply DTL83_1 with (A := {-A B2 -}).
   simpl_embed.
 
   eapply DSCut; first by apply DTL132 with
-    (A1 := {A: A1})
-    (A2 := {A: eventuallyp A2})
-    (B1 := {A: eventuallyp B1})
-    (B2 := {A: eventuallyp B2}).
+    (A1 := {-A A1 -})
+    (A2 := {-A eventuallyp A2 -})
+    (B1 := {-A eventuallyp B1 -})
+    (B2 := {-A eventuallyp B2 -}).
   d_ifp; first by d_splitc; d_assumption.
   d_swap; d_clear.
   eapply DARewriteEntailsP; first by d_head.
   simpl_embed.
 
-  d_have {A:
+  d_have {-A
     (A1 /\ eventuallyp A2 =>> c = c') ->
     self (A1 /\ eventuallyp A2 =>> c = c')
-  }; first by eapply DTL129.
+   -}; first by eapply DTL129.
 
   d_swap; eapply DARewriteIfP; first by d_head.
   by simpl_embed.
@@ -3060,13 +2966,13 @@ Admitted.
 (* No-duplication
  * If a message is sent at most once, it will be delivered at most once.
  *)
-Theorem PL_2 : empty_context |- perfect_link, {A:
+Theorem PL_2 : empty_context |- perfect_link, {-A
   forall: forall: forall: (* 2:n, 1:n', 0:m *)
-    (on #1, event[]-> CPLSend $ #2 $ #0 =>>
-      alwaysp^ ~on #1, event[]-> CPLSend $ #2 $ #0) ->
-    (on #2, event[]<- CPLDeliver $ #1 $ #0 =>>
-      alwaysp^ ~on #2, event[]<- CPLDeliver $ #1 $ #0)
-  }.
+    (on #1, event[]-> CPLSend ' #2 ' #0 =>>
+      alwaysp^ ~on #1, event[]-> CPLSend ' #2 ' #0) ->
+    (on #2, event[]<- CPLDeliver ' #1 ' #0 =>>
+      alwaysp^ ~on #2, event[]<- CPLDeliver ' #1 ' #0)
+   -}.
 Proof.
   (* Introduce context *)
   set C := perfect_link; rewrite -/C /empty_context.
@@ -3076,29 +2982,29 @@ Proof.
   d_ifc.
 
   (* By OI' *)
-  d_have {A:
-    on n, event[]<- CPLDeliver $ n' $ m =>>
-    eventuallyp (self-event /\ on n, (CPLDeliver $ n' $ m \in Fois))
-  }.
+  d_have {-A
+    on n, event[]<- CPLDeliver ' n' ' m =>>
+    eventuallyp (self-event /\ on n, (CPLDeliver ' n' ' m \in Fois))
+   -}.
   {
-    d_use DPOI'; d_forallp n; d_forallp {t: CPLDeliver $ n' $ m};
+    d_use DPOI'; d_forallp n; d_forallp {-t CPLDeliver ' n' ' m -};
       simpl_embed.
     eapply DARewriteIfP; first by apply DTL123 with
-      (A := {A: self-event /\ on n, (CPLDeliver $ n' $ m \in Fois)}).
+      (A := {-A self-event /\ on n, (CPLDeliver ' n' ' m \in Fois) -}).
     by simpl_embed.
   }
 
   (* By InvL *)
-  d_have {A:
-    self-event /\ on n, (CPLDeliver $ n' $ m \in Fois) =>>
-    self-event /\ on n, ((FCount $ (CPLDeliver $ n' $ m) $ Fois) = 1)
-  }.
+  d_have {-A
+    self-event /\ on n, (CPLDeliver ' n' ' m \in Fois) =>>
+    self-event /\ on n, ((FCount ' (CPLDeliver ' n' ' m) ' Fois) = 1)
+   -}.
   {
     eapply DSCut; first by eapply DSEmptyContext; apply DPInvL with
-      (A := {A:
-          on n, (CPLDeliver $ n' $ m \in Fois) ->
-          on n, ((FCount $ (CPLDeliver $ n' $ m)$ Fois) = 1)
-        });
+      (A := {-A
+          on n, (CPLDeliver ' n' ' m \in Fois) ->
+          on n, ((FCount ' (CPLDeliver ' n' ' m)$ Fois) = 1)
+         -});
       first by repeat constructor.
 
     (* request *)
@@ -3106,24 +3012,24 @@ Proof.
       d_forallc e Hf_e; simpl_embed.
       d_ifc; d_splitp; d_swap; d_evalp.
 
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
     d_forallp r; d_forallp c; d_splitp; d_swap.
     d_substp; d_evalp.
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
     d_forallp m. d_forallp n'.
     d_splitp. d_swap.
     d_substp. d_evalp.
     d_ifc. d_swap.
     d_destructtuplep
-      {t: Fs' $ Fn} {t: Fors} {t: Fois}
-      {t: (FSucc $ c, r)}
-      {t: (CCons $ (CPair $ 0 $ (CSLSend $ n' $ (CPair $ (FSucc $ c) $ m))) $ CNil)} {t: CNil}; do 2 d_splitp.
+      {-t Fs' ' Fn -} {-t Fors -} {-t Fois -}
+      {-t (FSucc ' c, r) -}
+      {-t (CCons ' (CPair ' 0 ' (CSLSend ' n' ' (CPair ' (FSucc ' c) ' m))) ' CNil) -} {-t CNil -}; do 2 d_splitp.
     d_rotate 3. d_substp.
     d_splitp. d_swap.
 
     eapply DSCut; first by eapply DAPInNil.
-    d_forallp {t: (CPLDeliver $ n' $ m)}.
-    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A: (CPLDeliver $ n' $ m) \in CNil}).
+    d_forallp {-t (CPLDeliver ' n' ' m) -}.
+    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A (CPLDeliver ' n' ' m) \in CNil -}).
     d_swap; eapply DARewriteIffPL; first by d_head.
     simpl_embed; d_swap; d_clear.
     d_ifp. d_head. d_false.
@@ -3131,25 +3037,25 @@ Proof.
     (* indication *)
     d_ifp. d_forallc "i". d_forallc e.
     d_ifc. d_splitp. d_swap. d_evalp.
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
     d_forallp r; d_forallp c; d_splitp; d_swap.
     d_substp; d_evalp.
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
     d_forallp m; d_forallp c'; d_forallp n'. (* n' or n? *)
     d_splitp. d_swap. d_substp. d_evalp.
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
 
     d_orp.
     (* true case *)
     d_splitp. d_swap. d_substp. d_evalp.
     d_destructtuplep
-        {t: Fs' $ Fn} {t: Fors} {t: Fois}
-        {t: (c, r)}
-        {t:  CNil} {t: CNil}; do 2 d_splitp.
+        {-t Fs' ' Fn -} {-t Fors -} {-t Fois -}
+        {-t (c, r) -}
+        {-t  CNil -} {-t CNil -}; do 2 d_splitp.
     d_ifc. d_substp. d_splitp. d_swap.
     eapply DSCut; first by eapply DAPInNil.
-    d_forallp {t: (CPLDeliver $ n' $ m)}.
-    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A: (CPLDeliver $ n' $ m) \in CNil}).
+    d_forallp {-t (CPLDeliver ' n' ' m) -}.
+    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A (CPLDeliver ' n' ' m) \in CNil -}).
     d_swap; eapply DARewriteIffPL; first by d_head.
     simpl_embed; d_swap; d_clear.
     d_ifp. d_head. d_false.
@@ -3157,9 +3063,9 @@ Proof.
     (* false case *)
     d_splitp. d_swap. d_substp. d_evalp.
     d_destructtuplep
-      {t: Fs' $ Fn} {t: Fors} {t: Fois}
-      {t: (CPair $ c $ (FUnion $ r $ (CCons $ ((n', c)') $ CNil)))}
-      {t:  CNil} {t: (CCons $ (CPLDeliver $ n' $ m) $ CNil)}. do 2 d_splitp.
+      {-t Fs' ' Fn -} {-t Fors -} {-t Fois -}
+      {-t (CPair ' c ' (FUnion ' r ' (CCons ' ((n', c)') ' CNil))) -}
+      {-t  CNil -} {-t (CCons ' (CPLDeliver ' n' ' m) ' CNil) -}. do 2 d_splitp.
     d_ifc.
     d_splitc. d_splitp. d_head.
     d_subst. d_eval.
@@ -3168,26 +3074,26 @@ Proof.
     (* periodics *)
     d_ifp. d_ifc. d_splitp. d_swap. d_evalp.
     d_destructtuplep
-      {t: Fs' $ Fn} {t: Fors} {t: Fois}
-      {t: Fs $ Fn}
-      {t:  CNil} {t: CNil}; do 2 d_splitp.
+      {-t Fs' ' Fn -} {-t Fors -} {-t Fois -}
+      {-t Fs ' Fn -}
+      {-t  CNil -} {-t CNil -}; do 2 d_splitp.
     d_ifc. d_splitp. d_splitc. d_head.
     d_swap. d_substp.
     eapply DSCut; first by eapply DAPInNil.
-    d_forallp {t: (CPLDeliver $ n' $ m)}.
-    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A: (CPLDeliver $ n' $ m) \in CNil}).
+    d_forallp {-t (CPLDeliver ' n' ' m) -}.
+    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A (CPLDeliver ' n' ' m) \in CNil -}).
     d_swap; eapply DARewriteIffPL; first by d_head.
     simpl_embed; d_swap; d_clear.
     d_ifp. d_head. d_false.
 
     eapply DARewriteIffPL; first by apply DSMergeIf with
-      (Ap1 := {A: self-event})
-      (Ap2 := {A: on n, CPLDeliver $ n' $ m \in Fois})
-      (Ac := {A: on n, (fun: fun: FCount $ (P 0 0) $ (P 1 0)) $ Fois $ (CPLDeliver $ n' $ m) = 1}).
+      (Ap1 := {-A self-event -})
+      (Ap2 := {-A on n, CPLDeliver ' n' ' m \in Fois -})
+      (Ac := {-A on n, (fun: fun: FCount ' (P 0 0) ' (P 1 0)) ' Fois ' (CPLDeliver ' n' ' m) = 1 -}).
     simpl_embed.
 
-    d_have {A:
-              (self-event /\ on n, CPLDeliver $ n' $ m \in Fois =>> self-event /\ on n, (fun: fun: FCount $ (P 0 0) $ (P 1 0)) $ Fois $ (CPLDeliver $ n' $ m) = 1)}.
+    d_have {-A
+              (self-event /\ on n, CPLDeliver ' n' ' m \in Fois =>> self-event /\ on n, (fun: fun: FCount ' (P 0 0) ' (P 1 0)) ' Fois ' (CPLDeliver ' n' ' m) = 1) -}.
     {
       eapply DTGeneralization; first by repeat constructor.
       d_ifc. d_swap. d_splitp. d_swap; d_clear.
@@ -3198,56 +3104,56 @@ Proof.
   }
 
   (* by Lemma 96 on (1) and (2) *)
-  d_have {A:
-            on n, event[]<- CPLDeliver $ n' $ m =>>
-                          eventuallyp (self-event /\ on n, ((FOcc $ Fois $ (CPLDeliver $ n' $ m)) = 1))}.
+  d_have {-A
+            on n, event[]<- CPLDeliver ' n' ' m =>>
+                          eventuallyp (self-event /\ on n, ((FOcc ' Fois ' (CPLDeliver ' n' ' m)) = 1)) -}.
   {
     d_rotate 2. d_clear. d_swap.
     eapply DSCut; first by apply DTL96_2 with
-                             (A1 := {A: on n, event[]<- CPLDeliver $ n' $ m})
-                             (A2 := {A: self-event /\ on n, (CPLDeliver $ n' $ m \in Fois)})
-                             (A3 := {A: self-event /\ on n, (fun: fun: FCount $ (P 0 0) $ (P 1 0)) $ Fois $ (CPLDeliver $ n' $ m) = 1}).
+                             (A1 := {-A on n, event[]<- CPLDeliver ' n' ' m -})
+                             (A2 := {-A self-event /\ on n, (CPLDeliver ' n' ' m \in Fois) -})
+                             (A3 := {-A self-event /\ on n, (fun: fun: FCount ' (P 0 0) ' (P 1 0)) ' Fois ' (CPLDeliver ' n' ' m) = 1 -}).
     d_ifp. d_splitc. d_head. d_swap. d_head.
     d_head.
   }
 
   (* by Lemma 42 *)
-  d_have {A:
+  d_have {-A
             self (
-                on n, (CPLDeliver $ n' $ m) \in Fois =>>
-                                                                   always^ (Fn = n -> (CPLDeliver $ n' $ m) \notin Fois) /\
-                                                            alwaysp^ (Fn = n -> (CPLDeliver $ n' $ m) \notin Fois)
-         )}.
+                on n, (CPLDeliver ' n' ' m) \in Fois =>>
+                                                                   always^ (Fn = n -> (CPLDeliver ' n' ' m) \notin Fois) /\
+                                                            alwaysp^ (Fn = n -> (CPLDeliver ' n' ' m) \notin Fois)
+         ) -}.
   {
     do 4 d_clear.
     eapply L42.
   }
 
   (* by SINV on (4) *)
-  d_have {A:
-            self-event /\ on n, CPLDeliver $ n' $ m \in Fois =>>
-                                                                           always^ (self-event /\ Fn = n -> (CPLDeliver $ n' $ m) \notin Fois) /\
-                                                                    alwaysp^ (self-event /\ Fn = n -> (CPLDeliver $ n' $ m) \notin Fois)}.
+  d_have {-A
+            self-event /\ on n, CPLDeliver ' n' ' m \in Fois =>>
+                                                                           always^ (self-event /\ Fn = n -> (CPLDeliver ' n' ' m) \notin Fois) /\
+                                                                    alwaysp^ (self-event /\ Fn = n -> (CPLDeliver ' n' ' m) \notin Fois) -}.
   {
-    eapply DARewriteIfP with (Arp := {A:
-                                          (self (on n, CPLDeliver $ n' $ m \in Fois =>>                                                                                          always^ (Fn = n -> CPLDeliver $ n' $ m \notin Fois) /\ alwaysp^ (Fn = n -> CPLDeliver $ n' $ m \notin Fois)))})
-                               (Arc := {A: restrict_assertion {A: self-event} ( ((on n, CPLDeliver $ n' $ m \in Fois) =>>  (always^ (Fn = n -> CPLDeliver $ n' $ m \notin Fois) /\ alwaysp^ (Fn = n -> CPLDeliver $ n' $ m \notin Fois))))}).
+    eapply DARewriteIfP with (Arp := {-A
+                                          (self (on n, CPLDeliver ' n' ' m \in Fois =>>                                                                                          always^ (Fn = n -> CPLDeliver ' n' ' m \notin Fois) /\ alwaysp^ (Fn = n -> CPLDeliver ' n' ' m \notin Fois))) -})
+                               (Arc := {-A restrict_assertion {-A self-event -} ( ((on n, CPLDeliver ' n' ' m \in Fois) =>>  (always^ (Fn = n -> CPLDeliver ' n' ' m \notin Fois) /\ alwaysp^ (Fn = n -> CPLDeliver ' n' ' m \notin Fois)))) -}).
 
     eapply DPSInv_1.
     simpl_embed.
     d_splitp.
     d_swap.
-    set A := {A: (self-event -> on n, CPLDeliver $ n' $ m \in Fois)}.
-    set B := {A: always^ (self-event -> Fn = n -> CPLDeliver $ n' $ m \notin Fois) /\
-                 alwaysp^ (self-event -> Fn = n -> CPLDeliver $ n' $ m \notin Fois)}.
-    d_have {A:
-              always^ (self-event -> on n, CPLDeliver $ n' $ m \in Fois -> B) -> always ((self-event /\ on n, CPLDeliver $ n' $ m \in Fois) -> B)}.
+    set A := {-A (self-event -> on n, CPLDeliver ' n' ' m \in Fois) -}.
+    set B := {-A always^ (self-event -> Fn = n -> CPLDeliver ' n' ' m \notin Fois) /\
+                 alwaysp^ (self-event -> Fn = n -> CPLDeliver ' n' ' m \notin Fois) -}.
+    d_have {-A
+              always^ (self-event -> on n, CPLDeliver ' n' ' m \in Fois -> B) -> always ((self-event /\ on n, CPLDeliver ' n' ' m \in Fois) -> B) -}.
     {
       d_ifc. d_splitc. d_ifc. d_rotate 3. d_ifp. d_rotate 4. d_splitp. d_swap. d_head. d_head.
-      d_have {A:
-              (self-event -> on n, CPLDeliver $ n' $ m \in Fois -> B) ->
-              ((self-event /\ on n, CPLDeliver $ n' $ m \in Fois) -> B)
-             }.
+      d_have {-A
+              (self-event -> on n, CPLDeliver ' n' ' m \in Fois -> B) ->
+              ((self-event /\ on n, CPLDeliver ' n' ' m \in Fois) -> B)
+              -}.
       {
         d_ifc. d_ifc. d_splitp. d_rotate 2. d_ifp. d_rotate 7. d_head. d_ifp. d_rotate 8. d_head. d_head.
 
@@ -3258,10 +3164,10 @@ Proof.
     d_swap.
     eapply DARewriteIfP; first by d_head.
     simpl_embed.
-    d_have {A:
-              (self-event -> Fn = n -> CPLDeliver $ n' $ m \notin Fois) ->
-              ((self-event /\ Fn = n -> CPLDeliver $ n' $ m \notin Fois))
-           }.
+    d_have {-A
+              (self-event -> Fn = n -> CPLDeliver ' n' ' m \notin Fois) ->
+              ((self-event /\ Fn = n -> CPLDeliver ' n' ' m \notin Fois))
+            -}.
     {
       d_ifc. d_ifc. d_splitp. d_rotate 2. d_ifp. d_rotate 7. d_head. d_ifp. d_rotate 8. d_head. d_head.
     }
@@ -3270,111 +3176,111 @@ Proof.
   }
 
   (* from (3) and (5) *)
-  d_have {A:
-            on n, event[]<- CPLDeliver $ n' $ m =>>
-                          eventuallyp (((FOcc $ Fois $ (CPLDeliver $ n' $ m)) = 1) /\
-                                      always^ (self-event /\ Fn = n -> (CPLDeliver $ n' $ m) \notin Fois) /\ alwaysp^ (self-event /\ Fn = n -> (CPLDeliver $ n' $ m) \notin Fois))
-         }.
+  d_have {-A
+            on n, event[]<- CPLDeliver ' n' ' m =>>
+                          eventuallyp (((FOcc ' Fois ' (CPLDeliver ' n' ' m)) = 1) /\
+                                      always^ (self-event /\ Fn = n -> (CPLDeliver ' n' ' m) \notin Fois) /\ alwaysp^ (self-event /\ Fn = n -> (CPLDeliver ' n' ' m) \notin Fois))
+          -}.
   {
-    d_have {A: ((FOcc $ Fois $ (CPLDeliver $ n' $ m)) = 1) -> CPLDeliver $ n' $ m \in Fois}.
+    d_have {-A ((FOcc ' Fois ' (CPLDeliver ' n' ' m)) = 1) -> CPLDeliver ' n' ' m \in Fois -}.
     {
       d_ifc.
       d_eval.
       eapply DSCut; first by eapply DAPEqualToGE.
-      d_forallp {t: FCount $ (CPLDeliver $ n' $ m) $ Fois}.
+      d_forallp {-t FCount ' (CPLDeliver ' n' ' m) ' Fois -}.
       d_forallp 1. d_ifp.
       d_head.
       d_use DAPInOcc.
-      d_evalp. d_forallp {t: (CPLDeliver $ n' $ m)}. d_forallp Fois. d_splitp.
+      d_evalp. d_forallp {-t (CPLDeliver ' n' ' m) -}. d_forallp Fois. d_splitp.
       d_clear. d_ifp. d_head.
       d_head.
     }
 
-    d_have {A: self-event /\ on n, ((FOcc $ Fois $ (CPLDeliver $ n' $ m)) = 1)
+    d_have {-A self-event /\ on n, ((FOcc ' Fois ' (CPLDeliver ' n' ' m)) = 1)
                ->
-               ((FOcc $ Fois $ (CPLDeliver $ n' $ m)) = 1) /\ (self-event /\ on n, CPLDeliver $ n' $ m \in Fois)}.
+               ((FOcc ' Fois ' (CPLDeliver ' n' ' m)) = 1) /\ (self-event /\ on n, CPLDeliver ' n' ' m \in Fois) -}.
     {
       d_ifc.
       d_splitc. do 2 (d_splitp; d_swap). d_head.
-      eapply DARewriteIfP with (Arp := {A: (fun: fun: FCount $ (P 0 0) $ (P 1 0)) $ Fois $ (CPLDeliver $ n' $ m) = 1})
-                               (Arc := {A: CPLDeliver $ n' $ m \in Fois}).
+      eapply DARewriteIfP with (Arp := {-A (fun: fun: FCount ' (P 0 0) ' (P 1 0)) ' Fois ' (CPLDeliver ' n' ' m) = 1 -})
+                               (Arc := {-A CPLDeliver ' n' ' m \in Fois -}).
       d_head. simpl_embed. d_head.
     }
-    eapply DARewriteEntailsP with (Arp := {A: self-event /\ on n, CPLDeliver $ n' $ m \in Fois})
-                                  (Arc := {A:  always^ (self-event /\ Fn = n -> CPLDeliver $ n' $ m \notin Fois) /\
-                        alwaysp^ (self-event /\ Fn = n -> CPLDeliver $ n' $ m \notin Fois)}).
+    eapply DARewriteEntailsP with (Arp := {-A self-event /\ on n, CPLDeliver ' n' ' m \in Fois -})
+                                  (Arc := {-A  always^ (self-event /\ Fn = n -> CPLDeliver ' n' ' m \notin Fois) /\
+                        alwaysp^ (self-event /\ Fn = n -> CPLDeliver ' n' ' m \notin Fois) -}).
     d_swap. d_head. simpl_embed.
     d_rotate 4.
-    eapply DARewriteIfP with (Arp := {A: self-event /\ on n, (fun: fun: FCount $ (P 0 0) $ (P 1 0)) $ Fois $ (CPLDeliver $ n' $ m) = 1})
-                             (Arc := {A:  (fun: fun: FCount $ (P 0 0) $ (P 1 0)) $ Fois $ (CPLDeliver $ n' $ m) = 1 /\
-                        always^ (self-event /\ Fn = n -> CPLDeliver $ n' $ m \notin Fois) /\
-                        alwaysp^ (self-event /\ Fn = n -> CPLDeliver $ n' $ m \notin Fois)}).
+    eapply DARewriteIfP with (Arp := {-A self-event /\ on n, (fun: fun: FCount ' (P 0 0) ' (P 1 0)) ' Fois ' (CPLDeliver ' n' ' m) = 1 -})
+                             (Arc := {-A  (fun: fun: FCount ' (P 0 0) ' (P 1 0)) ' Fois ' (CPLDeliver ' n' ' m) = 1 /\
+                        always^ (self-event /\ Fn = n -> CPLDeliver ' n' ' m \notin Fois) /\
+                        alwaysp^ (self-event /\ Fn = n -> CPLDeliver ' n' ' m \notin Fois) -}).
     d_rotate 3. d_head. simpl_embed. d_head.
   }
 
   (* by UNIOI *)
-  d_have {A:
-            (((FOcc $ Fois $ (CPLDeliver $ n' $ m)) <= 1) /\
-             always^ (self-event /\ Fn = n -> (CPLDeliver $ n' $ m) \notin Fois) /\
-             alwaysp^ (self-event /\ Fn = n -> (CPLDeliver $ n' $ m) \notin Fois)) =>>
-                                                                                             on n, event[]<- CPLDeliver $ n' $ m =>>
-                                                                                                          alwaysp^ (~ (on n, event[]<- CPLDeliver $ n' $ m))
-         }.
+  d_have {-A
+            (((FOcc ' Fois ' (CPLDeliver ' n' ' m)) <= 1) /\
+             always^ (self-event /\ Fn = n -> (CPLDeliver ' n' ' m) \notin Fois) /\
+             alwaysp^ (self-event /\ Fn = n -> (CPLDeliver ' n' ' m) \notin Fois)) =>>
+                                                                                             on n, event[]<- CPLDeliver ' n' ' m =>>
+                                                                                                          alwaysp^ (~ (on n, event[]<- CPLDeliver ' n' ' m))
+          -}.
   {
     d_use DPUniOI.
-    d_forallp n. d_forallp Fois. d_forallp {t: CPLDeliver $ n' $ m}.
-    set A := {A: always^ (self-event /\ Fn = n -> (CPLDeliver $ n' $ m) \notin Fois)}.
-    set B := {A: alwaysp^ (self-event /\ Fn = n -> (CPLDeliver $ n' $ m) \notin Fois)}.
-    set D := {A:  (fun: fun: FCount $ (P 0 0) $ (P 1 0)) $ Fois $ (CPLDeliver $ n' $ m) <= 1}.
-    set E := {A: alwaysp^ (~ (on n, Fd = CNil /\ Fo = OIndication /\ Fe = CPLDeliver $ n' $ m))}.
-    set F := {A: always^ (~ (on n, Fd = CNil /\ Fo = OIndication /\ Fe = CPLDeliver $ n' $ m))}.
-    eapply DARewriteIfP with (Arp := {A: E /\ F})
-                             (Arc := {A: E}).
+    d_forallp n. d_forallp Fois. d_forallp {-t CPLDeliver ' n' ' m -}.
+    set A := {-A always^ (self-event /\ Fn = n -> (CPLDeliver ' n' ' m) \notin Fois) -}.
+    set B := {-A alwaysp^ (self-event /\ Fn = n -> (CPLDeliver ' n' ' m) \notin Fois) -}.
+    set D := {-A  (fun: fun: FCount ' (P 0 0) ' (P 1 0)) ' Fois ' (CPLDeliver ' n' ' m) <= 1 -}.
+    set E := {-A alwaysp^ (~ (on n, Fd = CNil /\ Fo = OIndication /\ Fe = CPLDeliver ' n' ' m)) -}.
+    set F := {-A always^ (~ (on n, Fd = CNil /\ Fo = OIndication /\ Fe = CPLDeliver ' n' ' m)) -}.
+    eapply DARewriteIfP with (Arp := {-A E /\ F -})
+                             (Arc := {-A E -}).
     d_ifc. d_splitp. d_head.
     simpl_embed.
     d_head.
   }
 
   (* from (6) and (7) *)
-  d_have {A:
-            on n, event[]<- CPLDeliver $ n' $ m <~
-                          (on n, event[]<- CPLDeliver $ n' $ m =>> alwaysp^ (~ on n, event[]<- CPLDeliver $ n' $ m))}.
+  d_have {-A
+            on n, event[]<- CPLDeliver ' n' ' m <~
+                          (on n, event[]<- CPLDeliver ' n' ' m =>> alwaysp^ (~ on n, event[]<- CPLDeliver ' n' ' m)) -}.
   {
     d_swap.
     d_use DAPEqualToLe.
-    d_forallp {t: (fun: fun: FCount $ (P 0 0) $ (P 1 0)) $ Fois $ (CPLDeliver $ n' $ m)}. d_forallp 1.
+    d_forallp {-t (fun: fun: FCount ' (P 0 0) ' (P 1 0)) ' Fois ' (CPLDeliver ' n' ' m) -}. d_forallp 1.
     d_swap.
-    eapply DARewriteIfP with (Arp := {A: (fun: fun: FCount $ (P 0 0) $ (P 1 0)) $ Fois $ (CPLDeliver $ n' $ m) = 1})
-                             (Arc := {A: (fun: fun: FCount $ (P 0 0) $ (P 1 0)) $ Fois $ (CPLDeliver $ n' $ m) <= 1}).
+    eapply DARewriteIfP with (Arp := {-A (fun: fun: FCount ' (P 0 0) ' (P 1 0)) ' Fois ' (CPLDeliver ' n' ' m) = 1 -})
+                             (Arc := {-A (fun: fun: FCount ' (P 0 0) ' (P 1 0)) ' Fois ' (CPLDeliver ' n' ' m) <= 1 -}).
     d_head. simpl_embed.
     d_swap. d_clear.
-    eapply DARewriteEntailsP with (Arp := {A: (fun: fun: FCount $ (P 0 0) $ (P 1 0)) $ Fois $ (CPLDeliver $ n' $ m) <= 1 /\
-                        always^ (self-event /\ Fn = n -> CPLDeliver $ n' $ m \notin Fois) /\
-                        alwaysp^ (self-event /\ Fn = n -> CPLDeliver $ n' $ m \notin Fois)})
-                                  (Arc := {A: on n, event[]<- CPLDeliver $ n' $ m =>> alwaysp^ (~ on n, event[]<- CPLDeliver $ n' $ m)}).
+    eapply DARewriteEntailsP with (Arp := {-A (fun: fun: FCount ' (P 0 0) ' (P 1 0)) ' Fois ' (CPLDeliver ' n' ' m) <= 1 /\
+                        always^ (self-event /\ Fn = n -> CPLDeliver ' n' ' m \notin Fois) /\
+                        alwaysp^ (self-event /\ Fn = n -> CPLDeliver ' n' ' m \notin Fois) -})
+                                  (Arc := {-A on n, event[]<- CPLDeliver ' n' ' m =>> alwaysp^ (~ on n, event[]<- CPLDeliver ' n' ' m) -}).
     d_head. simpl_embed.
     d_head.
   }
 
-  d_have {A:
-            on n, event[]<- CPLDeliver $ n' $ m =>>
-                          alwaysp^ (~ (on n, event[]<- CPLDeliver $ n' $ m))}.
+  d_have {-A
+            on n, event[]<- CPLDeliver ' n' ' m =>>
+                          alwaysp^ (~ (on n, event[]<- CPLDeliver ' n' ' m)) -}.
   {
-    set A := {A:  on n, event[]<- CPLDeliver $ n' $ m}.
+    set A := {-A  on n, event[]<- CPLDeliver ' n' ' m -}.
 
-    eapply DARewriteEntailsP with (Arp := {A: eventuallyp always (A -> alwaysp^ (~A))})
-                                  (Arc := {A: (A -> alwaysp^ (~A))}).
+    eapply DARewriteEntailsP with (Arp := {-A eventuallyp always (A -> alwaysp^ (~A)) -})
+                                  (Arc := {-A (A -> alwaysp^ (~A)) -}).
     eapply DTL98_1.
     simpl_embed.
     d_subst.
-    set B := {A: on n, Fd = CNil /\ Fo = OIndication /\ Fe = CPLDeliver $ n' $ m}.
-    d_have {A:
-              (B -> (B -> alwaysp^ (~ B))) -> (B -> alwaysp^ (~ B))}.
+    set B := {-A on n, Fd = CNil /\ Fo = OIndication /\ Fe = CPLDeliver ' n' ' m -}.
+    d_have {-A
+              (B -> (B -> alwaysp^ (~ B))) -> (B -> alwaysp^ (~ B)) -}.
     {
       d_ifc. d_ifc. d_swap. d_ifp. d_head. d_ifp. d_head. d_head.
     }
-    d_swap. eapply DARewriteIfP with (Arp := {A: (B -> B -> alwaysp^ (~ B))})
-                                     (Arc := {A:  B -> alwaysp^ (~ B)}).
+    d_swap. eapply DARewriteIfP with (Arp := {-A (B -> B -> alwaysp^ (~ B)) -})
+                                     (Arc := {-A  B -> alwaysp^ (~ B) -}).
     d_head.
     simpl_embed.
     d_head.
@@ -3386,59 +3292,59 @@ Qed.
  * If a node n delivers a message m with sender n', then m was previously sent
  * to n by node n'.
  *)
-Theorem PL_3 : Context [:: V m; V n'; V n] [::] |- perfect_link, {A:
-  on n, event[]<- CPLDeliver $ n' $ m <~
-  on n', event[]-> CPLSend $ n $ m
-}.
+Theorem PL_3 : Context [:: V m; V n'; V n] [::] |- perfect_link, {-A
+  on n, event[]<- CPLDeliver ' n' ' m <~
+  on n', event[]-> CPLSend ' n ' m
+ -}.
 Proof.
   (* By OI' *)
-  d_have {A:
-    on n, event[]<- CPLDeliver $ n' $ m =>>
+  d_have {-A
+    on n, event[]<- CPLDeliver ' n' ' m =>>
     eventuallyp^ (self-event /\ on n,
-      (CPLDeliver $ n' $ m \in Fois))
-  }.
+      (CPLDeliver ' n' ' m \in Fois))
+   -}.
   {
     (* Instantiate OI' *)
-    by d_use DPOI'; d_forallp n; d_forallp {t: CPLDeliver $ n' $ m}.
+    by d_use DPOI'; d_forallp n; d_forallp {-t CPLDeliver ' n' ' m -}.
   }
 
   (* By InvL *)
-  d_have {A:
-    self-event /\ on n, (CPLDeliver $ n' $ m \in Fois) =>>
-    exists: c: on n, event[0]<- CSLDeliver $ n' $ (c, m)
-  }.
+  d_have {-A
+    self-event /\ on n, (CPLDeliver ' n' ' m \in Fois) =>>
+    exists: c: on n, event[0]<- CSLDeliver ' n' ' (c, m)
+   -}.
   {
     d_clear. (* Clean up the context *)
 
     (* Instantiate InvL *)
     eapply DSCut; first by apply DPInvL with
-      (A := {A:
-          on n, (CPLDeliver $ n' $ m \in Fois) ->
-          exists: c: on n, event[0]<- CSLDeliver $ n' $ (c, m)
-        }); first by repeat constructor.
+      (A := {-A
+          on n, (CPLDeliver ' n' ' m \in Fois) ->
+          exists: c: on n, event[0]<- CSLDeliver ' n' ' (c, m)
+         -}); first by repeat constructor.
 
     (* Prove for requests *)
     d_ifp.
     d_forallc e.
     d_ifc; d_splitp; d_swap; d_evalp.
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
-    d_forallp {t: (c, m)}; d_forallp n'; d_splitp; d_swap.
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
+    d_forallp {-t (c, m) -}; d_forallp n'; d_splitp; d_swap.
     d_substp; d_evalp.
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
-    d_forallp {t: (c, m)}.
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
+    d_forallp {-t (c, m) -}.
     d_forallp n'; d_splitp; d_swap.
     d_substp; d_evalp.
     d_ifc; d_swap.
     d_destructtuplep
-      {t: Fs' $ Fn} {t: Fors} {t: Fois}
-        {t: (FSucc $ n', (c, m))}
-        {t: (CCons $ (CPair $ 0 $ (CSLSend $ n' $ (CPair $ (FSucc $ n') $ (c, m)))) $ CNil)} {t: CNil}; do 2 d_splitp.
+      {-t Fs' ' Fn -} {-t Fors -} {-t Fois -}
+        {-t (FSucc ' n', (c, m)) -}
+        {-t (CCons ' (CPair ' 0 ' (CSLSend ' n' ' (CPair ' (FSucc ' n') ' (c, m)))) ' CNil) -} {-t CNil -}; do 2 d_splitp.
     d_rotate 3; d_substp; d_splitp; d_swap.
 
     eapply DSCut; first by eapply DAPInNil.
-    d_forallp {t: CPLDeliver $ n' $ m}.
-    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
-                                                                   CPLDeliver $ n' $ m \in CNil}).
+    d_forallp {-t CPLDeliver ' n' ' m -}.
+    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
+                                                                   CPLDeliver ' n' ' m \in CNil -}).
     d_swap; eapply DARewriteIffPL; first by d_head.
     simpl_embed; d_swap; d_clear.
       by d_ifp; first by d_head; d_false.
@@ -3447,27 +3353,27 @@ Proof.
       d_ifp.
       d_forallc "i"; d_forallc e.
       d_ifc. d_splitp. d_swap. d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
       d_forallp m; d_forallp n'; d_splitp; d_swap.
       d_substp; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
       d_forallp m; d_forallp c; d_forallp n'.
       d_splitp; d_swap.
       d_substp; d_evalp.
-      d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
 
       d_orp.
       (* true case *)
       d_splitp; d_swap. d_substp. d_evalp.
       d_destructtuplep
-        {t: Fs' $ Fn} {t: Fors} {t: Fois}
-        {t: (n', m)}
-        {t:  CNil} {t: CNil}; do 2 d_splitp.
+        {-t Fs' ' Fn -} {-t Fors -} {-t Fois -}
+        {-t (n', m) -}
+        {-t  CNil -} {-t CNil -}; do 2 d_splitp.
       d_ifc. d_substp; d_splitp; d_swap.
       eapply DSCut; first by eapply DAPInNil.
-      d_forallp {t: CPLDeliver $ n' $ m}.
-      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
-                                                                     CPLDeliver $ n' $ m \in CNil}).
+      d_forallp {-t CPLDeliver ' n' ' m -}.
+      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
+                                                                     CPLDeliver ' n' ' m \in CNil -}).
       d_swap; eapply DARewriteIffPL; first by d_head.
       simpl_embed; d_swap; d_clear.
         by d_ifp; first by d_head; d_false.
@@ -3475,14 +3381,14 @@ Proof.
       (* false case *)
       d_splitp; d_swap. d_substp. d_evalp.
       d_destructtuplep
-        {t: Fs' $ Fn} {t: Fors} {t: Fois}
-        {t: (n', (FUnion $ m $ (CCons $ (n', c) $ CNil)))}
-        {t:  CNil} {t: (CCons $ (CPLDeliver $ n' $ m) $ CNil)}; do 2 d_splitp.
+        {-t Fs' ' Fn -} {-t Fors -} {-t Fois -}
+        {-t (n', (FUnion ' m ' (CCons ' (n', c) ' CNil))) -}
+        {-t  CNil -} {-t (CCons ' (CPLDeliver ' n' ' m) ' CNil) -}; do 2 d_splitp.
 
       d_ifc. d_splitp.
       d_existsc c.
       d_rotate 6.
-      d_destructpairp {t: "i"} {t: e} {t: 0} {t: (CSLDeliver $ n' $ (c, m))}.
+      d_destructpairp {-t "i" -} {-t e -} {-t 0 -} {-t (CSLDeliver ' n' ' (c, m)) -}.
       simpl_embed; d_splitp.
 
       d_splitc. d_rotate 4. d_head.
@@ -3494,87 +3400,87 @@ Proof.
     d_ifp.
     d_ifc. d_splitp. d_swap. d_evalp.
     d_destructtuplep
-      {t: Fs' $ Fn} {t: Fors} {t: Fois}
-      {t: Fs $ Fn}
-      {t:  CNil} {t: CNil}; do 2 d_splitp.
+      {-t Fs' ' Fn -} {-t Fors -} {-t Fois -}
+      {-t Fs ' Fn -}
+      {-t  CNil -} {-t CNil -}; do 2 d_splitp.
     d_ifc. d_substp. d_splitp; d_swap.
     eapply DSCut; first by eapply DAPInNil.
-    d_forallp {t: CPLDeliver $ n' $ m}.
-    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
-                                                                   CPLDeliver $ n' $ m \in CNil}).
+    d_forallp {-t CPLDeliver ' n' ' m -}.
+    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
+                                                                   CPLDeliver ' n' ' m \in CNil -}).
 
     d_swap; eapply DARewriteIffPL; first by d_head.
     simpl_embed; d_swap; d_clear.
       by d_ifp; first by d_head; d_false.
 
     by eapply DARewriteIffPL; first by apply DSMergeIf with
-      (Ap1 := {A: self-event})
-      (Ap2 := {A: on n, (CPLDeliver $ n' $ m \in Fois)})
-      (Ac := {A: exists: c:
-        on n, event[0]<- CSLDeliver $ n' $ (c, m)}).
+      (Ap1 := {-A self-event -})
+      (Ap2 := {-A on n, (CPLDeliver ' n' ' m \in Fois) -})
+      (Ac := {-A exists: c:
+        on n, event[0]<- CSLDeliver ' n' ' (c, m) -}).
   }
 
   (* By Lemma 96 on (1) and (2) *)
-  d_have {A:
-    on n, event[]<- CPLDeliver $ n' $ m <~
-    exists: c: on n, event[0]<- CSLDeliver $ n' $ (c, m)
-  }.
+  d_have {-A
+    on n, event[]<- CPLDeliver ' n' ' m <~
+    exists: c: on n, event[0]<- CSLDeliver ' n' ' (c, m)
+   -}.
   {
     eapply DSCut;
-    first by eapply DTL96_2 with (A1 := {A:
-                                  on n, event[]<- CPLDeliver $ n' $ m})
-                        (A2 := {A:
-                                  (self-event /\ on n, (CPLDeliver $ n' $ m \in Fois))})
-                        (A3 := {A:
-                                  exists: c : on n, event[0]<- CSLDeliver $ n' $ (c, m)}).
+    first by eapply DTL96_2 with (A1 := {-A
+                                  on n, event[]<- CPLDeliver ' n' ' m -})
+                        (A2 := {-A
+                                  (self-event /\ on n, (CPLDeliver ' n' ' m \in Fois)) -})
+                        (A3 := {-A
+                                  exists: c : on n, event[0]<- CSLDeliver ' n' ' (c, m) -}).
     d_ifp.
     d_splitc.
     d_swap.
-    eapply DARewriteIfP. by apply DTL123 with (A := {A:
-                                                       (self-event /\ on n, (CPLDeliver $ n' $ m \in Fois))}).
+    eapply DARewriteIfP. by apply DTL123 with (A := {-A
+                                                       (self-event /\ on n, (CPLDeliver ' n' ' m \in Fois)) -}).
     simpl_embed.
     d_head. d_head. d_head.
   }
 
   (* By OR' *)
-  d_have {A:
+  d_have {-A
     forall: c:
-    on n', event[0]-> CSLSend $ n $ (c, m) =>>
+    on n', event[0]-> CSLSend ' n ' (c, m) =>>
     eventuallyp (self-event /\
-      on n', ((0, CSLSend $ n $ (c, m)) \in Fors))
-  }.
+      on n', ((0, CSLSend ' n ' (c, m)) \in Fors))
+   -}.
   {
     d_forallc c.
 
     d_use DPOR'.
-      d_forallp n'; d_forallp 0; d_forallp {t: CSLSend $ n $ (c, m)}.
+      d_forallp n'; d_forallp 0; d_forallp {-t CSLSend ' n ' (c, m) -}.
       (*
-      d_have {A:
+      d_have {-A
                  eventuallyp^ (self-event /\
-                               Fn = n' /\ CPair $ 0 $ (CSLSend $ n $ (c, m)) \in Fors) =>>
+                               Fn = n' /\ CPair ' 0 ' (CSLSend ' n ' (c, m)) \in Fors) =>>
                                                                                                              eventuallyp (self-event /\
-                                                                                                                          Fn = n' /\ CPair $ 0 $ (CSLSend $ n $ (c, m)) \in Fors)}.
+                                                                                                                          Fn = n' /\ CPair ' 0 ' (CSLSend ' n ' (c, m)) \in Fors) -}.
       {
         d_splitc.
         eapply DTL123.
        *)
-    d_have {A: (Fn = n' /\ Fd = [0] /\ Fo = ORequest /\ Fe = CSLSend $ n $ (c, m) =>>
-                                                                                            eventuallyp (self-event /\ Fn = n' /\ CPair $ 0 $ (CSLSend $ n $ (c, m)) \in Fors))}.
+    d_have {-A (Fn = n' /\ Fd = [0] /\ Fo = ORequest /\ Fe = CSLSend ' n ' (c, m) =>>
+                                                                                            eventuallyp (self-event /\ Fn = n' /\ CPair ' 0 ' (CSLSend ' n ' (c, m)) \in Fors)) -}.
     {
       d_splitc.
       d_splitp; d_swap; d_clear.
-      eapply DARewriteIfP with (Arp := {A: eventuallyp^ (self-event /\
-                                                         Fn = n' /\ CPair $ 0 $ (CSLSend $ n $ (c, m)) \in Fors)})
-                               (Arc := {A: eventuallyp (self-event /\
-                                                        Fn = n' /\ CPair $ 0 $ (CSLSend $ n $ (c, m)) \in Fors)}).
+      eapply DARewriteIfP with (Arp := {-A eventuallyp^ (self-event /\
+                                                         Fn = n' /\ CPair ' 0 ' (CSLSend ' n ' (c, m)) \in Fors) -})
+                               (Arc := {-A eventuallyp (self-event /\
+                                                        Fn = n' /\ CPair ' 0 ' (CSLSend ' n ' (c, m)) \in Fors) -}).
       eapply DTL123.
       simpl_embed.
       d_head.
       d_splitp; d_clear.
-      eapply DARewriteIfP with (Arp := {A: eventuallyp^ (self-event /\
-                                                         Fn = n' /\ CPair $ 0 $ (CSLSend $ n $ (c, m)) \in Fors)})
-                               (Arc := {A: eventuallyp (self-event /\
-                                                        Fn = n' /\ CPair $ 0 $ (CSLSend $ n $ (c, m)) \in Fors)}).
+      eapply DARewriteIfP with (Arp := {-A eventuallyp^ (self-event /\
+                                                         Fn = n' /\ CPair ' 0 ' (CSLSend ' n ' (c, m)) \in Fors) -})
+                               (Arc := {-A eventuallyp (self-event /\
+                                                        Fn = n' /\ CPair ' 0 ' (CSLSend ' n ' (c, m)) \in Fors) -}).
       eapply DTL123.
       simpl_embed.
       d_head.
@@ -3583,36 +3489,36 @@ Proof.
   }
 
   (* By InvL *)
-  d_have {A:
+  d_have {-A
     forall: c:
-    self-event /\ on n', ((0, CSLSend $ n $ (c, m)) \in Fors) =>>
-    on n', event[]-> CPLSend $ n $ (m)
-  }.
+    self-event /\ on n', ((0, CSLSend ' n ' (c, m)) \in Fors) =>>
+    on n', event[]-> CPLSend ' n ' (m)
+   -}.
   {
     do 4 d_clear. (* Clean up the context *)
 
     (* Instantiate InvL *)
     eapply DSCut; first by apply DPInvL with
-                      (A := {A:
-                               on n', ((0, CSLSend $ n $ (c, m)) \in Fors) ->
-                                                                                     on n', event[]-> CPLSend $ n $ (m)
-                      }); first by repeat constructor.
+                      (A := {-A
+                               on n', ((0, CSLSend ' n ' (c, m)) \in Fors) ->
+                                                                                     on n', event[]-> CPLSend ' n ' (m)
+                       -}); first by repeat constructor.
 
     (* Prove for requests *)
     d_ifp.
     d_forallc e.
     d_ifc; d_splitp; d_swap. d_evalp.
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
     d_forallp r; d_forallp c.
     d_splitp; d_swap. d_substp. d_evalp.
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
-    d_forallp {t: (m)}; d_forallp n.
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
+    d_forallp {-t (m) -}; d_forallp n.
     d_splitp; d_swap.
     d_substp; d_evalp.
     d_destructtuplep
-      {t: Fs' $ Fn} {t: Fors} {t: Fois}
-      {t: (FSucc $ c, r)}
-      {t: (CCons $ (CPair $ 0 $ (CSLSend $ n $ (CPair $ (FSucc $ c) $ (m)))) $ CNil)} {t: CNil}; do 2 d_splitp.
+      {-t Fs' ' Fn -} {-t Fors -} {-t Fois -}
+      {-t (FSucc ' c, r) -}
+      {-t (CCons ' (CPair ' 0 ' (CSLSend ' n ' (CPair ' (FSucc ' c) ' (m)))) ' CNil) -} {-t CNil -}; do 2 d_splitp.
     d_ifc; d_splitp.
     d_splitc; first by d_head.
     d_rotate 7. do 2 (d_splitp; d_swap).
@@ -3625,30 +3531,30 @@ Proof.
     d_forallc "i"; d_forallc e.
     d_ifc.
     d_splitp; d_swap; d_substp; d_evalp.
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
     d_forallp r; d_forallp c.
     d_splitp; d_swap. d_substp. d_evalp.
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
     d_forallp m. d_forallp c'. d_forallp n.
     d_splitp; d_swap.
     d_substp. d_evalp.
-    d_destructp (fun t => {A: (Fs' $ Fn, Fors, Fois) = t}).
+    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
 
     d_orp.
     (* true case *)
     d_splitp; d_swap.
     d_substp; d_evalp.
     d_destructtuplep
-        {t: Fs' $ Fn} {t: Fors} {t: Fois}
-        {t: (c, r)}
-        {t:  CNil} {t: CNil}; do 2 d_splitp.
+        {-t Fs' ' Fn -} {-t Fors -} {-t Fois -}
+        {-t (c, r) -}
+        {-t  CNil -} {-t CNil -}; do 2 d_splitp.
     d_ifc.
     d_subst.
     d_splitp; d_swap.
     eapply DSCut; first by eapply DAPInNil.
-    d_forallp {t: CPair $ 0 $ (CSLSend $ n $ (c, m))}.
-    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
-                                                                   CPair $ 0 $ (CSLSend $ n $ (c, m)) \in CNil}).
+    d_forallp {-t CPair ' 0 ' (CSLSend ' n ' (c, m)) -}.
+    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
+                                                                   CPair ' 0 ' (CSLSend ' n ' (c, m)) \in CNil -}).
     d_swap; eapply DARewriteIffPL; first by d_head.
     simpl_embed; d_swap; d_clear.
       by d_ifp; first by d_head; d_false.
@@ -3657,15 +3563,15 @@ Proof.
     d_splitp; d_swap.
     d_substp; d_evalp.
     d_destructtuplep
-      {t: Fs' $ Fn} {t: Fors} {t: Fois}
-      {t: (CPair $ c $ (FUnion $ r $ (CCons $ ((n, c)') $ CNil)))}
-      {t:  CNil} {t: (CCons $ (CPLDeliver $ n $ m) $ CNil)}; do 2 d_splitp.
+      {-t Fs' ' Fn -} {-t Fors -} {-t Fois -}
+      {-t (CPair ' c ' (FUnion ' r ' (CCons ' ((n, c)') ' CNil))) -}
+      {-t  CNil -} {-t (CCons ' (CPLDeliver ' n ' m) ' CNil) -}; do 2 d_splitp.
     d_ifc; d_splitp; d_swap.
     d_substp.
     eapply DSCut; first by eapply DAPInNil.
-    d_forallp {t: CPair $ 0 $ (CSLSend $ n $ (c, m))}.
-    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
-                                                                   CPair $ 0 $ (CSLSend $ n $ (c, m)) \in CNil}).
+    d_forallp {-t CPair ' 0 ' (CSLSend ' n ' (c, m)) -}.
+    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
+                                                                   CPair ' 0 ' (CSLSend ' n ' (c, m)) \in CNil -}).
     d_swap; eapply DARewriteIffPL; first by d_head.
     simpl_embed; d_swap; d_clear.
       by d_ifp; first by d_head; d_false.
@@ -3674,44 +3580,44 @@ Proof.
     d_ifp.
     d_ifc. d_splitp. d_swap. d_evalp.
     d_destructtuplep
-      {t: Fs' $ Fn} {t: Fors} {t: Fois}
-      {t: Fs $ Fn}
-      {t:  CNil} {t: CNil}; do 2 d_splitp.
+      {-t Fs' ' Fn -} {-t Fors -} {-t Fois -}
+      {-t Fs ' Fn -}
+      {-t  CNil -} {-t CNil -}; do 2 d_splitp.
     d_ifc; d_substp.
     d_splitp; d_swap.
     eapply DSCut; first by eapply DAPInNil.
-    d_forallp {t: CPair $ 0 $ (CSLSend $ n $ (c, m))}.
-    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {A:
-                                                                   CPair $ 0 $ (CSLSend $ n $ (c, m)) \in CNil}).
+    d_forallp {-t CPair ' 0 ' (CSLSend ' n ' (c, m)) -}.
+    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
+                                                                   CPair ' 0 ' (CSLSend ' n ' (c, m)) \in CNil -}).
     d_swap; eapply DARewriteIffPL; first by d_head.
     simpl_embed; d_swap; d_clear.
       by d_ifp; first by d_head; d_false.
 
     eapply DARewriteIffPL; first by apply DSMergeIf with
-      (Ap1 := {A: self-event})
-      (Ap2 := {A: on n', (CPair $ 0 $ (CSLSend $ n $ (c, m)) \in Fors)})
-      (Ac := {A: on n', event[]-> CPLSend $ n $ (m)}).
+      (Ap1 := {-A self-event -})
+      (Ap2 := {-A on n', (CPair ' 0 ' (CSLSend ' n ' (c, m)) \in Fors) -})
+      (Ac := {-A on n', event[]-> CPLSend ' n ' (m) -}).
     simpl_embed.
     d_forallc c; d_head.
   }
 
   (* By Lemma 96 on (4) and (5) *)
-  d_have {A:
+  d_have {-A
     forall: c:
-    on n', event[0]-> CSLSend $ n $ (c, m) <~
-    on n', event[]-> CPLSend $ n $ m
-  }.
+    on n', event[0]-> CSLSend ' n ' (c, m) <~
+    on n', event[]-> CPLSend ' n ' m
+   -}.
   {
 
     d_forallc c.
     eapply DSCut;
       first by eapply DTL96_2 with
-          (A1 := {A:
-                    on n', event[0]-> CSLSend $ n $ (c, m)})
-          (A2 := {A:
-                    self-event /\ on n', (CPair $ 0 $ (CSLSend $ n $ (c, m)) \in Fors)})
-          (A3 := {A:
-                    on n', event[]-> CPLSend $ n $ (m)}).
+          (A1 := {-A
+                    on n', event[0]-> CSLSend ' n ' (c, m) -})
+          (A2 := {-A
+                    self-event /\ on n', (CPair ' 0 ' (CSLSend ' n ' (c, m)) \in Fors) -})
+          (A3 := {-A
+                    on n', event[]-> CPLSend ' n ' (m) -}).
     d_ifp.
     d_splitc.
     d_swap.
@@ -3721,39 +3627,39 @@ Proof.
   }
 
   (* By PL_SL_2 *)
-  d_have {A:
+  d_have {-A
     exists: c:
-    on n, event[0]<- CSLDeliver $ n' $ (c, m) <~
-    on n', event[0]-> CSLSend $ n $ (c, m)
-  }.
+    on n, event[0]<- CSLDeliver ' n' ' (c, m) <~
+    on n', event[0]-> CSLSend ' n ' (c, m)
+   -}.
   {
     do 6 d_clear. (* Clean up the context *)
     d_have (derives_assertion PL_SL_2); first by
       d_clearv n; d_clearv n'; d_clearv m;
       apply PL_SL_2.
     by d_existsc c;
-      d_forallp n; d_forallp n'; d_forallp {t: (c, m)}.
+      d_forallp n; d_forallp n'; d_forallp {-t (c, m) -}.
   }
 
   (* From Lemma 85 on (3), PL_SL_2, and (6) *)
-  d_have {A:
-            exists: c: on n, event[]<- CPLDeliver $ n' $ m <~
-                          on n', event[0]-> CSLSend $ n $ (c, m)
-         }.
+  d_have {-A
+            exists: c: on n, event[]<- CPLDeliver ' n' ' m <~
+                          on n', event[0]-> CSLSend ' n ' (c, m)
+          -}.
   d_existsc c.
   eapply DTL85 with
-             (A1 := {A: on n, event[]<- CPLDeliver $ n' $ m})
-             (A2 := {A: on n, event[0]<- CSLDeliver $ n' $ (c, m)})
-             (A3 := {A: on n', event[0]-> CSLSend $ n $ (c, m)}).
+             (A1 := {-A on n, event[]<- CPLDeliver ' n' ' m -})
+             (A2 := {-A on n, event[0]<- CSLDeliver ' n' ' (c, m) -})
+             (A3 := {-A on n', event[0]-> CSLSend ' n ' (c, m) -}).
   - d_rotate 4.
-    d_have {A:
-              (exists: c : on n, event[0]<- CSLDeliver $ n' $ (c, m)) =>>
-                                           on n, event[0]<- CSLDeliver $ n' $ (c, m)}.
+    d_have {-A
+              (exists: c : on n, event[0]<- CSLDeliver ' n' ' (c, m)) =>>
+                                           on n, event[0]<- CSLDeliver ' n' ' (c, m) -}.
     eapply DTGeneralization; first by repeat constructor.
     d_ifc. d_existsp c. d_head.
     d_swap.
-    eapply DARewriteEntailsP with (Arp := {A: exists: c : on n, event[0]<- CSLDeliver $ n' $ (c, m)})
-                                  (Arc := {A: on n, event[0]<- CSLDeliver $ n' $ (c, m)}).
+    eapply DARewriteEntailsP with (Arp := {-A exists: c : on n, event[0]<- CSLDeliver ' n' ' (c, m) -})
+                                  (Arc := {-A on n, event[0]<- CSLDeliver ' n' ' (c, m) -}).
     d_head.
     simpl_embed.
     d_head.
@@ -3761,9 +3667,9 @@ Proof.
     d_existsp c.
     d_head.
 
-  d_have {A:
-            on n, event[]<- CPLDeliver $ n' $ m <~
-                          on n', event[]-> CPLSend $ n $ m}.
+  d_have {-A
+            on n, event[]<- CPLDeliver ' n' ' m <~
+                          on n', event[]-> CPLSend ' n ' m -}.
   d_existsp c.
   eapply DTL85.
   - by [].
