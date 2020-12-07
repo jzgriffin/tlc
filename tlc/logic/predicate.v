@@ -113,6 +113,14 @@ Lemma DPSuccGreaterEqual C Delta :
 Proof.
 Admitted.
 
+Lemma DPGreaterEqual C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: (* x, y *)
+    $$1 >= $$0 <-> $$1 = $$0 \/ $$1 > $$0
+  -}.
+Proof.
+Admitted.
+
 (* Membership *)
 
 (* FMember reflects PMember *)
