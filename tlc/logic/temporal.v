@@ -718,12 +718,6 @@ Hint Resolve DTEntailsAndDropLeft : core.
 
 Ltac dtentails_r := eapply DTTrans; first by exact: DTEntailsAndDropLeft.
 
-Lemma DTEntailsSplitAnd C Z H1 H2 A :
-  Z ||- C, {-A H1 =>> H2 =>> A -} ->
-  Z ||- C, {-A H1 /\ H2 =>> A -}.
-Proof.
-Admitted.
-
 Lemma DTEntailsAndAssocP C Z H1 H2 H3 A :
   Z ||- C, {-A (H1 /\ H2) /\ H3 =>> A -} <->
   Z ||- C, {-A H1 /\ (H2 /\ H3) =>> A -}.
@@ -738,7 +732,7 @@ Admitted.
 
 Lemma DTEntailsAndSplitP C Delta Gamma H A1 A2 A :
   Context Delta ({-A H =>> A1 /\ A2 -} :: Gamma) ||- C, A <->
-    Context Delta ({-A H =>> A1 -} :: {-A H =>> A2 -} :: Gamma) ||- C, A.
+  Context Delta ({-A H =>> A1 -} :: {-A H =>> A2 -} :: Gamma) ||- C, A.
 Proof.
 Admitted.
 
