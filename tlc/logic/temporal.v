@@ -779,6 +779,11 @@ Proof.
   by dtentails_r.
 Qed.
 
+Lemma DTMergeEntailsIf C Delta H1 H2 A :
+  Context Delta [::] ||- C, {-A (H1 =>> H2 -> A) =>> (H1 /\ H2 =>> A) -}.
+Proof.
+Admitted.
+
 (* Further tactics *)
 Ltac dtsubstp_l :=
   match goal with
@@ -872,3 +877,10 @@ Ltac dtsubste_l :=
   dsplitp; dswap; dclear;
   dsplitp; dclear;
   difp; (try by []).
+
+Ltac dtmergeentailsifp :=
+  match goal with
+  | |- Context _ ({-A ?H1_ =>> ?H2_ -> ?A_ -} :: _) ||- _, _ =>
+    eapply DSCut; first (by repeat dclear; apply DTMergeEntailsIf with
+      (H1 := H1_) (H2 := H2_) (A := A_)); dtsubstposp
+  end.
