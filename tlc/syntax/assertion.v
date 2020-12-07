@@ -164,7 +164,7 @@ Notation "x1 <= x2" := (ALessEqual x1 x2) : assertion_scope.
 Definition AGreater x1 x2 := {-A ~ x1 <= x2 -}.
 Notation "x1 > x2" := (AGreater x1 x2) : assertion_scope.
 Definition AGreaterEqual x1 x2 := {-A ~ x1 < x2 -}.
-Notation "x1 >= x2" := (ALessEqual x1 x2) : assertion_scope.
+Notation "x1 >= x2" := (AGreaterEqual x1 x2) : assertion_scope.
 Definition ANotIn y xs := {-A ~ y \in xs -}.
 Notation "y \notin xs" := (ANotIn y xs) : assertion_scope.
 
