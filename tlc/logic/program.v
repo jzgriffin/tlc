@@ -257,6 +257,35 @@ Proof.
   (* Used in PLC *)
 Admitted.
 
+Lemma DPInvS C Delta S :
+  assertion_univ S ->
+  assertion_closed_in [::] Delta S ->
+  non_temporal_assertion S ->
+  Context Delta [::] ||- C, {-A
+    forall: (* n *)
+    (
+      forall: forall: (* s, e *)
+      S ' $$1 ->
+      S ' let: ($0, %, %) := request C ' $$2 ' $$1 ' $$0 in: $$0
+    ) ->
+    (
+      forall: forall: forall: (* s, i, e *)
+      S ' $$2 ->
+      S ' let: ($0, %, %) := indication C ' $$3 ' $$2 ' ($$1, $$0) in: $$0
+    ) ->
+    (
+      forall: (* s *)
+      S ' $$0 ->
+      S ' let: ($0, %, %) := periodic C ' $$1 ' $$0 in: $$0
+    ) ->
+    (
+    self-event /\ S ' (Fs ' $$0) =>> (self-event =>> S ' (Fs ' $$0))
+    )
+  -}.
+Proof.
+  (* Used in PLC *)
+Admitted.
+
 Lemma DPInvS'' C Delta S :
   assertion_univ S ->
   assertion_closed_in [::] Delta S ->
