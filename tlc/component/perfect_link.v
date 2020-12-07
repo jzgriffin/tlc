@@ -171,51 +171,36 @@ Proof.
   d_head.
 Qed.
 
-Lemma PL_SL_2 : empty_context |- perfect_link, {-A
-  forall: forall: forall: (* 2:n, 1:n', 0:m *)
-  on #2, event[0]<- CSLDeliver ' #1 ' #0 <~
-  on #1, event[0]-> CSLSend ' #2 ' #0
- -}.
+Lemma PL_SL_2 : Z0 ||- perfect_link, {-A
+  forall: forall: forall: (* n, n', m *)
+  on $$2, event[0]<- CSLDeliver ' $$1 ' $$0 <~
+  on $$1, event[0]-> CSLSend ' $$2 ' $$0
+-}.
 Proof.
-  d_forallc n Hf_n; d_forallc n' Hf_n'; d_forallc m Hf_m.
+  duse (DPLower SL_2 perfect_link 0 SL_2_TA);
+    rewrite /lower_assertion /=; dclean.
 
-  (* Use the lowering specification on SL_2 *)
-  eapply DSCut; first by apply DSEmptyContext; apply: DPLower SL_2 perfect_link 0 SL_2_TA.
-  rewrite /lower_assertion /=; d_forallp n; d_forallp n'; d_forallp m; simpl_embed.
+  dforall n; dforall n'; dforall m;
+  dforallp n; dforallp n'; dforallp m.
 
-  eapply DARewriteEntailsP; first by apply DTL124 with
+  eapply DSCut; first (by repeat dclear; apply DTL124 with
     (Ap := {-A Fd <<< [0] -})
     (Ac := {-A on n, event[0]<- CSLDeliver ' n' ' m ->
-      eventuallyp on n', event[0]-> CSLSend ' n ' m -}).
-  eapply DARewriteEntailsP; first by apply DTL125 with
-    (Ap := {-A Fd <<< [0] -})
-    (Ac := {-A on n, event[0]<- CSLDeliver ' n' ' m ->
-      eventuallyp on n', event[0]-> CSLSend ' n ' m -}).
-  eapply DARewriteIffPL; first by apply DSMergeIf with
-    (Ap1 := {-A Fd <<< [0] -})
-    (Ap2 := {-A on n, event[0]<- CSLDeliver ' n' ' m -})
-    (Ac := {-A eventuallyp on n', event[0]-> CSLSend ' n ' m -}).
-  simpl_embed.
+      eventuallyp on n', event[0]-> CSLSend ' n ' m -}));
+    dtsubstposp.
+  dtmergeentailsifp.
 
-  d_have {-A
-    Fd <<< [0] /\ on n, event[0]<- CSLDeliver ' n' ' m <->
+  dhave {-A
+    (Fd <<< [0] /\ on n, event[0]<- CSLDeliver ' n' ' m) <->
     on n, event[0]<- CSLDeliver ' n' ' m
    -}.
   {
-    d_splitc; d_ifc.
-    - by d_splitp; d_swap; d_head.
-    - d_splitc.
-      + by d_splitp; d_swap; d_splitp; d_substc; eapply DAPExtension.
-      + by d_head.
+    dsplit; dif; first by dsplitp; dassumption.
+    dsplit; last by [].
+    by dsplitp; dclear; dsplitp; dtgenp; dtsubste_l;
+      repeat dclear; eapply DPExtension.
   }
-
-  d_swap; eapply DARewriteIffPL; first by d_head.
-
-  eapply DARewriteEntailsP; first by apply DTL80 with (A := {-A
-    on n, event[0]<- CSLDeliver ' n' ' m <~
-    on n', event[0]-> CSLSend ' n ' m
-   -}).
-  by simpl_embed.
+  by dtgenp; dclean; dtsubstp_l.
 Qed.
 
 (* Lemmas used in proving PL_1 *)
