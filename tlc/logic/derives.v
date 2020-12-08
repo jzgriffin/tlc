@@ -332,6 +332,16 @@ Lemma DFresh Z A :
 Proof.
 Admitted.
 
+(* If a term appears inside of a construction, the term and construction
+ * must not be equal. Example: n <> n.+1
+ *)
+Lemma DSubInjection C Delta Gamma t1 t2 c xs :
+  term_construction t2 = Some (c, xs) ->
+  t1 \in xs ->
+  Context Delta Gamma ||- C, {-A t1 <> t2 -}.
+Proof.
+Admitted.
+
 (* Tactics
  * Some of these tactics are named for their Coq equivalents.  For example,
  * dclear uses the DSThin axiom but operates similarly to clear.
