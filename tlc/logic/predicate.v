@@ -121,6 +121,14 @@ Lemma DPGreaterEqual C Delta :
 Proof.
 Admitted.
 
+Lemma DPLessThanSucc C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: (* x *)
+    $$0 < $$0.+1
+  -}.
+Proof.
+Admitted.
+
 (* Membership *)
 
 (* FMember reflects PMember *)
