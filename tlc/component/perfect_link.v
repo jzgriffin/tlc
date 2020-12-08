@@ -205,328 +205,260 @@ Qed.
 
 (* Lemmas used in proving PL_1 *)
 
-Lemma L37_1 : empty_context |- perfect_link, {-A
-  forall: forall:
-  correct #1 /\ correct #0 ->
-  forall: forall: forall: (* 4:n, 3:n', 2:m, 1:m', 0:c *)
-  self-event /\ on #4, ((0, CSLSend ' #3 ' (#0, #2)) \in Fors) =>>
-  always^ ~(self-event /\ on #4, ((0, CSLSend ' #3 ' (#0, #1)) \in Fors))
-   -}.
+Lemma L37_1 : Z0 ||- perfect_link, {-A
+  forall: forall: forall: forall: forall: (* n, n', c, m, m' *)
+  $$4 \in UCorrect /\ $$3 \in UCorrect ->
+  self-event /\ (on $$4, (0, CSLSend ' $$3 ' ($$2, $$1)) \in Fors) =>>
+  always^ ~(self-event /\ on $$4, (0, CSLSend ' $$3 ' ($$2, $$0)) \in Fors)
+-}.
 Proof.
-  (* Introduce context *)
-  set C := perfect_link; rewrite -/C /empty_context.
-  d_forallc n Hf_n; d_forallc n' Hf_n'; simpl_embed.
-  d_ifc; d_splitp;
-    d_forallc m Hf_m; d_forallc m' Hf_m';
-    d_forallc c Hf_c;
-    simpl_embed.
+  dforall n; dforall n'; dforall c; dforall m; dforall m'; dif; dsplitp.
 
   (* By InvL *)
-  d_have {-A
-    self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) =>>
-    ((TLeft (Fs' ' n)) = c)
-   -}.
+  dhave {-A
+    self-event /\ (on n, (0, CSLSend ' n' ' (c, m)) \in Fors) =>>
+    (Fs' ' n).1 = c
+  -}.
   {
-    repeat d_clear. (* Clean up context *)
-
-    (* Instantiate InvL *)
-    eapply DSCut; first by apply DSEmptyContext; apply DPInvL with (A := {-A
-        on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) ->
-        (TLeft (Fs' ' n)) = c
-       -}); first by repeat constructor.
+    repeat dclear.
+    eapply DSCut; first by apply DPInvL with (A := {-A
+      on n, (0, CSLSend ' n' ' (c, m)) \in Fors ->
+      (Fs' ' n).1 = c -});
+      [dautoclosed | repeat constructor].
 
     (* request *)
-    d_ifp.
-      d_forallc e Hf_e; simpl_embed.
-      d_ifc; d_splitp; d_swap; d_evalp.
+    difp.
+      dforall e; dif; dsplitp; dswap; dsimplp; dsimpl; simpl.
+      dcase {-t ? e -}; dexistsp e_m; dexistsp e_n'; dtgenp;
+        dtsubstep_l; dswap; dclear; dsimplp.
+      dcase {-t ? Fs ' ? Fn -}; dexistsp s_r; dexistsp s_c; dtgenp;
+        dtsubstep_l; dswap; dclear; dsimplp.
+      dtinjectionp; repeat dsplitp.
 
-      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        d_existsp r Hf_r; d_existsp c_ Hf_c_; d_splitp; d_swap; d_substp; d_evalp.
-      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        d_existsp m_ Hf_m_; d_existsp n'_ Hf_n'_; d_splitp;
-        d_swap; d_substp; distinguish_variables; d_evalp.
-      d_destructpairp; repeat d_splitp.
+      dif; dsplitp.
+      dtgenp; dxchg 1 2; dtsubstep_l; dswap; dclear.
+      dtgenp; dtsubste_l; dclear; dsimpl.
+      dswap; dtgenp; dtsubstep_l; dswap; dclear.
 
-      d_ifc; d_splitp.
-      d_rotate 1; d_swap; d_rotate 1; d_substp.
-      d_in_cons_pl; simpl_embed; d_orp; last by d_evalp.
-      d_destructpairp; d_splitp; d_clear.
-      apply DSEqualEvent; d_splitp; d_swap.
-      d_destructpairp; d_splitp.
-      do 7 (d_swap; d_clear).
-      d_rotate 1; d_swap; d_substp; d_substc.
-      do 2 d_clear; d_substc; distinguish_variables.
-      by d_evalc; apply DAPEqual.
+      duse DPMemberCons;
+        dforallp {-t (0, CSLSend ' n' ' (c, m)) -};
+        dforallp {-t (0, CSLSend ' e_n' ' (CSucc ' s_c, e_m)) -};
+        dforallp {-t [] -};
+        dsplitp; dswap; dclear; difp; first by [].
+      dorp; last by duse DPMemberNil;
+        dforallp {-t (0, CSLSend ' n' ' (c, m)) -}; dnotp.
+      dtinjectionp; dsplitp; dclear.
+      dsplitp; dclear; dsplitp; dtgenp; dtsubste_l; dautoeq.
+      by repeat dclear; exact: DPEqual.
 
     (* indication *)
-    d_ifp.
-      d_forallc i Hf_i; d_forallc e Hf_e; simpl_embed.
-      d_ifc; d_splitp; d_swap; d_evalp.
-
-      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        d_existsp r Hf_r; d_existsp c_ Hf_c_; d_splitp; d_swap; d_substp; d_evalp.
-      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        d_existsp m_ Hf_m_; d_existsp c' Hf_c'; d_existsp n_ Hf_n_;
-        d_splitp; d_swap; d_substp; distinguish_variables; d_evalp.
-      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
-
-      d_orp.
-        (* true case *)
-        d_splitp; d_swap; d_substp; d_evalp.
-        d_ifc; d_swap.
-        d_destructpairp; repeat d_splitp.
-        d_swap; do 2 d_rotate; d_swap; d_substp; d_splitp; d_clear.
-        eapply DSCut; first by eapply DAPInNil.
-        d_forallp {-t CPair ' 0 ' (CSLSend ' n' ' (c, m)) -}.
-        eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
-            (CPair ' 0 ' (CSLSend ' n' ' (c, m)) \in CNil)
-           -}).
-        d_swap. eapply DARewriteIffPL; first by d_head.
-        simpl_embed.
-        by d_ifp; first by d_clear; do 5 (d_swap; d_clear); d_substp.
-
-      (* false case *)
-      d_splitp; d_swap; d_substp; d_evalp.
-      d_destructpairp; repeat d_splitp.
-      d_swap; d_substc; d_clear.
-      by d_ifc; d_splitp; d_clear; d_evalp.
+    difp.
+      dforall i; dforall e; dif; dsplitp; dswap; dsimplp; dsimpl; simpl.
+      dcase {-t (? i, ? e) -}; dexistsp e_m; dexistsp e_c; dexistsp e_n; dtgenp;
+        dtsubstep_l; dswap; dclear; dsimplp.
+      dcase {-t ? Fs ' ? Fn -}; dexistsp s_r; dexistsp s_c; dtgenp;
+        dtsubstep_l; dswap; dclear; dsimplp.
+      dcase {-t FCount ' (? e_n, ? e_c) ' ? s_r == 0 -}; dorp;
+        dtgenp; dtsubstep_l; dswap; dclear; dsimplp;
+        dtinjectionp; repeat dsplitp;
+        dclear; dtgenp; dif; dsplitp; dclear; dswap; dtsubstep_l; dswap; dclear;
+        by duse DPMemberNil; dforallp {-t (0, CSLSend ' n' ' (c, m)) -}; dnotp.
 
     (* periodic *)
-    d_ifp.
-      d_ifc; d_splitp; d_swap; d_evalp.
-      d_destructpairp; repeat d_splitp.
-      d_swap; d_ifc; d_substp; d_splitp; d_swap.
-      eapply DSCut; first by eapply DAPInNil.
-      d_forallp {-t CPair ' 0 ' (CSLSend ' n' ' (c, m)) -}.
-      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
-          (CPair ' 0 ' (CSLSend ' n' ' (c, m)) \in CNil)
-         -}).
-      d_swap. eapply DARewriteIffPL; first by d_head.
-      simpl_embed.
-      by d_ifp; first by d_clear.
+    difp.
+      dif; dsplitp; dswap; dsimplp; dsimpl; simpl.
+      dtinjectionp; repeat dsplitp;
+      dclear; dtgenp; dif; dsplitp; dclear; dswap; dtsubstep_l; dswap; dclear;
+      by duse DPMemberNil; dforallp {-t (0, CSLSend ' n' ' (c, m)) -}; dnotp.
 
-    eapply DTGeneralization; first by repeat constructor.
-    d_ifc; d_swap; d_splitp; d_ifp; first by d_clear; d_splitp.
-    by d_ifp; first by d_clear; d_splitp; d_swap.
+    by dtmergeentailsifp.
   }
 
   (* By InvS *)
-  d_have {-A
-    self-event /\ ((TLeft (Fs ' n)) = c) =>>
-    (self-event =>> (TLeft (Fs ' n) = c))
-   -}.
+  dhave {-A
+    self-event /\ (Fs ' n).1 >= c =>>
+    (self-event =>> (Fs ' n).1 >= c)
+  -}.
   {
-    repeat d_clear. (* Clean up the context *)
+    repeat dclear.
+    eapply DSCut; first by apply DPInvS with
+      (S0 := {-A forall: (* s *) ($$0).1 >= c -});
+      [| dautoclosed | repeat constructor].
+    dforallp n.
 
-    d_have {-A
-      (self-event -> TLeft (Fs ' n) = c) ->
-      self-event =>> TLeft (Fs ' n) = c
-     -}; first by d_ifc; eapply DTGeneralization; first by repeat constructor.
+    (* request *)
+    difp.
+      dforall s; dforall e; dsimpl; dif.
+      dcase {-t ? s -}; dexistsp s_r; dexistsp s_c;
+        dtgenp; dtsubste_l; dtsubstep_l; dswap; dclear;
+        dautoeq; dsimpl; dsimplp.
+      dcase {-t ? e -}; dexistsp e_n'; dexistsp e_m;
+        dtgenp; dtsubste_l; dclear; dautoeq; dsimpl.
+      by duse DPSuccGreaterEqual; dforallp s_c; dforallp c; difp.
 
-    eapply DARewriteIfC; first by d_head.
-    simpl_embed.
+    (* indication *)
+    difp.
+      dforall s; dforall i; dforall e; dsimpl; dif.
+      dcase {-t ? s -}; dexistsp s_r; dexistsp s_c;
+        dtgenp; dtsubste_l; dtsubstep_l; dswap; dclear;
+        dautoeq; dsimpl; dsimplp.
+      dcase {-t (? i, ? e) -}; dexistsp e_m; dexistsp e_c; dexistsp e_n;
+        dtgenp; dtsubste_l; dclear; dautoeq; dsimpl.
+      by dcase {-t FCount ' (? e_n, ? e_c) ' ? s_r == 0 -}; dorp;
+        dtgenp; dtsubste_l; dclear; dsimpl.
 
-    eapply DTGeneralization; first by repeat constructor.
-    by repeat d_ifc; d_clear; d_splitp; d_swap.
+    (* periodic *)
+    difp.
+      by dforall s; dsimpl; dif.
+
+    by dsimplp.
   }
 
   (* By ASA on (1) and (2) *)
-  d_have {-A
+  dhave {-A
     on n, self-event /\ ((0, CSLSend ' n' ' (c, m)) \in Fors) =>>
-    always^ (self-event -> TLeft (Fs ' n) = c)
-   -}.
+    always^ (self-event -> (Fs ' n).1 >= c)
+  -}.
   {
-    eapply DSCut; first by repeat d_clear; eapply DPASA with
-      (S := {-A forall: (* ts *) TLeft #0 = c -})
-      (A := {-A on n, (CPair ' 0 ' (CSLSend ' n' ' (c, m)) \in Fors) -})
-      (A' := {-A TLeft (Fs ' n) = c -});
-      [by auto_is_closed | by repeat constructor | by repeat constructor].
-    d_forallp n; d_evalp.
-    d_ifp; first by d_swap.
-    d_ifp; first by d_head.
+    eapply DSCut; first (by repeat dclear; apply DPASA with
+      (S := {-A forall: (* s *) ($$0).1 >= c -})
+      (A := {-A on n, (0, CSLSend ' n' ' (c, m)) \in Fors -})
+      (A' := {-A (Fs ' n).1 >= c -});
+      [| dautoclosed | dautoclosed | dautoclosed
+        | repeat constructor | repeat constructor]).
+    dforallp n; dsimplp.
 
-    d_have {-A
-      (on n, self-event) /\ ((0, CSLSend ' n' ' (c, m)) \in Fors) =>>
-      self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors)
-     -}.
-    {
-      eapply DTGeneralization; first by repeat constructor.
-      d_ifc; d_splitc; first by repeat d_splitp; d_swap.
-      repeat d_splitp; d_splitc; first by d_head.
-      by d_assumption.
-    }
+    (* post *)
+    difp.
+      duse DPEqualGreaterEqual; dforallp {-t (Fs' ' n).1 -}; dforallp c.
+      by dtgenp; dclean; dxchg 1 2; dtsubstposp.
 
-    eapply DARewriteEntailsP; first by d_head.
-    simpl_embed.
+    (* pre *)
+    difp.
+      by dassumption.
 
-    by d_head.
+    eapply DSCut; first (by repeat dclear; apply DSAndAssoc with
+      (A1 := {-A self-event -})
+      (A2 := {-A Fn = n -})
+      (A3 := {-A (0, CSLSend ' n' ' (c, m)) \in Fors -}));
+      dtgenp; dclean; dtsubstp_r.
+    eapply DSCut; first (by repeat dclear; apply DSAndComm with
+      (A1 := {-A self-event -})
+      (A2 := {-A Fn = n -}));
+      dtgenp; dclean; dtsubstp_l.
+    eapply DSCut; first (by repeat dclear; apply DSAndAssoc with
+      (A1 := {-A Fn = n -})
+      (A2 := {-A self-event -})
+      (A3 := {-A (0, CSLSend ' n' ' (c, m)) \in Fors -}));
+      dtgenp; dclean; dtsubstp_l.
+    by [].
   }
 
   (* By InvL *)
-  d_have {-A
-    self-event /\ (TLeft ( Fs ' n)) = c =>>
-    ~(on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
-   -}.
+  dhave {-A
+    self-event /\ (Fs ' n).1 >= c =>>
+    ~(on n, (0, CSLSend ' n' ' (c, m')) \in Fors)
+  -}.
   {
-    (* Instantiate InvL *)
-    eapply DSCut; first by apply DSEmptyContext; apply DPInvL with (A := {-A
-        (TLeft (Fs ' n)) = c ->
-        ~(on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
-       -}); first by repeat constructor.
+    repeat dclear.
+    eapply DSCut; first by apply DPInvL with (A := {-A
+      (Fs ' n).1 >= c ->
+      ~(on n, (0, CSLSend ' n' ' (c, m')) \in Fors)
+    -}); [dautoclosed | repeat constructor].
 
     (* request *)
-    d_ifp.
-      d_forallc e Hf_e; d_ifc; d_splitp; d_swap; d_evalp.
-      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        d_existsp r Hf_r; d_existsp c_ Hf_c_; d_splitp; d_swap; d_substp; d_evalp.
-      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        d_existsp m'_ Hf_m'_; d_existsp n'_ Hf_n'_;
-        d_splitp; d_swap; d_substp; distinguish_variables; d_evalp.
-      d_destructpairp; repeat d_splitp.
+    difp.
+      dforall e; dif; dsplitp; dswap; dsimplp.
+      dcase {-t ? e -}; dexistsp e_m; dexistsp e_n'; dtgenp;
+        dtsubstep_l; dswap; dclear; dsimplp.
+      dcase {-t ? Fs ' ? Fn -}; dexistsp s_r; dexistsp s_c; dtgenp;
+        dtsubstep_l; dsimplp.
+      dtinjectionp; repeat dsplitp.
 
-      d_swap; d_substc; d_clear.
-      d_ifc; d_notc; d_splitp.
-      do 5 (d_swap; d_rotate 1); d_swap; d_substp.
-      do 8 (d_swap; d_rotate 1); d_swap; d_substp; d_evalp.
-      do 11 (d_swap; d_rotate 1); d_swap; d_substp; distinguish_variables.
-      d_in_cons_pl; simpl_embed; d_orp; last by d_evalp.
-      d_destructpairp; d_splitp; d_clear.
-      apply DSEqualEvent; d_splitp; d_clear.
-      d_destructpairp; d_splitp.
-      by apply DSNotEqualP.
+      dswap; dtgenp; dtsubste_l; dclear.
+      dif; dnot.
+      dsplitp; dtgenp.
+      dxchg 1 3; dtsubstep_l; dswap.
+      dxchg 1 5; dtsubstep_l; dswap; dclear.
+      dtsubstep_l; dswap; dclear; dsimplp.
+
+      duse DPMemberCons;
+        dforallp {-t (0, CSLSend ' n' ' (c, m')) -};
+        dforallp {-t (0, CSLSend ' e_n' ' (CSucc ' s_c, e_m)) -};
+        dforallp {-t [] -};
+        dsplitp; dswap; dclear; difp; first by dassumption.
+      dorp; last by duse DPMemberNil;
+        dforallp {-t (0, CSLSend ' n' ' (c, m')) -}; dnotp.
+      dtinjectionp; dsplitp; dclear.
+      dsplitp; dclear; dsplitp; dswap; dclear; dtgenp;
+        dtsubstep_l; dautoeq; dswap; dclear.
+
+      duse DPGreaterEqual; dforallp s_c; dforallp {-t s_c.+1 -}.
+      dsplitp; dswap; dclear; difp; first (by []); dswap; dclear; dorp.
+      - (* equal *)
+        eapply DSCut; first by eapply DSubInjection with
+          (t1 := {-t s_c -}) (t2 := {-t s_c.+1 -}); [by [] | auto_mem].
+        by dnotp.
+      - (* not equal *)
+        duse DPNotLessThanIfGreaterThan; dforallp s_c; dforallp {-t s_c.+1 -}.
+        difp; last by dnotp.
+        by duse DPLessThanSucc; dforallp s_c.
 
     (* indication *)
-    d_ifp.
-      d_forallc i Hf_i; d_forallc e Hf_e; d_ifc; d_splitp; d_swap; d_evalp.
-      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        d_existsp r Hf_r; d_existsp c_ Hf_c_; d_splitp; d_swap; d_substp; d_evalp.
-      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-        d_existsp m'_ Hf_m'_; d_existsp c' Hf_c'; d_existsp n_ Hf_n_;
-        d_splitp; d_swap; d_substp; distinguish_variables; d_evalp.
-      d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
-
-      d_orp.
-        (* true case *)
-        d_splitp; d_swap; d_substp; d_evalp.
-        d_ifc; d_swap.
-        d_destructpairp; repeat d_splitp; d_swap.
-        eapply DARewriteIffCL with
-          (Arp := {-A ~(on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -})
-          (Arc := {-A (on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -> AFalse -});
-          first by eapply DSNotImpliesFalse.
-        simpl_embed.
-        d_ifc; d_splitp; d_swap.
-        do 1 (d_swap; d_clear); d_substp.
-
-        eapply DSCut; first by eapply DAPInNil.
-        d_forallp {-t (0, CSLSend ' n' ' (c, m')) -}.
-        eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
-            (0, CSLSend ' n' ' (c, m')) \in CNil
-           -}).
-        d_swap; eapply DARewriteIffPL; first by d_head.
-        by simpl_embed; d_ifp; first by d_swap.
-
-      (* false case *)
-      d_splitp; d_swap; d_substp; d_evalp.
-      d_destructpairp; repeat d_splitp.
-      d_ifc; d_rotate 2.
-      eapply DARewriteIffCL with
-        (Arp := {-A ~(on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -})
-        (Arc := {-A (on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -> AFalse -});
-        first by eapply DSNotImpliesFalse.
-      simpl_embed.
-      d_ifc; d_splitp; d_swap.
-      do 1 (d_swap; d_clear); d_substp.
-
-      eapply DSCut; first by eapply DAPInNil.
-      d_forallp {-t (0, CSLSend ' n' ' (c, m')) -}.
-      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
-          (0, CSLSend ' n' ' (c, m')) \in CNil
-         -}).
-      d_swap; eapply DARewriteIffPL; first by d_head.
-      by simpl_embed; d_ifp; first by d_swap.
+    difp.
+      dforall i; dforall e; dif; dsplitp; dswap; dsimplp.
+      dcase {-t (? i, ? e) -}; dexistsp e_m; dexistsp e_c; dexistsp e_n;
+        dtgenp; dtsubstep_l; dswap; dclear; dsimplp.
+      dcase {-t ? Fs ' ? Fn -}; dexistsp s_r; dexistsp s_c; dtgenp;
+        dtsubstep_l; dsimplp.
+      by dcase {-t FCount ' (? e_n, ? e_c) ' ? s_r == 0 -}; dorp;
+        dtgenp; dtsubstep_l; dswap; dclear; dsimplp;
+        dtinjectionp; repeat dsplitp;
+        dif; dclear; dnot; dsplitp; dclear;
+        dswap; dxchg 0 2; dtgenp; dtsubstep_l; dswap; dclear;
+        duse DPMemberNil; dforallp {-t (0, CSLSend ' n' ' (c, m')) -}; dnotp.
 
     (* periodic *)
-    d_ifp.
-      d_ifc; d_splitp; d_swap; d_evalp.
-      d_destructpairp; repeat d_splitp; d_swap.
-      d_ifc.
-      eapply DARewriteIffCL with
-        (Arp := {-A ~(on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -})
-        (Arc := {-A (on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -> AFalse -});
-        first by eapply DSNotImpliesFalse.
-      simpl_embed.
-      d_ifc; d_splitp; d_swap.
-      do 2 (d_swap; d_clear); d_substp.
+    difp.
+      dif; dsplitp; dclear; dsimplp.
+      by dtinjectionp; repeat dsplitp;
+        dif; dclear; dnot; dsplitp; dclear;
+        dswap; dxchg 0 2; dtgenp; dtsubstep_l; dswap; dclear;
+        duse DPMemberNil; dforallp {-t (0, CSLSend ' n' ' (c, m')) -}; dnotp.
 
-      eapply DSCut; first by eapply DAPInNil.
-      d_forallp {-t (0, CSLSend ' n' ' (c, m')) -}.
-      eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
-          (0, CSLSend ' n' ' (c, m')) \in CNil
-         -}).
-      d_swap; eapply DARewriteIffPL; first by d_head.
-      by simpl_embed; d_ifp; first by d_swap.
-
-    d_splitp; d_swap; d_clear.
-    eapply DTGeneralization; first by repeat constructor.
-    d_ifc; d_splitp; d_rotate 2; d_ifp; first by d_assumption.
-    by d_ifp; d_assumption.
+    by dtmergeentailsifp.
   }
-
-  d_have {-A
-    (self-event -> TLeft (Fs ' n) = c) ->
-    (self-event -> (self-event /\ TLeft (Fs ' n) = c))
-   -}.
-  {
-    repeat d_ifc; d_splitc; first by d_head.
-    by d_swap; d_ifp.
-  }
-
-  d_rotate 2.
-  eapply DARewriteIfP; first by d_rotate 4; d_head.
-  simpl_embed.
 
   (* From (3) and (4) *)
-  eapply DARewriteEntailsP; first by d_rotate 5; d_head.
-  simpl_embed.
+  dhave {-A
+    (self-event -> (Fs ' n).1 >= c) ->
+    (self-event -> (self-event /\ (Fs ' n).1 >= c))
+  -}; first by repeat dif; dsplit; [| dswap; difp].
+  dtgenp; dclean.
+  dxchg 1 2; dtsubstposp.
+  dswap; dtsubstposp.
+  dhave {-A
+    (self-event -> ~ on n, (0, CSLSend ' n' ' (c, m')) \in Fors) ->
+    ~ (self-event /\ on n, (0, CSLSend ' n' ' (c, m')) \in Fors)
+  -}; first by dif; dnot; dsplitp; dxchg 1 2; dswap; difp; [| dnotp; dassumption].
+  dtgenp; dclean.
+  dtsubstposp.
 
-  d_have {-A
-    (self-event -> ~ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) ->
-    ~ (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors))
-   -}.
-  {
-    d_ifc.
-    eapply DARewriteIffCL with
-      (Arp := {-A ~(self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -})
-      (Arc := {-A (self-event /\ on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)) -> AFalse -});
-      first by eapply DSNotImpliesFalse.
-    simpl_embed.
-    d_ifc; d_splitp; d_rotate 2; d_ifp; first by d_assumption.
-    d_rotate 9; d_swap.
-    eapply DSCut; first by eapply DSNotImpliesFalse with (Ac := {-A
-        on n, ((0, CSLSend ' n' ' (c, m')) \in Fors)
-       -}).
-    d_splitp; d_swap; d_clear.
-    d_ifp; first by d_head.
-    by d_ifp; first by d_swap.
-  }
-
-  d_swap.
-  eapply DARewriteIfP; first by d_head.
-  simpl_embed.
-
-  d_have {-A
-    self-event /\ on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) =>>
-    (on n, self-event) /\ ((0, CSLSend ' n' ' (c, m)) \in Fors)
-   -}.
-  {
-    eapply DTGeneralization; first by repeat constructor.
-    d_ifc; d_splitp; d_swap; d_splitp; d_splitc; first by d_splitc; d_assumption.
-    by d_assumption.
-  }
-
-  eapply DARewriteEntailsP; first by d_head.
-  by simpl_embed.
+  eapply DSCut; first (by repeat dclear; apply DSAndAssoc with
+    (A1 := {-A Fn = n -})
+    (A2 := {-A self-event -})
+    (A3 := {-A (0, CSLSend ' n' ' (c, m)) \in Fors -}));
+    dtgenp; dclean; dtsubstp_r.
+  eapply DSCut; first (by repeat dclear; apply DSAndComm with
+    (A1 := {-A Fn = n -})
+    (A2 := {-A self-event -}));
+    dtgenp; dclean; dtsubstp_l.
+  eapply DSCut; first (by repeat dclear; apply DSAndAssoc with
+    (A1 := {-A self-event -})
+    (A2 := {-A Fn = n -})
+    (A3 := {-A (0, CSLSend ' n' ' (c, m)) \in Fors -}));
+    dtgenp; dclean; dtsubstp_l.
+  by [].
 Qed.
 
 Lemma L37_2 : empty_context |- perfect_link, {-A
