@@ -432,121 +432,51 @@ Proof.
 Qed.
 
 Lemma L39 Delta : Context Delta [::] ||- perfect_link, {-A
-  forall: forall:
-  correct #1 /\ correct #0 ->
-  forall: forall: (* 3:n, 2:n', 1:m, 0:c *)
-  on #2, event[0]<- CSLDeliver ' #3 ' (#0, #1) /\
-    (#3, #0) \notin (TRight (Fs ' #2)) =>>
-  eventually on #2, event[]<- CPLDeliver ' #3 ' #1
+  forall: forall: forall: forall: (* n, n', m, c *)
+  $$3 \in UCorrect /\ $$2 \in UCorrect ->
+  on $$2, event[0]<- CSLDeliver ' $$3 ' ($$0, $$1) /\
+    ($$3, $$0) \notin (Fs ' $$2).2 ~>
+  on $$2, event[]<- CPLDeliver ' $$3 ' $$1
  -}.
 Proof.
-  (* Introduce context *)
-  set C := perfect_link; rewrite -/C /empty_context.
-  d_forallc n Hf_n; d_forallc n' Hf_n'; simpl_embed.
-  d_ifc; d_splitp;
-    d_forallc m Hf_m;
-    d_forallc c Hf_c;
-    simpl_embed.
+  dforall n; dforall n'; dforall m; dforall c.
+  dif; dsplitp.
 
-  (* By rule II *)
-  d_have {-A
-    on n', event[0]<- CSLDeliver ' n ' (c, m) /\
-    (n, c) \notin (TRight (Fs ' n')) =>>
-    (self-event /\ (CPLDeliver ' n ' m) \in Fois)
-   -}.
+  duse DPOI; dforallp n'; dforallp {-t CPLDeliver ' n ' m -}; dsimplp.
+  eapply DSCut; first (by repeat dclear; apply DTL121 with
+    (A := {-A on n', event[]<- CPLDeliver ' n ' m -}));
+    dtsubstposp.
+
+  dhave {-A
+    on n', event[0]<- CSLDeliver ' n ' (c, m) /\ (n, c) \notin (Fs ' n').2 ->
+    on n', self-event /\ CPLDeliver ' n ' m \in Fois
+  -}.
   {
-    eapply DTGeneralization; first by repeat constructor.
-    d_ifc; d_splitp; d_evalp.
-
-    (* Instantiate II *)
-    d_use DPII; d_forallp 0; d_forallp {-t CSLDeliver ' n ' (c, m) -}; d_evalp.
-
-    eapply DTEntailsModusPonensP; first by d_splitp; d_assumption.
-
-    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -});
-      d_existsp r Hf_r; d_existsp c' Hf_c'; simpl_embed.
-
-    d_swap; d_splitp;
-      d_use DAPEqualSymmetric; d_forallp Fn; d_forallp n'; simpl_embed;
-      d_splitp; eapply DSModusPonensP; first by d_assumption.
-    d_swap; d_clear.
-
-    d_rotate 3; d_splitp; d_swap; d_substp; d_evalp.
-
-    d_rotate 2; do 2 (d_swap; d_clear); d_substp; distinguish_variables.
-    do 4 (d_swap; d_rotate 1); d_substp; d_evalp.
-
-    d_rotate 5.
-    d_destructp (fun t => {-A (Fs' ' Fn, Fors, Fois) = t -}).
-
-    d_orp.
-
-    (* true case *)
-    d_splitp; d_swap; d_clear; d_rotate 2; do 4 d_clear.
-    by d_swap; d_notp.
-
-    (* false case *)
-    d_splitp; d_swap; d_substp; d_evalp.
-    d_destructpairp; repeat d_splitp.
-
-    d_splitc; first by d_use_empty DPSecondIndicationSelf;
-      d_forallp {-t CSLDeliver ' n ' (c, m) -}; simpl_embed;
-      d_splitp; d_swap; d_clear; d_ifp; d_assumption.
-
-    by d_rotate 2; d_substc; d_evalc.
+    repeat dclear.
+    dif; dsplitp; dswap; dsplitp.
+    dsplit; first by dassumption.
+    dsplit; first by dleft; dexists {-t 0 -};
+      dsplit; dsplitp; [| dclear; dsplitp].
+    duse DPII; dforallp {-t 0 -}; dforallp {-t CSLDeliver ' n ' (c, m) -};
+      dsimplp; dsplitp; dswap; dclear; difp; first by dassumption.
+    dswap; dxchg 0 3; dtgenp; dtsubstep_l; dswap; dclear.
+    dcase {-t ? Fs ' ? n' -}; dexistsp s_r; dexistsp s_c;
+      dtgenp; dtsubstep_l; dsimplp.
+    dswap; dxchg 1 2; dtsubstep_l; dswap; dclear; dswap.
+    dcase {-t FCount ' (? n, ? c) ' ? s_r == 0 -}; dorp;
+      dtgenp; dtsubstep_l; dsimplp.
+    - dswap; dclear; dtinjectionp; repeat dsplitp.
+      dxchg 0 2; dtgenp; dtsubste_l.
+      by duse DPMemberSingleton; dforallp {-t CPLDeliver ' n ' m -}.
+    - dclear; dswap; dsimplp.
+      duse DPMemberReflect; dforallp {-t (n, c) -}; dforallp s_r.
+      dxchg 1 2; dswap; dtsubstep_l; dsimplp; dswap; dclear;
+        dsplitp; dswap; dclear; difp; first by repeat dclear; exact: DPEqual.
+      by dswap; dnotp.
   }
+  dtgenp; dclean.
 
-  (* By rule OI *)
-  d_have {-A
-    on n', (self-event /\ (CPLDeliver ' n ' m) \in Fois) =>>
-    (eventually^  on n', (event[]<- CPLDeliver ' n ' m))
-   -}.
-  {
-    (* Instantiate OI *)
-    d_use DPOI; d_forallp n'; d_forallp {-t CPLDeliver ' n ' m -}; d_evalp.
-
-    eapply DARewriteIfP; first by apply DTL121 with
-      (A := {-A on n', ((CPLDeliver ' n ' m) \in Fois) -}).
-    by simpl_embed; rewrite andbF.
-  }
-
-  (* Clean up and derive the final goal *)
-  d_rotate 2; do 2 d_clear; d_swap.
-  d_have {-A
-    (on n', event[0]<- CSLDeliver ' n ' (c, m) /\ (n, c) \notin TRight (Fs ' n') =>>
-      self-event /\ CPLDeliver ' n ' m \in Fois) ->
-    (on n', event[0]<- CSLDeliver ' n ' (c, m) /\ (n, c) \notin TRight (Fs ' n') =>>
-      on n', (self-event /\ CPLDeliver ' n ' m \in Fois))
-   -}.
-  {
-    d_ifc; eapply DTGeneralization; first by repeat constructor.
-    d_ifc; repeat d_splitp; d_splitc; first by [].
-
-    d_rotate 3.
-    eapply DARewriteIfP with
-      (Arp := {-A (on n', event[0]<- CSLDeliver ' n ' (c, m) /\ (n, c) \notin TRight (Fs ' n') =>>
-        self-event /\ CPLDeliver ' n ' m \in Fois) -})
-      (Arc := {-A (on n', event[0]<- CSLDeliver ' n ' (c, m) /\ (n, c) \notin TRight (Fs ' n') ->
-        self-event /\ CPLDeliver ' n ' m \in Fois) -}); first by eapply DT1.
-    simpl_embed.
-    by d_ifp; first by d_splitc; [d_splitc |]; d_assumption.
-  }
-
-  d_swap.
-  eapply DARewriteIfP; first by d_head.
-  simpl_embed.
-
-  d_swap; d_clear; d_swap.
-  eapply DARewriteIfP with
-    (Arp := {-A eventually^ on n', event[]<- CPLDeliver ' n ' m -})
-    (Arc := {-A eventually on n', event[]<- CPLDeliver ' n ' m -});
-    first by eapply DTL121.
-  simpl_embed.
-
-  d_swap.
-  eapply DARewriteEntailsP; first by d_head.
-
-  by simpl_embed; rewrite andbF.
+  by rewrite /AFollowedBy; dswap; dttransp.
 Qed.
 
 Lemma L41 Delta : Context Delta [::] ||- perfect_link, {-A
