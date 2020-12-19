@@ -687,12 +687,7 @@ Proof.
   (* Used in PLC *)
 Admitted.
 
-Lemma DTEventually' C Delta A :
-  Context Delta [::] ||- C, {-A
-    eventually^ A =>> eventually A
-  -}.
-Proof.
-Admitted.
+Definition DTEventually' := DTL121.
 Ltac dteventually'p :=
   match goal with
   | |- context[ {-A eventually^ ?A_ -} ] =>
@@ -701,12 +696,7 @@ Ltac dteventually'p :=
     dtsubstposp
   end.
 
-Lemma DTEventuallyP' C Delta A :
-  Context Delta [::] ||- C, {-A
-    eventuallyp^ A =>> eventuallyp A
-  -}.
-Proof.
-Admitted.
+Definition DTEventuallyP' := DTL123.
 Ltac dteventuallyp'p :=
   match goal with
   | |- context[ {-A eventuallyp^ ?A_ -} ] =>
