@@ -66,21 +66,19 @@ Definition perfect_link :=
 (* Specification *)
 
 (* Lowered stubborn link properties *)
-Lemma PL_SL_1 : empty_context |- perfect_link, {-A
-  forall: forall:
-  correct #1 /\ correct #0 ->
-  forall: (* 2:n, 1:n', 0:m *)
-  on #2, event[0]-> CSLSend ' #1 ' #0 =>>
-  always eventually on #1, event[0]<- CSLDeliver ' #2 ' #0
- -}.
+Lemma PL_SL_1 Delta : Context Delta [::] ||- perfect_link, {-A
+  forall: forall: forall: (* n, n', m *)
+  $$2 \in UCorrect /\ $$1 \in UCorrect ->
+  on $$2, event[0]-> CSLSend ' $$1 ' $$0 =>>
+  always eventually on $$1, event[0]<- CSLDeliver ' $$2 ' $$0
+-}.
 Proof.
-  d_forallc n Hf_n; d_forallc n' Hf_n'; simpl_embed.
-  d_ifc; d_splitp; d_forallc m Hf_m; simpl_embed.
+  duse (DPLower (SL_1 Delta) perfect_link 0 (SL_1_TA Delta));
+    rewrite /lower_assertion /=; dclean.
 
-  (* Use the lowering specification on SL_1 *)
-  eapply DSCut; first by apply DSEmptyContext; apply: DPLower SL_1 perfect_link 0 SL_1_TA.
-  rewrite /lower_assertion /=; d_forallp n; d_forallp n'; d_forallp m; simpl_embed.
-  d_ifp; first by d_splitc; d_assumption.
+  dforall n; dforall n'; dforall m;
+  dforallp n; dforallp n'; dforallp m.
+  dif; dswap; difp; [by [] | dswap; dsplitp; dswap; dxchg 0 2].
 
   eapply DARewriteEntailsP; first by apply DTL124 with
     (Ap := {-A Fd <<< [0] -})
@@ -171,13 +169,13 @@ Proof.
   d_head.
 Qed.
 
-Lemma PL_SL_2 : Z0 ||- perfect_link, {-A
+Lemma PL_SL_2 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: (* n, n', m *)
   on $$2, event[0]<- CSLDeliver ' $$1 ' $$0 <~
   on $$1, event[0]-> CSLSend ' $$2 ' $$0
 -}.
 Proof.
-  duse (DPLower SL_2 perfect_link 0 SL_2_TA);
+  duse (DPLower (SL_2 Delta) perfect_link 0 (SL_2_TA Delta));
     rewrite /lower_assertion /=; dclean.
 
   dforall n; dforall n'; dforall m;
@@ -205,7 +203,7 @@ Qed.
 
 (* Lemmas used in proving PL_1 *)
 
-Lemma L37_1 : Z0 ||- perfect_link, {-A
+Lemma L37_1 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: forall: forall: (* n, n', c, m, m' *)
   $$4 \in UCorrect /\ $$3 \in UCorrect ->
   self-event /\ (on $$4, (0, CSLSend ' $$3 ' ($$2, $$1)) \in Fors) =>>
@@ -461,7 +459,7 @@ Proof.
   by [].
 Qed.
 
-Lemma L37_2 : empty_context |- perfect_link, {-A
+Lemma L37_2 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall:
   correct #1 /\ correct #0 ->
   forall: forall: forall: (* 4:n, 3:n', 2:m, 1:m', 0:c *)
@@ -494,7 +492,7 @@ Proof.
   by d_ifp.
 Qed.
 
-Lemma L39 : empty_context |- perfect_link, {-A
+Lemma L39 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall:
   correct #1 /\ correct #0 ->
   forall: forall: (* 3:n, 2:n', 1:m, 0:c *)
@@ -612,7 +610,7 @@ Proof.
   by simpl_embed; rewrite andbF.
 Qed.
 
-Lemma L41 : Z0 ||- perfect_link, {-A
+Lemma L41 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: (* n, n', c *)
   $$2 \in UCorrect /\ $$1 \in UCorrect ->
   self-event /\ ($$2, $$0) \in (Fs ' $$1).2 =>>
@@ -709,7 +707,7 @@ Proof.
   by dtsubstp_l.
 Qed.
 
-Lemma L40 : empty_context |- perfect_link, {-A
+Lemma L40 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall:
   correct #1 /\ correct #0 ->
   forall: (* 2: n, 1:n', 0:c *)
@@ -899,7 +897,7 @@ Qed.
 *)
 Admitted.
 
-Lemma L38 : empty_context |- perfect_link, {-A
+Lemma L38 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall:
   correct #1 /\ correct #0 ->
   forall: forall: (* 3:n, 2:n', 1:m, 0:c *)
@@ -1026,7 +1024,7 @@ Qed.
  * If a correct node n sends a message m to a correct node n', then n' will
  * eventually deliver m.
  *)
-Theorem PL_1 : empty_context |- perfect_link, {-A
+Theorem PL_1 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: (* 2:n, 1:n', 0:m *)
   correct #2 /\ correct #1 ->
   on #2, event[]-> CPLSend ' #1 ' #0 ~>
@@ -1673,7 +1671,7 @@ Admitted. (* TODO *)
 
 (* Lemmas used in proving PL_2 *)
 
-Lemma L43 : empty_context |- perfect_link, {-A
+Lemma L43 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: forall: forall: forall: forall: (* 6:n, 5:n', 4:m, 3:m', 2:c, 1:c', 0:r *)
     self (
       (#5, #2) \in TRight (Fs ' #6) /\
@@ -1844,7 +1842,7 @@ Proof.
   by d_head.
 Qed.
 
-Lemma L42 : empty_context |- perfect_link, {-A
+Lemma L42 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: (* 2:n, 1:n', 0:m *)
     self (
       on #2, (CPLDeliver ' #1 ' #0 \in Fois) =>>
@@ -2218,7 +2216,7 @@ Proof.
   by simpl_embed.
 Admitted.
 
-Lemma L44 : empty_context |- perfect_link, {-A
+Lemma L44 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: forall: forall: (* 4:n, 3:n', 2:m, 1:c, 0:c' *)
     correct #4 /\ correct #3 ->
     (on #3, event[]-> CPLSend ' #4 ' #2 =>>
@@ -2822,7 +2820,7 @@ Admitted.
 (* No-duplication
  * If a message is sent at most once, it will be delivered at most once.
  *)
-Theorem PL_2 : empty_context |- perfect_link, {-A
+Theorem PL_2 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: (* 2:n, 1:n', 0:m *)
     (on #1, event[]-> CPLSend ' #2 ' #0 =>>
       alwaysp^ ~on #1, event[]-> CPLSend ' #2 ' #0) ->
@@ -3148,7 +3146,7 @@ Qed.
  * If a node n delivers a message m with sender n', then m was previously sent
  * to n by node n'.
  *)
-Theorem PL_3 : Context [:: V m; V n'; V n] [::] |- perfect_link, {-A
+Theorem PL_3 Delta : Context Delta [::] ||- perfect_link, {-A
   on n, event[]<- CPLDeliver ' n' ' m <~
   on n', event[]-> CPLSend ' n ' m
  -}.

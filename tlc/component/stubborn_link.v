@@ -61,7 +61,7 @@ Definition stubborn_link :=
 (* Stubborn delivery
  * If a correct node n sends a message m to a correct node n', then n'
  * delivers m infinitely often *)
-Theorem SL_1 : Z0 ||- stubborn_link, {-A
+Theorem SL_1 Delta : Context Delta [::] ||- stubborn_link, {-A
   forall: forall: forall: (* n, n', m *)
   $$2 \in UCorrect /\ $$1 \in UCorrect ->
   on $$2, event[]-> CSLSend ' $$1 ' $$0 =>>
@@ -279,7 +279,7 @@ Qed.
 (* No-forge
  * If a node n delivers a message m with sender n', then m was previously sent
  * to n by n' *)
-Theorem SL_2 : Z0 ||- stubborn_link, {-A
+Theorem SL_2 Delta : Context Delta [::] ||- stubborn_link, {-A
   forall: forall: forall: (* n, n', m *)
   on $$2, event[]<- CSLDeliver ' $$1 ' $$0 <~
   on $$1, event[]-> CSLSend ' $$2 ' $$0
@@ -662,7 +662,7 @@ Proof.
 Qed.
 
 (* Top assertions for properties *)
-Definition SL_1_TA : top_assertion (derives_assertion SL_1).
+Definition SL_1_TA Delta : top_assertion (derives_assertion (SL_1 Delta)).
 Proof.
   repeat apply LAForAll.
   apply LAIf; first by apply LAAnd; apply LACorrect.
@@ -670,7 +670,7 @@ Proof.
   by apply LAAlways, LAEventually, LAEventOn with (dp := [::]).
 Defined.
 
-Definition SL_2_TA : top_assertion (derives_assertion SL_2).
+Definition SL_2_TA Delta : top_assertion (derives_assertion (SL_2 Delta)).
 Proof.
   repeat apply LAForAll.
   by apply LAPrecededBy; apply LAEventOn with (dp := [::]).
