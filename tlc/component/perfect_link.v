@@ -413,36 +413,22 @@ Proof.
 Qed.
 
 Lemma L37_2 Delta : Context Delta [::] ||- perfect_link, {-A
-  forall: forall:
-  correct #1 /\ correct #0 ->
-  forall: forall: forall: (* 4:n, 3:n', 2:m, 1:m', 0:c *)
-  self-event /\ on #4, ((0, CSLSend ' #3 ' (#0, #2)) \in Fors) =>>
-  alwaysp^ ~(self-event /\ on #4, ((0, CSLSend ' #3 ' (#0, #1)) \in Fors))
-   -}.
+  forall: forall: forall: forall: forall: (* n, n', c, m, m' *)
+  $$4 \in UCorrect /\ $$3 \in UCorrect ->
+  self-event /\ (on $$4, (0, CSLSend ' $$3 ' ($$2, $$1)) \in Fors) =>>
+  alwaysp^ ~(self-event /\ on $$4, (0, CSLSend ' $$3 ' ($$2, $$0)) \in Fors)
+-}.
 Proof.
-  (* Introduce context *)
-  set C := perfect_link; rewrite -/C /empty_context.
-  d_forallc n Hf_n; d_forallc n' Hf_n'; simpl_embed.
-  d_ifc; d_splitp;
-    d_forallc m Hf_m; d_forallc m' Hf_m';
-    d_forallc c Hf_c;
-    simpl_embed.
+  dforall n; dforall n'; dforall c; dforall m; dforall m'; dif.
 
-  (* Instantiate L37_1 *)
-  d_use_empty L37_1;
-    d_forallp n; d_forallp n'; simpl_embed.
-  d_ifp; first by d_splitc; d_assumption.
-    d_forallp m; d_forallp m';
-    d_forallp c;
-    simpl_embed.
+  (* By L37_1 *)
+  duse L37_1; dforallp n; dforallp n'; dforallp c; dforallp m; dforallp m';
+    difp; first by [].
 
-  eapply DSCut; first by repeat d_clear; eapply DTL134 with
-    (A := {-A forall: self-event /\ on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) -})
-    (t := TVariable m);
-    [rewrite /is_assertion_closed /=; auto_in_seq_and | repeat constructor].
-  d_forallp m'; d_evalp.
-
-  by d_ifp.
+  eapply DSCut; first (by repeat dclear; apply DTL105_1 with
+    (H := {-A self-event /\ on n, (0, CSLSend ' n' ' (c, m)) \in Fors -})
+    (A := {-A self-event /\ on n, (0, CSLSend ' n' ' (c, m')) \in Fors -})).
+  by difp.
 Qed.
 
 Lemma L39 Delta : Context Delta [::] ||- perfect_link, {-A
