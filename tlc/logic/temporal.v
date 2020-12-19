@@ -912,3 +912,14 @@ Ltac dtmergeentailsifp :=
     eapply DSCut; first (by repeat dclear; apply DTMergeEntailsIf with
       (H1 := H1_) (H2 := H2_) (A := A_)); dtsubstposp
   end.
+
+Ltac dtandelimselfap :=
+  match goal with
+  | |- context[ {-A ?A1_ /\ (?A1_ /\ ?A2_) -} ] =>
+    eapply DSCut; first (by repeat dclear; eapply DSAndAssoc with
+      (A1 := A1_) (A2 := A1_) (A3 := A2_));
+    dtgenp; dclean; dtsubstp_r;
+    eapply DSCut; first (by repeat dclear; eapply DSAndElimSelf with
+      (A := A1_));
+    dtgenp; dclean; dtsubstp_l
+  end; dclean.
