@@ -705,6 +705,14 @@ Ltac dteventuallyp'p :=
     dtsubstposp
   end.
 
+Lemma DTAndEntails C Delta H A :
+  Context Delta [::] ||- C, {-A
+    H /\ (H =>> A) =>>
+    always A
+  -}.
+Proof.
+Admitted.
+
 Lemma DTEntailsTautology C Z A :
   Z ||- C, {-A
     A =>> A
