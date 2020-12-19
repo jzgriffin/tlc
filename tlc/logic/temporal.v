@@ -416,14 +416,14 @@ Proof.
   (* Used in PLC *)
 Admitted.
 
-Lemma DTL105_1 C Z A :
-  Z ||- C, {-A (A =>> always^ ~A) -> A =>> alwaysp^ ~A -}.
+Lemma DTL105_1 C Z H A :
+  Z ||- C, {-A (H =>> always^ ~A) -> H =>> alwaysp^ ~A -}.
 Proof.
   (* Used in PLC *)
 Admitted.
 
-Lemma DTL105_2 C Z A :
-  Z ||- C, {-A (A =>> alwaysp^ ~A) -> A =>> always^ ~A -}.
+Lemma DTL105_2 C Z H A :
+  Z ||- C, {-A (H =>> alwaysp^ ~A) -> H =>> always^ ~A -}.
 Proof.
 Admitted.
 
