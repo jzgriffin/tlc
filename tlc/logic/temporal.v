@@ -687,6 +687,34 @@ Proof.
   (* Used in PLC *)
 Admitted.
 
+Lemma DTEventually' C Delta A :
+  Context Delta [::] ||- C, {-A
+    eventually^ A =>> eventually A
+  -}.
+Proof.
+Admitted.
+Ltac dteventually'p :=
+  match goal with
+  | |- context[ {-A eventually^ ?A_ -} ] =>
+    eapply DSCut; first (by repeat dclear; eapply DTEventually' with
+      (A := A_));
+    dtsubstposp
+  end.
+
+Lemma DTEventuallyP' C Delta A :
+  Context Delta [::] ||- C, {-A
+    eventuallyp^ A =>> eventuallyp A
+  -}.
+Proof.
+Admitted.
+Ltac dteventuallyp'p :=
+  match goal with
+  | |- context[ {-A eventuallyp^ ?A_ -} ] =>
+    eapply DSCut; first (by repeat dclear; eapply DTEventuallyP' with
+      (A := A_));
+    dtsubstposp
+  end.
+
 Lemma DTEntailsTautology C Z A :
   Z ||- C, {-A
     A =>> A
