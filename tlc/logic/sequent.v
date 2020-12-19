@@ -368,6 +368,29 @@ Proof.
     dsplitp; dassumption.
 Qed.
 
+(* Closed assertions may be moved into or out of an existential quantifier *)
+Lemma DSExistsAndClosed C Delta A1 A2 :
+  assertion_closed_in [::] Delta A1 ->
+  assertion_closed_in [:: 1] Delta A2 ->
+  Context Delta [::] ||- C, {-A
+    (exists: A1 /\ A2) <->
+    A1 /\ exists: A2
+  -}.
+Proof.
+Admitted.
+Ltac dexistsandclosed_l :=
+  match goal with
+  | |- context[ {-A exists: ?A1_ /\ ?A2_ -} ] =>
+    eapply DSCut; first (by repeat dclear; eapply DSExistsAndClosed with
+      (A1 := A1_) (A2 := A2_); dautoclosed)
+  end.
+Ltac dexistsandclosed_r :=
+  match goal with
+  | |- context[ {-A ?A1_ /\ exists: ?A2_ -} ] =>
+    eapply DSCut; first (by repeat dclear; eapply DSExistsAndClosed with
+      (A1 := A1_) (A2 := A2_); dautoclosed)
+  end.
+
 Lemma DSExistsDistribOr2 C Delta A1 A2 :
   assertion_closed_in [:: 1] Delta A1 ->
   assertion_closed_in [:: 1] Delta A2 ->
