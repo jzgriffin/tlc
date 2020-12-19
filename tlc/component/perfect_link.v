@@ -80,93 +80,46 @@ Proof.
   dforallp n; dforallp n'; dforallp m.
   dif; dswap; difp; [by [] | dswap; dsplitp; dswap; dxchg 0 2].
 
-  eapply DARewriteEntailsP; first by apply DTL124 with
+  eapply DSCut; first (by repeat dclear; apply DTL124 with
     (Ap := {-A Fd <<< [0] -})
-    (Ac := {-A eventually on n', event[0]<- CSLDeliver ' n ' m -}).
-  simpl_embed.
-
-  eapply DARewriteEntailsP; first by apply DTL124 with
+    (Ac := {-A eventually on n', event[0]<- CSLDeliver ' n ' m -}));
+    dtsubstposp.
+  eapply DSCut; first (by repeat dclear; apply DTL124 with
     (Ap := {-A Fd <<< [0] -})
     (Ac := {-A
       on n, event[0]-> CSLSend ' n' ' m ->
-      Fd <<< [0] ~>
-           on n', event[0]<- CSLDeliver ' n ' m -}).
-  simpl_embed.
+      Fd <<< [0] ~> on n', event[0]<- CSLDeliver ' n ' m -}));
+    dtsubstposp.
+  dtmergeentailsifp.
 
-  eapply DARewriteIffPL; first by apply DSMergeIf with
-    (Ap1 := {-A Fd <<< [0] -})
-    (Ap2 := {-A on n, event[0]-> CSLSend ' n' ' m -})
-    (Ac := {-A
-      Fd <<< [0] ~>
-      on n', event[0]<- CSLDeliver ' n ' m
-     -}).
-  simpl_embed.
-
-  set A := {-A Fd <<< [0] -}.
-  set B := {-A on n, event[0]-> CSLSend ' n' ' m -}.
-  set D := {-A on n', event[0]<- CSLDeliver ' n ' m -}.
-  d_have {-A
-    always (A -> eventually D) =>>
-    ((always A) -> always (eventually D))
-   -}; first by eapply DT4.
-  d_swap. eapply DARewriteEntailsP; first by d_head. simpl_embed.
-  set A1 := {-A Fd <<< [0] -}.
-  set B1 := {-A on n, event[0]-> CSLSend ' n' ' m -}.
-  set D1 := {-A (on n', event[0]<- CSLDeliver ' n ' m) -}.
-  set AB := {-A A1 /\ B1 -}.
-  eapply DARewriteIffPL; first by apply DSMergeIf with
-    (Ap1 := {-A AB -})
-    (Ap2 := {-A always A1 -})
-    (Ac := {-A always eventually D1 -}).
-  simpl_embed.
-  d_have {-A (AB /\ A1) =>> (AB /\ always A1) -}.
+  dhave {-A
+    (Fd <<< [0] /\ on n, event[0]-> CSLSend ' n' ' m) <->
+    on n, event[0]-> CSLSend ' n' ' m
+  -}.
   {
-    eapply DSCut; first by apply DTL132 with
-      (A1 := {-A AB -})
-      (A2 := {-A A1 -})
-      (B1 := {-A AB -})
-      (B2 := {-A A1 -}).
-    d_ifp. d_splitc. eapply DTGeneralization; first by repeat constructor.
-    d_ifc. d_head. eapply DTGeneralization; first by repeat constructor.
-    d_ifc. d_head.
-
-    d_have {-A A1 -> always A1 -}.
-    {
-      d_ifc. eapply DTGeneralization; first by repeat constructor.
-      d_head.
-    }
-    d_swap.
-    d_have {-A (AB /\ A1) -> (AB /\ always A1) -}.
-    {
-      d_ifc; d_splitc; d_splitp; first by d_head.
-      eapply DTGeneralization; first by repeat constructor.
-      by d_splitp; d_head.
-    }
-
-    d_swap. eapply DARewriteIfP with
-      (Arp := {-A AB /\ A1 -})
-      (Arc := {-A AB /\ always A1 -}); first by d_head.
-    simpl_embed.
-    by do 2 (d_swap; d_clear).
+    dsplit; dif; first by dsplitp; dassumption.
+    dsplit; last by [].
+    by dsplitp; dclear; dsplitp; dtgenp; dtsubste_l;
+      repeat dclear; eapply DPExtension.
   }
-  eapply DARewriteEntailsP; first by d_head. simpl_embed.
+  dtgenp; dclean; dtsubstp_l.
 
-  set A2 := {-A Fd <<< [0] -}.
-  set B2 := {-A on n, event[0]-> CSLSend ' n' ' m -}.
-  d_have {-A B1 =>> ((A2 /\ B2) /\ A2) -}.
-  {
-    eapply DTGeneralization; first by repeat constructor.
-    d_ifc; d_splitc; first by
-      d_splitc; first by
-        d_splitp; d_swap; d_splitp; d_substc;
-        eapply DAPExtension; repeat constructor.
-    by d_splitp; d_swap; d_splitp; d_substc;
-      eapply DAPExtension; repeat constructor.
-  }
-  eapply DARewriteEntailsP; first by d_head. simpl_embed.
-  set A3 := {-A Fd <<< [0] -}.
-  set B3 := {-A on n, event[0]-> CSLSend ' n' ' m -}.
-  d_head.
+  eapply DSCut.
+    eapply DTL132 with
+      (A1 := {-A on n, event[0]-> CSLSend ' n' ' m -})
+      (B1 := {-A Fd <<< [0] -})
+      (A2 := {-A on n, event[0]-> CSLSend ' n' ' m -})
+      (B2 := {-A Fd <<< [0] =>> eventually on n', event[0]<- CSLDeliver ' n ' m -}).
+    difp; first by dsplit; first by
+      dtgen; dif; dsplitp; dclear; dsplitp; dtgenp; dtsubste_l;
+      repeat dclear; eapply DPExtension.
+  eapply DSCut; first (by repeat dclear; eapply DSAndElimSelf with
+    (A := {-A on n, event[0]-> CSLSend ' n' ' m -}));
+    dtgenp; dclean; dtsubstp_l.
+  by eapply DSCut; first (by repeat dclear; eapply DTAndEntails with
+    (H := {-A Fd <<< [0] -})
+    (A := {-A eventually on n', event[0]<- CSLDeliver ' n ' m -}));
+    dtsubstposp.
 Qed.
 
 Lemma PL_SL_2 Delta : Context Delta [::] ||- perfect_link, {-A
@@ -191,7 +144,7 @@ Proof.
   dhave {-A
     (Fd <<< [0] /\ on n, event[0]<- CSLDeliver ' n' ' m) <->
     on n, event[0]<- CSLDeliver ' n' ' m
-   -}.
+  -}.
   {
     dsplit; dif; first by dsplitp; dassumption.
     dsplit; last by [].
