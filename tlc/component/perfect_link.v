@@ -612,162 +612,101 @@ Proof.
   by simpl_embed; rewrite andbF.
 Qed.
 
-Lemma L41 : empty_context |- perfect_link, {-A
-  forall: forall:
-  correct #1 /\ correct #0 ->
-  forall: (* 2:n, 1:n', 0:c *)
-  self-event /\ (#2, #0) \in TRight (Fs ' #1) =>>
+Lemma L41 : Z0 ||- perfect_link, {-A
+  forall: forall: forall: (* n, n', c *)
+  $$2 \in UCorrect /\ $$1 \in UCorrect ->
+  self-event /\ ($$2, $$0) \in (Fs ' $$1).2 =>>
   exists: (* m *)
-    eventuallyp (on #2, event[0]<- CSLDeliver ' #3 ' (#1, #0) /\
-      CPLDeliver ' #3 ' #0 \in Fois)
+    eventuallyp (on $$2, event[0]<- CSLDeliver ' $$3 ' ($$1, $$0) /\
+      CPLDeliver ' $$3 ' $$0 \in Fois)
  -}.
 Proof.
-  (* Introduce context *)
-  set C := perfect_link; rewrite -/C /empty_context.
-  d_forallc n Hf_n; d_forallc n' Hf_n'; simpl_embed.
-  d_ifc; d_splitp; d_forallc c Hf_c; simpl_embed.
+  dforall n; dforall n'; dforall c; dif; dsplitp.
 
   (* Instantiate InvSA *)
-  eapply DSCut; first by repeat d_clear; apply DPInvSA with
-    (S0 := {-A forall: (* s *) (n, c) \in TRight #0 -})
+  eapply DSCut; first (by repeat dclear; apply DPInvSA with
+    (S0 := {-A forall: (* s *) (n, c) \in ($$0).2 -})
     (A := {-A exists: (* m *)
-      (on n', event[0]<- CSLDeliver ' n ' (c, #0) /\
-        CPLDeliver ' n ' #0 \in Fois) -});
-    [by auto_is_closed | by repeat econstructor | by repeat econstructor].
-  d_forallp n'; simpl_embed.
+      (on n', event[0]<- CSLDeliver ' n ' (c, $$0) /\
+        CPLDeliver ' n ' $$0 \in Fois) -});
+    [| dautoclosed | dautoclosed | repeat constructor | repeat constructor]);
+  dforallp n'.
 
   (* initialize *)
-  d_ifp; first by d_evalc.
+  difp.
+    repeat dsimpl.
+    by duse DPMemberNil; dforallp {-t (n, c) -}.
 
   (* request *)
-  d_ifp.
-    d_forallc e Hf_e; simpl_embed.
-    d_ifc; d_splitp; do 2 (d_splitp; d_swap); d_splitp.
-    d_rotate 4; do 5 (d_swap; d_rotate 1); d_substp; d_evalp.
-    d_splitp; d_swap; d_splitp.
+  difp.
+    dforall e; dif; dsplitp; dswap; dsplitp; dswap; dsplitp; dsimplp.
+    dcase {-t ? Fs ' ? Fn -}; dexistsp s_r; dexistsp s_c; dtgenp; dtsubstep_l;
+      dsimplp.
+    dcase {-t ? e -}; dexistsp e_m; dexistsp e_n; dtgenp; dtsubstep_l;
+      dautoeq; dsimplp.
+    dtinjectionp; repeat dsplitp.
 
-    d_destructp (fun t => {-A (n, c) \notin t -});
-      d_existsp r Hf_r; d_existsp c_ Hf_c_; simpl_embed; d_splitp.
-    d_swap; d_substp; d_evalp.
-
-    d_swap; do 2 (d_swap; d_rotate 1); d_swap.
-    d_substp; d_evalp.
-    d_destructp (fun t => {-A (Fs' ' n', Fors, Fois) = t -});
-      d_existsp m Hf_m; d_existsp n'_ Hf_n'_; simpl_embed; d_splitp.
-    d_swap; d_substp; distinguish_variables; d_evalp.
-
-    d_destructpairp; repeat d_splitp.
-    do 11 (d_swap; d_rotate 1); d_swap; d_substp; d_evalp.
-    do 11 (d_swap; d_clear).
-    by d_swap; d_notp.
+    dxchg 1 5; dtgenp; dtsubstep_l.
+    dxchg 1 4; dswap; dtsubstep_l; dautoeq.
+    repeat dsimplp; dsplitp.
+    by dnotp.
 
   (* indication *)
-  d_ifp.
-    d_forallc i Hf_i; d_forallc e Hf_e; simpl_embed.
-    d_ifc; d_splitp; do 2 (d_splitp; d_swap); d_splitp.
-    d_rotate 4; do 5 (d_swap; d_rotate 1); d_substp; d_evalp.
-    d_splitp; d_swap; d_splitp.
-
-    d_destructp (fun t => {-A (n, c) \notin t -});
-      d_existsp r Hf_r; d_existsp c_ Hf_c_; simpl_embed; d_splitp.
-    d_swap; d_substp; d_evalp.
-
-    d_swap; do 2 (d_swap; d_rotate 1); d_swap.
-    d_substp; d_evalp.
-    d_destructp (fun t => {-A (Fs' ' n', Fors, Fois) = t -});
-      d_existsp m Hf_m; d_existsp c' Hf_c'; d_existsp n_ Hf_n_; simpl_embed;
-      repeat d_splitp.
-    d_swap; d_substp; distinguish_variables; d_evalp.
-
-    d_destructp (fun t => {-A (Fs' ' n', Fors, Fois) = t -}); d_orp; d_splitp;
-      d_swap; d_substp; d_evalp; d_destructpairp; repeat d_splitp;
-      do 12 (d_swap; d_rotate 1); d_swap; d_substp; d_evalp.
-      do 12 (d_swap; d_clear).
-      by d_swap; d_notp.
-
-    d_rotate 3; d_substc.
-    d_existsc m; simpl_embed.
-    d_rotate 10; d_swap.
-    d_in_union_pr; simpl_embed; d_orp; first by d_swap; d_notp.
-    d_in_cons_pl; simpl_embed; d_orp; last by d_evalp.
-    d_destructpairp; d_splitp; d_substc; d_swap; d_substc.
-    distinguish_variables; repeat rewrite /eq_op /=;
-      distinguish_variables; rewrite eq_refl.
-    d_splitc.
-      d_splitc; first by d_assumption.
-      d_rotate 7; d_destructpairp; d_splitp.
-      d_splitc; first by
-        do 7 (d_swap; d_rotate 1); d_swap; d_substp; d_substc; apply DAPEqual.
-      d_splitc; first by d_assumption.
-      d_rotate 1; do 5 (d_swap; d_rotate 1); d_swap; d_substp; d_substc.
-      by apply DAPEqual.
-    eapply DAPIn; first by [].
-    by rewrite mem_seq1.
+  difp.
+    dforall i; dforall e; dif; dsplitp; dswap; dsplitp; dswap; dsplitp; dsimplp.
+    dcase {-t ? Fs ' ? Fn -}; dexistsp s_r; dexistsp s_c; dtgenp; dtsubstep_l;
+      dsimplp.
+    dcase {-t (? i, ? e) -}; dexistsp e_m; dexistsp e_c; dexistsp e_n;
+      dtinjectionp; dsplitp;
+      dtgenp; dxchg 1 2; dtsubstep_l;
+        dswap; dxchg 1 5; dtsubstep_l;
+        dswap; dclear; dswap; dautoeq;
+      dtgenp; dtsubstep_l;
+        dswap; dxchg 1 4; dtsubstep_l;
+        dswap; dclear; dautoeq;
+      dsimplp.
+    dcase {-t FCount ' (? e_n, ? e_c) ' ? s_r == 0 -}; dorp;
+      dtgenp; dtsubstep_l; dswap; dclear; dsimplp;
+      dtinjectionp; repeat dsplitp;
+      dxchg 1 4; dtgenp; dtsubstep_l; dswap; dclear;
+      dxchg 1 2; dswap; dtsubstep_l; dswap; dclear;
+      repeat dsimplp; dsplitp;
+      try by dnotp.
+    dexists e_m; dswap.
+    duse DPMemberSetUnion;
+      dforallp s_r; dforallp {-t [(e_n, e_c)] -}; dforallp {-t (n, c ) -};
+      dsplitp; dclear; difp; [by [] |]; dswap; dclear; dorp;
+      first by dswap; dnotp.
+    duse DPMemberCons;
+      dforallp {-t (n, c ) -}; dforallp {-t (e_n, e_c) -}; dforallp {-t [] -};
+      dsplitp; dswap; dclear; difp; [by [] |]; dswap; dclear; dorp;
+      last by duse DPMemberNil; dforallp {-t (n, c) -}; dnotp.
+    dswap; dclear; dxchg 0 2; dclear.
+    dsplit; first by dassumption.
+    dtgenp; dtsubste_l; dclear.
+    dtinjectionp; dsplitp; repeat (dtgenp; dtsubste_l; dautoeq; dclear).
+    dsplit; [by [] | dclear].
+    by duse DPMemberSingleton; dforallp {-t CPLDeliver ' e_n ' e_m -}.
 
   (* periodic *)
-  d_ifp.
-    d_ifc; d_splitp; d_splitp; d_swap; d_splitp; d_rotate 3.
-    do 4 (d_swap; d_rotate 1); d_substp; d_swap; d_substc; d_swap; d_evalp.
-    d_splitp; d_destructpairp; repeat d_splitp.
-    do 2 (d_swap; d_rotate 1); d_swap; d_substp; d_splitp.
-    d_destructp (fun t => {-A (n, c) \notin t -});
-      d_existsp r Hf_r; d_existsp c_ Hf_c_; simpl_embed; d_splitp.
-    d_swap; d_substp; d_evalp.
-    d_rotate 1; d_swap; d_substp; d_evalp.
-    do 9 (d_swap; d_clear).
-    by d_swap; d_notp.
+  difp.
+    dsimpl; repeat dclear; dif; repeat (dsplitp; dswap).
+    dxchg 0 2; dtinjectionp; repeat dsplitp.
+    do 2 (dswap; dclear); dtgenp; dxchg 1 2; dtsubstep_l; dswap; dclear.
+    by dswap; dnotp.
 
-  d_evalp.
+  dsimplp.
+  rewrite /AOn; dexistsandclosed_l; dtgenp; dclean; dtsubstp_l.
+  rewrite /AOn; dtandelimselfap.
+  rewrite /AOn; dexistsandclosed_r; dtgenp; dclean; dtsubstp_r.
+  dteventuallyp'p.
 
-  d_have {-A
-    (on n', exists: (on n', event[0]<- CSLDeliver ' n ' (c, #0) /\ CPLDeliver ' n ' #0 \in Fois)) ->
-    (exists: on n', (on n', event[0]<- CSLDeliver ' n ' (c, #0) /\ CPLDeliver ' n ' #0 \in Fois))
-   -}.
-  {
-    d_ifc; d_splitp; d_swap; d_existsp m_ Hf_m_; d_existsc m_; simpl_embed.
-    d_splitc; first by d_assumption.
-    by d_splitp; d_splitc; d_assumption.
-  }
-
-  d_swap; eapply DARewriteIfP; first by d_head.
-  simpl_embed.
-
-  d_swap; d_clear.
-  d_have {-A
-    eventuallyp^ (exists: on n', (on n', event[0]<- CSLDeliver ' n ' (c, #0) /\ CPLDeliver ' n ' #0 \in Fois)) ->
-    eventuallyp (exists: on n', (on n', event[0]<- CSLDeliver ' n ' (c, #0) /\ CPLDeliver ' n ' #0 \in Fois))
-   -}.
-  {
-    by d_ifc; d_right.
-  }
-
-  d_swap; eapply DARewriteIfP; first by d_head.
-  simpl_embed.
-
-  set A := {-A
-    on n', event[0]<- CSLDeliver ' n ' (c, #0) /\ CPLDeliver ' n ' #0 \in Fois
-   -}.
-  d_have {-A
-    (exists: on n', A) =>> exists: A
-   -}.
-  {
-    eapply DTGeneralization; first by repeat constructor.
-    d_ifc; d_existsp m_ Hf_m_; d_existsc m_; simpl_embed.
-    d_splitp; d_splitc.
-      d_splitc; first by [].
-      by d_clear; d_splitp; d_splitp; d_clear.
-    by d_clear; d_splitp; d_assumption.
-  }
-
-  d_swap; eapply DARewriteEntailsP; first by d_head.
-  simpl_embed.
-
-  d_have {-A
+  set A := {-A on n', event[0]<- CSLDeliver ' n ' (c, $$0) /\
+    CPLDeliver ' n ' $$0 \in Fois -}.
+  dhave {-A
     (eventuallyp exists: A) <=> (exists: eventuallyp A)
-   -}; first by apply DTL127_3.
-
-  d_swap; eapply DARewriteCongruentPL; first by d_head.
-  by simpl_embed.
+  -}; first by apply DTL127_3.
+  by dtsubstp_l.
 Qed.
 
 Lemma L40 : empty_context |- perfect_link, {-A
