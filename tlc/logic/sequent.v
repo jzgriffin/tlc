@@ -169,6 +169,15 @@ Proof.
   - by dsplitp; dswap; dsplitp; dsplit; [dsplit |]; dassumption.
 Qed.
 
+(* Elimination of And *)
+Lemma DSAndElimSelf C Delta A :
+  Context Delta [::] ||- C, {-A
+    A /\ A <-> A
+  -}.
+Proof.
+  by dsplit; dif; [dsplitp | dsplit].
+Admitted.
+
 (* Elimination of And with True *)
 Lemma DSAndElimTL C Delta Gamma A :
   Context Delta Gamma ||- C, {-A ATrue /\ A <-> A -}.
