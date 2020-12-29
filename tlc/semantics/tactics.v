@@ -23,7 +23,8 @@ Ltac dautoeq :=
     rewrite (negbTE (introN eqP H))
   | H : ?y <> ?x |- context[ ?x == ?y ] =>
     rewrite (negbTE (introN eqP (not_eq_sym H)))
-  end.
+  end;
+  rewrite ?eq_refl ?andbT ?andTb ?andbF ?andFb /=.
 
 (* Automatically simplify replacement *)
 Ltac dreplace :=
