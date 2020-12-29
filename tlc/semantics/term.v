@@ -5,21 +5,123 @@
  *)
 
 Require Import mathcomp.ssreflect.eqtype.
+Require Import mathcomp.ssreflect.path.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
+Require Import mathcomp.ssreflect.ssrfun.
 Require Import mathcomp.ssreflect.ssrnat.
 Require Import tlc.semantics.constructor.
 Require Import tlc.semantics.error.
 Require Import tlc.semantics.pattern.
 Require Import tlc.syntax.all_syntax.
 Require Import tlc.utility.monad.
+Require Import tlc.utility.option.
+Require Import tlc.utility.partial_map.
 Require Import tlc.utility.result.
 Require Import tlc.utility.seq.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
+
+Definition argument_map := partial_map [eqType of parameter] (option term).
+
+(* Push a argument map to the next binding level when entering a binder *)
+Definition push_argument_map (am : argument_map) :=
+  map (fun '(P i j, t) => (P i.+1 j, t)) am.
+
+(* Pop a argument map to the previous binding level when exiting a binder
+ * Bindings initially at level 0 will be removed and returned separately.
+ *)
+Definition pop_argument_map (am : argument_map) :=
+  (map (fun '(P i j, t) => (P i.-1 j, t))
+    (filter (fun '(P i _, _) => i > 0) am),
+  map (fun '(P _ j, t) => (j, t))
+    (filter (fun '(P i _, _) => i == 0) am)).
+
+(* Get the set of binders appearing in an argument map *)
+Definition argument_map_binders (am : argument_map) :=
+  undup (map (fun '(P i _, _) => i) am).
+
+(* Get the number of binders appearing in an argument map *)
+Definition count_argument_map_binders am :=
+  if omax (argument_map_binders am) is Some k then k.+1 else 0.
+
+Fixpoint group_argument_map_by_binder_rec am k :=
+  let '(am, usm) := pop_argument_map am in
+  if k is k.+1 then rcons (group_argument_map_by_binder_rec am k) usm
+  else [:: usm].
+
+Definition group_argument_map_by_binder am :=
+  if count_argument_map_binders am is k.+1 then
+    group_argument_map_by_binder_rec am k
+  else [::].
+
+Definition flatten_argument_map_binder (usm : seq (nat * option term)) :=
+  (* Ensure all bindings are mapped *)
+  let js := map fst usm in
+  let j_count := if omax js is Some j then j.+1 else 0 in
+  if set_eq js (iota 0 j_count) && uniq js then
+    usm <- foldr
+      (fun '(j, t) z =>
+        if z is Some z then
+          if t is Some t then Some ((j, t) :: z)
+          else None
+        else None)
+      (Some [::])
+      usm;
+    pure (map snd (sort (fun '(j1, _) '(j2, _) => j1 <= j2) usm))
+  else None.
+
+(* Flatten an argument map into a sequence of arguments ordered from
+ * outermost to innermost
+ *)
+Definition flatten_argument_map (am : argument_map) :=
+  (* Ensure all binders are mapped *)
+  if set_eq (argument_map_binders am) (iota 0 (count_argument_map_binders am)) then
+    foldr
+      (fun usm z =>
+        z <- z;
+        us <- flatten_argument_map_binder usm;
+        pure (us :: z))
+      (Some [::])
+      (group_argument_map_by_binder am)
+  else None.
+
+(* Unify two terms within an argument map
+ * If the two terms are equal when substituting according to the map,
+ * an updated map is returned.
+ *)
+Fixpoint unify_term_with t' t am :=
+  let fix unify_cases_with cs' cs am :=
+    match cs', cs with
+    | [::], [::] => pure am
+    | (p', t') :: cs', (p, t) :: cs =>
+      if p' == p then
+        am <- unify_term_with t' t (push_argument_map am);
+        unify_cases_with cs' cs (pop_argument_map am).1
+      else None
+    | _, _ => None
+    end
+  in
+  match t', t with
+  | TParameter x', t =>
+    if am {@ x'} is Some ot' then
+      if ot' is Some t' then
+        if t' == t then pure am else None
+      else pure am {= x' := Some t}
+    else if t' == t then pure am else None
+  | TVariable x', TVariable x => if x' == x then pure am else None
+  | TConstructor c', TConstructor c => if c' == c then pure am else None
+  | TFunction f', TFunction f => if f' == f then pure am else None
+  | TUnknown u', TUnknown u => if u' == u then pure am else None
+  | TApplication f' a', TApplication f a =>
+    am <- unify_term_with f' f am;
+    unify_term_with a' a am
+  | TMatch cs', TMatch cs => unify_cases_with cs' cs am
+  | _, _ => None
+  end.
 
 (* Determine whether a term is a value
  * Values are constructors that are fully applied with value arguments.

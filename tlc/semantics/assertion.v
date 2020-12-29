@@ -8,12 +8,15 @@ Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
+Require Import mathcomp.ssreflect.ssrfun.
 Require Import mathcomp.ssreflect.ssrnat.
 Require Import tlc.semantics.error.
 Require Import tlc.semantics.predicate.
 Require Import tlc.semantics.term.
 Require Import tlc.syntax.all_syntax.
 Require Import tlc.utility.monad.
+Require Import tlc.utility.option.
+Require Import tlc.utility.partial_map.
 Require Import tlc.utility.result.
 Require Import tlc.utility.seq.
 
@@ -48,6 +51,15 @@ Fixpoint open_assertion_at k us A :=
   | ASelf A => ASelf <$> open_assertion_at k us A
   end.
 Definition open_assertion := open_assertion_at 0.
+
+Fixpoint open_assertion_multi uss A :=
+  match uss, A with
+  | us :: uss, AForAll A =>
+    A <- open_assertion us A;
+    open_assertion_multi uss A
+  | us :: uss, _ => Failure (0, P 0 0)
+  | [::], _ => pure A
+  end.
 
 (* Determine whether an assertion is locally closed
  * An assertion is locally closed if every parameter reference is well-formed.
@@ -213,6 +225,128 @@ Fixpoint replace_assertion_term x u A :=
 
 (* Replace all instances of variable x with term u within A *)
 Definition replace_assertion_var x u A := replace_assertion_term (TVariable x) u A.
+
+(* Extract the antecedent and consequent from an implication
+ * Returns the antecedent, consequent, number of outer universal
+ * quantifications, and implication constructor.  For example, if the
+ * implication is weak (p -> q), the constructor is AIf.  If the
+ * implication is strong (p =>> q), the constructor is AEntails.
+ *)
+Fixpoint extract_implication A :=
+  match A with
+  | AForAll A =>
+    z <- extract_implication A; let '(n, c, H, A) := z in
+    pure (n.+1, c, H, A)
+  | ANot (AAnd (ANot (ANot H)) (ANot A)) =>
+    pure (0, AIf, H, A)
+  | AAnd
+      (ANot (AAnd (ANot (ANot A1)) (ANot A2)))
+      (ANot (AAnd (ANot (ANot A2')) (ANot A1'))) =>
+    if (A1 == A1') && (A2 == A2') then pure (0, AIff, A1, A2)
+    else None
+  | AAnd
+      (ANot (AAnd (ANot (ANot H)) (ANot A)))
+      (AAlways' (ANot (AAnd (ANot (ANot H')) (ANot A')))) =>
+    if (H == H') && (A == A') then pure (0, AEntails, H, A)
+    else None
+  | AAnd
+      (AAnd
+        (ANot (AAnd (ANot (ANot H1)) (ANot A1)))
+        (ANot (AAnd (ANot (ANot A1')) (ANot H1'))))
+     (AAlways'
+        (AAnd
+          (ANot (AAnd (ANot (ANot H2)) (ANot A2)))
+          (ANot (AAnd (ANot (ANot A2')) (ANot H2'))))) =>
+    if (H1 == H1') && (H1' == H2) && (H2 == H2') &&
+       (A1 == A1') && (A1' == A2) && (A2 == A2') then
+      pure (0, ACongruent, H1, A1)
+    else None
+  | _ => None
+  end.
+
+(* Split an implication into its antecedent and consequent
+ * Returns the antecedent, consequent, and implication constructor.
+ * The antecedent and consequent have the same quantifiers as A.
+ *)
+Definition split_implication A :=
+  z <- extract_implication A; let '(n, c, H, A) := z in
+  pure (c, iter n AForAll H, iter n AForAll A).
+
+(* Form an implication from an antecedent, consequent, and constructor
+ * Shared quantifiers are merged at the top level.
+ *)
+Fixpoint join_implication c H A :=
+  match H, A with
+  | AForAll H, AForAll A =>
+    AForAll (join_implication c H A)
+  | H, A => c H A
+  end.
+
+(* Joining a split implication yields the original implication *)
+Lemma join_split_implication A' c H A :
+  split_implication A' = Some (c, H, A) ->
+  join_implication c H A = A'.
+Proof.
+Admitted.
+
+(* Unify two assertions within an argument map
+ * If the two assertions are equal when substituting according to the map,
+ * an updated map is returned.
+ *)
+Fixpoint unify_assertion_with A' A us :=
+  match A', A with
+  | AFalse, AFalse => Some us
+  | APredicate p', APredicate p => unify_predicate_with p' p us
+  | ANot A', ANot A => unify_assertion_with A' A us
+  | AAnd A'1 A'2, AAnd A1 A2 =>
+    us <- unify_assertion_with A'1 A1 us;
+    unify_assertion_with A'2 A2 us
+  | AForAll A', AForAll A =>
+    us <- unify_assertion_with A' A (push_argument_map us);
+    pure (pop_argument_map us).1
+  | AApplication A' t', AApplication A t =>
+    us <- unify_assertion_with A' A us;
+    unify_term_with t' t us
+  | AAlways' A', AAlways' A => unify_assertion_with A' A us
+  | AAlwaysP' A', AAlwaysP' A => unify_assertion_with A' A us
+  | AEventually' A', AEventually' A => unify_assertion_with A' A us
+  | AEventuallyP' A', AEventuallyP' A => unify_assertion_with A' A us
+  | ANext A', ANext A => unify_assertion_with A' A us
+  | APrevious A', APrevious A => unify_assertion_with A' A us
+  | ASelf A', ASelf A => unify_assertion_with A' A us
+  | _, _ => None
+  end.
+
+Fixpoint unify_assertion_rec A' A us :=
+  if A' is AForAll A' then
+    unify_assertion_rec A' A ((push_argument_map us) {= P 0 0 := None})
+  else unify_assertion_with A' A us.
+
+Definition unify_assertion A' A :=
+  am <- unify_assertion_rec A' A [::];
+  flatten_argument_map am.
+
+(* Find the first subterm of A that unifies with A' *)
+Fixpoint unify_sub_assertion A' A :=
+  if unify_assertion A' A is Some uss then Some uss
+  else
+    match A with
+    | AFalse => None
+    | APredicate _ => None
+    | ANot A => unify_sub_assertion A' A
+    | AAnd A1 A2 =>
+      if unify_sub_assertion A' A1 is Some uss then Some uss
+      else unify_sub_assertion A' A2
+    | AForAll A => unify_sub_assertion A' A
+    | AApplication A _ => unify_sub_assertion A' A
+    | AAlways' A => unify_sub_assertion A' A
+    | AAlwaysP' A => unify_sub_assertion A' A
+    | AEventually' A => unify_sub_assertion A' A
+    | AEventuallyP' A => unify_sub_assertion A' A
+    | ANext A => unify_sub_assertion A' A
+    | APrevious A => unify_sub_assertion A' A
+    | ASelf A => unify_sub_assertion A' A
+    end.
 
 (* Determine whether all occurrences of A' within A are positive or negative
  * p' is the positivity to check for; true for positive, false for negative.

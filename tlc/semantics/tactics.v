@@ -26,6 +26,18 @@ Ltac dautoeq :=
   end;
   rewrite ?eq_refl ?andbT ?andTb ?andbF ?andFb /=.
 
+(* Automatically split implications *)
+Ltac dsplitimpl :=
+  rewrite /split_implication /=;
+  dautoeq.
+
+(* Automatically resolve unifications *)
+Ltac dunify :=
+  rewrite
+    /unify_sub_assertion /=
+    /unify_assertion /=;
+  dautoeq.
+
 (* Automatically simplify replacement *)
 Ltac dreplace :=
   rewrite

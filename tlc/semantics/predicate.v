@@ -18,6 +18,21 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+(* Unify two predicates within an argument map
+ * If the two predicates are equal when substituting according to the map,
+ * an updated map is returned.
+ *)
+Definition unify_predicate_with p' p us :=
+  match p', p with
+  | PEqual x'1 x'2, PEqual x1 x2
+  | PLess x'1 x'2, PLess x1 x2
+  | PMember x'1 x'2, PMember x1 x2
+  | PExtension x'1 x'2, PExtension x1 x2 =>
+    us <- unify_term_with x'1 x1 us;
+    unify_term_with x'2 x2 us
+  | _, _ => None
+  end.
+
 (* Open a predicate p at depth k with bindings us *)
 Definition open_predicate_at k us p :=
   match p with
