@@ -16,7 +16,7 @@ Require Import tlc.semantics.all_semantics.
 Require Import tlc.syntax.all_syntax.
 Require Import tlc.utility.result.
 Require Import tlc.utility.seq.
- 
+
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -80,49 +80,82 @@ Ltac dttransp := dttransp_keep; dswap; dclear; dswap; dclear.
 
 (* State substituvity *)
 Axiom DSSubst :
-  forall C Z A1 A2 u A,
+  forall C Z R R1 R2 uss R1' R2' A,
   non_temporal_assertion A ->
-  Z ||- C, {-A A1 <-> A2 -} ->
+  split_implication R = Some (AIff, R1, R2) ->
+  unify_sub_assertion R1 A = Some uss ->
+  open_assertion_multi uss R1 = Success R1' ->
+  open_assertion_multi uss R2 = Success R2' ->
+  Z ||- C, R ->
   Z ||- C, {-A
-    (replace_assertion u A1 A) <-> (replace_assertion u A2 A)
+    replace_assertion R1' R2' A <-> replace_assertion R2' R1' A
   -}.
 
 (* Temporal substitutivity *)
-Axiom DTSubst :
-  forall C Z A1 A2 u A,
-  Z ||- C, {-A A1 <=> A2 -} ->
+Axiom DTSubstL :
+  forall C Z R R1 R2 uss R1' R2' A,
+  split_implication R = Some (ACongruent, R1, R2) ->
+  unify_sub_assertion R2 A = Some uss ->
+  open_assertion_multi uss R1 = Success R1' ->
+  open_assertion_multi uss R2 = Success R2' ->
+  Z ||- C, R ->
   Z ||- C, {-A
-    (replace_assertion u A1 A) <=> (replace_assertion u A2 A)
+    A <=> replace_assertion R2' R1' A
+  -}.
+Axiom DTSubstR :
+  forall C Z R R1 R2 uss R1' R2' A,
+  split_implication R = Some (ACongruent, R1, R2) ->
+  unify_sub_assertion R1 A = Some uss ->
+  open_assertion_multi uss R1 = Success R1' ->
+  open_assertion_multi uss R2 = Success R2' ->
+  Z ||- C, R ->
+  Z ||- C, {-A
+    A <=> replace_assertion R1' R2' A
   -}.
 
 (* Positive polarity *)
 Axiom DTSubstPos :
-  forall C Z A1 A2 u A,
-  all_assertion_occ_pos u A ->
-  Z ||- C, {-A A1 =>> A2 -} ->
+  forall C Z R RH RA uss RH' RA' A,
+  split_implication R = Some (AEntails, RH, RA) ->
+  unify_sub_assertion RH A = Some uss ->
+  open_assertion_multi uss RH = Success RH' ->
+  open_assertion_multi uss RA = Success RA' ->
+  all_assertion_occ_pos RH' A ->
+  Z ||- C, R ->
   Z ||- C, {-A
-    ((replace_assertion u A1 A) =>> (replace_assertion u A2 A))
+    A =>> replace_assertion RH' RA' A
   -}.
-Ltac dtsubstposp :=
+Ltac dtsubstposp_keep :=
   match goal with
-  | |- Context _ (AEntails ?A1_ ?A2_ :: ?A_ :: _) ||- _, _ =>
-    eapply DSCut;
-    [eapply DTSubstPos with (A1 := A1_) (A2 := A2_) (u := A1_) (A := A_);
-      [try by rewrite /all_assertion_occ_pos /= ?eqE /=
-        ?eq_refl ?if_same ?andbF ?andFb ?andbT ?andTb /=
-        | try by [] ] |
-    simpl; dclean; rewrite ?eq_refl ?andbF ?andFb;
-    dsplitp; dswap; dclear; difp; [by dclear | do 2 (dswap; dclear)] ]
+  | |- Context _ (?R_ :: ?A_ :: _) ||- _, _ =>
+    eapply DSCut; [eapply DTSubstPos with (R := R_) (A := A_);
+      [by dsplitimpl | by dunify | by [] | by [] |
+        by rewrite /all_assertion_occ_pos /=; dautoeq | by [] ] |
+      dclean; dsplitp; dswap; dclear; difp; first by dassumption]
   end.
+Ltac dtsubstposp := dtsubstposp_keep; do 2 (dswap; dclear).
 
 (* Negative polarity *)
 Axiom DTSubstNeg :
-  forall C Z A1 A2 u A,
-  all_assertion_occ_neg u A ->
-  Z ||- C, {-A A1 =>> A2 -} ->
+  forall C Z R RH RA uss RH' RA' A,
+  split_implication R = Some (AEntails, RH, RA) ->
+  unify_sub_assertion RA A = Some uss ->
+  open_assertion_multi uss RH = Success RH' ->
+  open_assertion_multi uss RA = Success RA' ->
+  all_assertion_occ_neg RA' A ->
+  Z ||- C, R ->
   Z ||- C, {-A
-    ((replace_assertion u A2 A) =>> (replace_assertion u A1 A))
+    A =>> replace_assertion RA' RH' A
   -}.
+Ltac dtsubstnegp_keep :=
+  match goal with
+  | |- Context _ (?R_ :: ?A_ :: _) ||- _, _ =>
+    eapply DSCut; [eapply DTSubstNeg with (R := R_) (A := A_);
+      [by dsplitimpl | by dunify | by [] | by [] |
+        by rewrite /all_assertion_occ_neg /=; dautoeq | by [] ] |
+      dclean; dsplitp; dswap; dclear; difp; first by dassumption]
+  end.
+Ltac dtsubstnegp := dtsubstnegp_keep; do 2 (dswap; dclear).
 
 (* Reflexivity of equality *)
 Axiom DTReflE :
@@ -811,50 +844,36 @@ Proof.
 Admitted.
 
 (* Further tactics *)
-Ltac dtsubstp_l :=
+Ltac dtsubstp_l_keep :=
   match goal with
-  | |- Context _ ({-A ?A1_ <=> ?A2_ -} :: ?H_ :: _) ||- _, _ =>
-    eapply DSCut; first (by eapply DTSubst with
-      (A1 := A1_) (A2 := A2_) (u := A1_) (A := H_))
-  end;
-  dclean;
-  dsplitp; dswap; dclear;
-  dsplitp; dswap; dclear;
-  difp; first (by dassumption);
-  dswap; dclear;
-  dswap; dclear.
-Ltac dtsubstp_r :=
+  | |- Context _ (?R_ :: ?H_ :: _) ||- _, _ =>
+    eapply DSCut; [eapply DTSubstR with (R := R_) (A := H_);
+      [by dsplitimpl | by dunify | by [] | by [] | by [] ] |
+    dclean; do 2 (dsplitp; dswap; dclear); difp; first by dassumption]
+  end.
+Ltac dtsubstp_l := dtsubstp_l_keep; do 2 (dswap; dclear).
+Ltac dtsubstp_r_keep :=
   match goal with
-  | |- Context _ ({-A ?A1_ <=> ?A2_ -} :: ?H_ :: _) ||- _, _ =>
-    eapply DSCut; first (by eapply DTSubst with
-      (A1 := A1_) (A2 := A2_) (u := A2_) (A := H_))
-  end;
-  dclean;
-  dsplitp; dswap; dclear;
-  dsplitp; dclear;
-  difp; first (by dassumption);
-  dswap; dclear;
-  dswap; dclear.
+  | |- Context _ (?R_ :: ?H_ :: _) ||- _, _ =>
+    eapply DSCut; [eapply DTSubstL with (R := R_) (A := H_);
+      [by dsplitimpl | by dunify | by [] | by [] | by [] ] |
+    dclean; do 2 (dsplitp; dswap; dclear); difp; first by dassumption]
+  end.
+Ltac dtsubstp_r := dtsubstp_r_keep; do 2 (dswap; dclear).
 Ltac dtsubst_l :=
   match goal with
-  | |- Context _ ({-A ?A1_ <=> ?A2_ -} :: _) ||- _, ?A_ =>
-    eapply DSCut; first (by eapply DTSubst with
-      (A1 := A1_) (A2 := A2_) (u := A2_) (A := A_))
-  end;
-  dclean;
-  dsplitp; dswap; dclear;
-  dsplitp; dswap; dclear;
-  difp; last (by dassumption).
+  | |- Context _ (?R_ :: _) ||- _, ?A_ =>
+    eapply DSCut; [eapply DTSubstL with (R := R_) (A := A_);
+      [by dsplitimpl | by dunify | by [] | by [] | by [] ] |
+    dclean; dsplitp; dswap; dclear; dsplitp; dclear; difp; last by dassumption]
+  end.
 Ltac dtsubst_r :=
   match goal with
-  | |- Context _ ({-A ?A1_ <=> ?A2_ -} :: _) ||- _, ?A_ =>
-    eapply DSCut; first (by eapply DTSubst with
-      (A1 := A1_) (A2 := A2_) (u := A1_) (A := A_))
-  end;
-  dclean;
-  dsplitp; dswap; dclear;
-  dsplitp; dclear;
-  difp; last (by dassumption).
+  | |- Context _ (?R_ :: _) ||- _, ?A_ =>
+    eapply DSCut; [eapply DTSubstR with (R := R_) (A := A_);
+      [by dsplitimpl | by dunify | by[] | by [] | by [] ] |
+    dclean; dsplitp; dswap; dclear; dsplitp; dclear; difp; last by dassumption]
+  end.
 Ltac dtreple_cl :=
   rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
   match goal with
