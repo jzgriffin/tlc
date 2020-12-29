@@ -168,3 +168,13 @@ Fixpoint onth A (xs : seq A) i :=
   | _ :: xs, i.+1 => onth xs i
   | _, _ => None
   end.
+
+(* Get the maximum element from a sequence
+ * If the sequence is empty, None is returned.
+ *)
+Fixpoint omax xs :=
+  match xs with
+  | [::] => None
+  | [:: x] => Some x
+  | x :: xs => if omax xs is Some k then Some (max x k) else None
+  end.
