@@ -827,6 +827,14 @@ Lemma DTEntailsAlwaysC C Z H A :
 Proof.
 Admitted.
 
+Lemma DTAndAssoc C Delta A1 A2 A3 :
+  Context Delta [::] ||- C, {-A
+    (A1 /\ A2) /\ A3 <=>
+    A1 /\ (A2 /\ A3)
+  -}.
+Proof.
+Admitted.
+
 Lemma DTOrComm C Z H1 H2 :
   Z ||- C, {-A (H1 \/ H2) <=> (H2 \/ H1) -}.
 Proof.
