@@ -628,10 +628,10 @@ Proof.
   (* Used in PLC *)
 Admitted.
 
-Lemma DTL126 C Z A B :
-  Z ||- C, {-A
-    eventuallyp (eventuallyp A /\ eventually B) ->
-    eventuallyp (A /\ eventually B)
+Lemma DTL126 C Delta A1 A2 :
+  Context Delta [::] ||- C, {-A
+    eventuallyp (eventuallyp A1 /\ eventually A2) =>>
+    eventuallyp (A1 /\ eventually A2)
   -}.
 Proof.
   (* Provable by DTL102_3 and DTL83_1 *)
