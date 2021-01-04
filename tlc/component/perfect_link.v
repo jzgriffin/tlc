@@ -731,126 +731,70 @@ Proof.
 Qed.
 
 Lemma L38 Delta : Context Delta [::] ||- perfect_link, {-A
-  forall: forall:
-  correct #1 /\ correct #0 ->
-  forall: forall: (* 3:n, 2:n', 1:m, 0:c *)
-  on #2, event[0]<- CSLDeliver ' #3 ' (#0, #1) =>>
-  eventually on #2,
-    event[]<- CPLDeliver ' #3 ' #1 \/
-    exists: (* m' *)
-      (eventuallyp ((on #4, self-event /\ (0, CSLSend ' #3 ' (#1, #0)) \in Fors) /\
-      eventually on #3, event[]<- CPLDeliver ' #4 ' #0))
+  forall: forall: forall: forall: (* n, n', m, c *)
+  $$3 \in UCorrect /\ $$2 \in UCorrect ->
+  on $$2, event[0]<- CSLDeliver ' $$3 ' ($$0, $$1) =>>
+  eventually (on $$2, event[]<- CPLDeliver ' $$3 ' $$1) \/
+  exists: (* m' *)
+    eventuallyp (on $$4, (0, CSLSend ' $$3 ' ($$1, $$0)) \in Fors /\ self-event /\
+      eventually on $$3, event[]<- CPLDeliver ' $$4 ' $$0)
  -}.
 Proof.
-  (* Introduce context *)
-  set C := perfect_link; rewrite -/C /empty_context.
-  d_forallc n Hf_n; d_forallc n' Hf_n'; simpl_embed.
-  d_ifc; d_splitp; d_forallc m Hf_m; d_forallc c Hf_c; simpl_embed.
+  dforall n; dforall n'; dforall m; dforall c; dif.
+
+  dhave {-A (n, c) \notin (Fs ' n').2 \/ (n, c) \in (Fs ' n').2 -}.
+  {
+    duse DPMemberReflect; dforallp {-t (n, c) -}; dforallp {-t (Fs ' n').2 -};
+      dtgenp; dclean; dtsubst_l; dclear.
+    dcase {-t FCount ' (? n, ? c) ' (? Fs ' ? n').2 == 0 -}; dorp;
+      dtgenp; dtsubste_l; dclear; dsimpl; repeat dclear;
+      by dif.
+  }
+
+  eapply DSCut; first (by eapply DTEntailsAlwaysC with
+    (H := {-A on n', event[0]<- CSLDeliver ' n ' (c, m) -});
+    dtgenp; dhead); dswap; dclear.
+  eapply DSCut; first (by apply DTEntailsTautology with
+    (A := {-A on n', event[0]<- CSLDeliver ' n ' (c, m) -}));
+    rewrite -DTEntailsAndSplitP.
+  eapply DSCut; first (by apply DSOrDistribAnd2 with
+    (A := {-A on n', event[0]<- CSLDeliver ' n ' (c, m) -})
+    (A1 := {-A (n, c) \notin (Fs ' n').2 -})
+    (A2 := {-A (n, c) \in (Fs ' n').2 -}));
+    dtgenp; dclean; dtsubstp_l.
+
+  (* Align false case with L39 precondition *)
+  dhave {-A
+    (on n', event[0]<- CSLDeliver ' n ' (c, m)) /\ (n, c) \notin (Fs ' n').2 =>>
+    on n', event[0]<- CSLDeliver ' n ' (c, m) /\ (n, c) \notin (Fs ' n').2
+  -}.
+  {
+    repeat dclear; dtgen; dif; repeat dsplitp.
+    by dsplit; [| dsplit]; dassumption.
+  }
+  dtsubstposp.
+
+  (* Align true case with L40 precondition *)
+  dhave {-A
+    (on n', event[0]<- CSLDeliver ' n ' (c, m)) /\ (n, c) \in (Fs ' n').2 =>>
+    self-event /\ (on n', (n, c) \in (Fs ' n').2)
+  -}.
+  {
+    repeat dclear; dtgen; dif; repeat dsplitp.
+    dsplit; last by dsplit; dassumption.
+    by dswap; duse DPSubIndicationSelf; dtsubstposp.
+  }
+  dtsubstposp.
 
   (* By Lemma 39 *)
-  d_use_empty L39; d_forallp n; d_forallp n'; simpl_embed.
-  d_ifp; first by d_splitc; d_assumption.
-  d_forallp m; d_forallp c; simpl_embed.
+  duse L39; dforallp n; dforallp n'; dforallp m; dforallp c; difp; first by dassumption.
+  dtsubstposp.
 
-  d_have {-A
-    self-event /\ on n', ((n, c) \in TRight (Fs ' n')) =>>
-    exists: (* m *)
-      eventuallyp ((on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) /\ self-event) /\
-        eventually on n', event[]<- CPLDeliver ' n ' #0)
-   -}.
-  {
-    d_clear; d_evalc.
+  (* By Lemma 40 *)
+  duse L40; dforallp n; dforallp n'; dforallp c; difp; first by dassumption.
+  dtsubstposp.
 
-    (* By Lemma 40 *)
-    d_use_empty L40; d_forallp n; d_forallp n'; simpl_embed.
-    d_ifp; first by d_splitc; d_assumption.
-    d_forallp c; simpl_embed.
-
-    d_have {-A
-      (on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) /\ self-event /\
-        eventually on n', event[]<- CPLDeliver ' n ' m) ->
-      (on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) /\ self-event) /\
-        eventually on n', event[]<- CPLDeliver ' n ' m
-     -}.
-    {
-      d_ifc; d_splitp; d_splitc; first by d_splitc; [| d_swap; d_splitp].
-      by d_swap; d_splitp; d_swap.
-    }
-
-    d_swap.
-    eapply DARewriteIfInExistsP with
-      (Arp := {-A on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) /\
-          self-event /\ eventually on n', event []<- CPLDeliver ' n ' #0
-         -})
-      (Arc := {-A (on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) /\ self-event) /\
-          eventually on n', event []<- CPLDeliver ' n ' #0
-         -});
-      first by d_existsc m; simpl_embed; d_assumption.
-    by rewrite /rewrite_pos_in_exists /=; simpl_embed.
-  }
-
-  d_have {-A
-    on n', event[0]<- CSLDeliver ' n ' (c, m) /\ (n, c) \in TRight (Fs ' n') =>>
-    self-event /\ on n', ((n, c) \in TRight (Fs ' n'))
-   -}.
-  {
-    eapply DTGeneralization; first by repeat constructor.
-    d_ifc.
-    d_splitc.
-      d_splitp.
-      d_use_empty DPSecondIndicationSelf; d_forallp {-t CSLDeliver ' n ' (c, m) -};
-        simpl_embed.
-      eapply DARewriteEntailsC; first by d_head.
-      simpl_embed.
-      by d_clear; d_splitp; d_swap.
-    by repeat d_splitp; d_splitc; d_assumption.
-  }
-
-  eapply DARewriteEntailsP; first by d_head.
-  simpl_embed.
-
-  d_have {-A
-    (on n, ((0, CSLSend ' n' ' (c, m)) \in Fors) /\ self-event) =>>
-    (on n, self-event /\ (0, CSLSend ' n' ' (c, m)) \in Fors)
-   -}.
-  {
-    eapply DTGeneralization; first by repeat constructor.
-    by d_ifc; repeat d_splitp; d_splitc; [d_splitc |]; d_assumption.
-  }
-
-  d_swap.
-  eapply DARewriteEntailsInExistsP with
-    (Arp := {-A on n, ((0, CSLSend ' n' ' (c, #0)) \in Fors) /\ self-event -})
-    (Arc := {-A on n, self-event /\ (0, CSLSend ' n' ' (c, #0)) \in Fors -});
-    first by d_existsc m; simpl_embed; d_assumption.
-  rewrite /rewrite_pos_in_exists /=; simpl_embed.
-
-  set A := {-A on n', event[0]<- CSLDeliver ' n ' (c, m) -}.
-  set B := {-A (n, c) \notin TRight (Fs ' n') -}.
-  set D := {-A (n, c) \in TRight (Fs ' n') -}.
-  d_have {-A
-    A =>> A /\ (B \/ D)
-   -}.
-  {
-    eapply DTGeneralization; first by repeat constructor.
-    d_ifc; d_splitc; first by d_head.
-    by d_ifc.
-  }
-
-  eapply DARewriteIffPL with
-    (Arp := {-A A /\ (B \/ D) -})
-    (Arc := {-A (A /\ B) \/ (A /\ D) -}).
-  eapply DSOrDistributesAnd with
-    (A := {-A A -})
-    (Al := {-A B -})
-    (Ar := {-A D -}).
-  simpl_embed.
-
-  eapply DARewriteEntailsP; first by d_rotate 3; d_head.
-  simpl_embed; rewrite andbF.
-
-  eapply DARewriteEntailsP; first by d_head.
-  by simpl_embed.
+  by [].
 Qed.
 
 (* Reliable delivery
