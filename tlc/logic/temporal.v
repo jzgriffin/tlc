@@ -870,6 +870,13 @@ Lemma DTOrDistrib2 C Delta A1 A2 A3 :
 Proof.
 Admitted.
 
+Lemma DTOrElimSelf C Delta A :
+  Context Delta [::] ||- C, {-A
+    A \/ A <=> A
+  -}.
+Proof.
+Admitted.
+
 Lemma DTOrComm C Z H1 H2 :
   Z ||- C, {-A (H1 \/ H2) <=> (H2 \/ H1) -}.
 Proof.
