@@ -663,6 +663,13 @@ Proof.
   (* Used in PLC *)
 Admitted.
 
+Ltac dteventuallyexistscomm :=
+  match goal with
+  | |- context[ {-A eventually (exists: ?A_) -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTL127_2 with
+      (A := A_))
+  end.
+
 Lemma DTL127_3 C Z A :
   Z ||- C, {-A eventuallyp (exists: A) <=> (exists: eventuallyp A) -}.
 Proof.
