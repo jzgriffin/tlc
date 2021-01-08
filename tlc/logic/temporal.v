@@ -650,6 +650,13 @@ Proof.
   (* Used in PLC *)
 Admitted.
 
+Ltac dteventuallyorcomm :=
+  match goal with
+  | |- context[ {-A eventually (?A1_ \/ ?A2_) -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTL127_1 with
+      (A := A1_) (B := A2_))
+  end.
+
 Lemma DTL127_2 C Z A :
   Z ||- C, {-A eventually (exists: A) <=> (exists: eventually A) -}.
 Proof.
