@@ -130,10 +130,10 @@ Ltac dtsubstposp_keep :=
   | |- Context _ (?R_ :: ?A_ :: _) ||- _, _ =>
     eapply DSCut; [eapply DTSubstPos with (R := R_) (A := A_);
       [by dsplitimpl | by dunify | by [] | by [] |
-        by rewrite /all_assertion_occ_pos /=; dautoeq | by [] ] |
+        by rewrite /all_assertion_occ_pos /=; repeat dautoeq | by [] ] |
       dclean; dsplitp; dswap; dclear; difp; first by dassumption]
   end.
-Ltac dtsubstposp := dtsubstposp_keep; do 2 (dswap; dclear).
+Ltac dtsubstposp := dtsubstposp_keep; do 2 (dswap; dclear); repeat dautoeq.
 
 (* Negative polarity *)
 Axiom DTSubstNeg :
@@ -152,10 +152,10 @@ Ltac dtsubstnegp_keep :=
   | |- Context _ (?R_ :: ?A_ :: _) ||- _, _ =>
     eapply DSCut; [eapply DTSubstNeg with (R := R_) (A := A_);
       [by dsplitimpl | by dunify | by [] | by [] |
-        by rewrite /all_assertion_occ_neg /=; dautoeq | by [] ] |
+        by rewrite /all_assertion_occ_neg /=; repeat dautoeq | by [] ] |
       dclean; dsplitp; dswap; dclear; difp; first by dassumption]
   end.
-Ltac dtsubstnegp := dtsubstnegp_keep; do 2 (dswap; dclear).
+Ltac dtsubstnegp := dtsubstnegp_keep; do 2 (dswap; dclear); repeat dautoeq.
 
 (* Reflexivity of equality *)
 Axiom DTReflE :
