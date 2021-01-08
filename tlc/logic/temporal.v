@@ -766,6 +766,13 @@ Lemma DTAndEntails C Delta H A :
 Proof.
 Admitted.
 
+Lemma DTAndElimSelf C Delta A :
+  Context Delta [::] ||- C, {-A
+    A /\ A <=> A
+  -}.
+Proof.
+Admitted.
+
 Lemma DTEntailsTautology C Z A :
   Z ||- C, {-A
     A =>> A
