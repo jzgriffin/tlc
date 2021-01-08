@@ -990,3 +990,12 @@ Ltac dtandelimselfap :=
       (A := A1_));
     dtgenp; dclean; dtsubstp_l
   end; dclean.
+
+Ltac dtordistrib2_2 :=
+  match goal with
+  | |- context[ {-A ?A1_ /\ (?A2_ \/ ?A3_) -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTOrDistrib2 with
+      (A1 := A1_) (A2 := A2_) (A3 := A3_)); dtsubstp_l;
+    eapply DSCut; first (by repeat dclear; apply DTEntailsAndDropLeft with
+      (A1 := A1_) (A2 := A2_)); dtsubstposp
+  end.
