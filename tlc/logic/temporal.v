@@ -309,6 +309,12 @@ Proof.
   (* Used in PLC *)
 Admitted.
 
+Ltac dteventuallyidemp :=
+  match goal with
+  | |- context[ {-A eventually eventually ?A_ -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTL84 with (A := A_))
+  end.
+
 Lemma DTL85 C Z A1 A2 A3 :
   Z ||- C, {-A A1 =>> eventuallyp A2 -} ->
   Z ||- C, {-A A2 =>> eventuallyp A3 -} ->
