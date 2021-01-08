@@ -18,6 +18,28 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+Definition push_predicate_params_rec p k :=
+  match p with
+  | PEqual x1 x2 =>
+    PEqual
+      (push_term_params_rec x1 k)
+      (push_term_params_rec x2 k)
+  | PLess x1 x2 =>
+    PLess
+      (push_term_params_rec x1 k)
+      (push_term_params_rec x2 k)
+  | PMember y xs =>
+    PMember
+      (push_term_params_rec y k)
+      (push_term_params_rec xs k)
+  | PExtension xs' xs =>
+    PExtension
+      (push_term_params_rec xs' k)
+      (push_term_params_rec xs k)
+  end.
+
+Definition push_predicate_params p := push_predicate_params_rec p 0.
+
 (* Unify two predicates within an argument map
  * If the two predicates are equal when substituting according to the map,
  * an updated map is returned.

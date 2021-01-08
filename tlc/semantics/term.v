@@ -25,6 +25,29 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+Fixpoint push_term_params_rec t k :=
+  let fix push_match_params_rec cs k :=
+    match cs with
+    | [::] => [::]
+    | (p, t) :: cs =>
+      (p, push_term_params_rec t k) :: push_match_params_rec cs k
+    end in
+  match t with
+  | TParameter (P i j) =>
+    if i >= k then TParameter (P i.+1 j) else TParameter (P i j)
+  | TVariable x => TVariable x
+  | TConstructor c => TConstructor c
+  | TFunction f => TFunction f
+  | TUnknown u => TUnknown u
+  | TApplication f a =>
+    TApplication
+      (push_term_params_rec f k)
+      (push_term_params_rec a k)
+  | TMatch cs => TMatch (push_match_params_rec cs k.+1)
+  end.
+
+Definition push_term_params t := push_term_params_rec t 0.
+
 Definition argument_map := partial_map [eqType of parameter] (option term).
 
 (* Push a argument map to the next binding level when entering a binder *)

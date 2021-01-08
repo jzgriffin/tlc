@@ -24,6 +24,31 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+Fixpoint push_assertion_params_rec A k :=
+  match A with
+  | AFalse => AFalse
+  | APredicate p => APredicate (push_predicate_params_rec p k)
+  | ANot A => ANot (push_assertion_params_rec A k)
+  | AAnd A1 A2 =>
+    AAnd
+      (push_assertion_params_rec A1 k)
+      (push_assertion_params_rec A2 k)
+  | AForAll A => AForAll (push_assertion_params_rec A k.+1)
+  | AApplication A t =>
+    AApplication
+      (push_assertion_params_rec A k)
+      (push_term_params_rec t k)
+  | AAlways' A => AAlways' (push_assertion_params_rec A k)
+  | AAlwaysP' A => AAlwaysP' (push_assertion_params_rec A k)
+  | AEventually' A => AEventually' (push_assertion_params_rec A k)
+  | AEventuallyP' A => AEventuallyP' (push_assertion_params_rec A k)
+  | ANext A => ANext (push_assertion_params_rec A k)
+  | APrevious A => APrevious (push_assertion_params_rec A k)
+  | ASelf A => ASelf (push_assertion_params_rec A k)
+  end.
+
+Definition push_assertion_params A := push_assertion_params_rec A 0.
+
 (* Determine whether an asserion is a universal quantification *)
 Definition assertion_univ A := if A is AForAll _ then true else false.
 
