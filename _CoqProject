@@ -51,6 +51,13 @@ tlc/logic/program.v
 tlc/logic/tactics.v
 tlc/logic/all_logic.v
 tlc/component/stubborn_link.v
+tlc/component/stubborn_link_1.v
+tlc/component/stubborn_link_2.v
+tlc/component/stubborn_link_spec.v
 tlc/component/perfect_link.v
+tlc/component/perfect_link_1.v
+tlc/component/perfect_link_2.v
+tlc/component/perfect_link_3.v
+tlc/component/perfect_link_spec.v
 tlc/component/all_component.v
 tlc/all.v
