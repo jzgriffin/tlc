@@ -862,6 +862,14 @@ Lemma DTAndAssoc C Delta A1 A2 A3 :
 Proof.
 Admitted.
 
+Lemma DTAndExampleExists C Delta H1 H2 x :
+  Context Delta [::] ||- C, {-A
+    ((forall: H1) ' x /\ exists: H1 /\ H2) =>>
+    (forall: H2) ' x
+  -}.
+Proof.
+Admitted.
+
 Lemma DTAndIntoExists C Delta A1 A2 :
   assertion_closed_in [::] Delta A1 ->
   Context Delta [::] ||- C, {-A
