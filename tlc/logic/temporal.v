@@ -891,6 +891,14 @@ Lemma DTAndIntoExists C Delta A1 A2 :
 Proof.
 Admitted.
 
+Ltac dtandintoexists :=
+  match goal with
+  | |- context[ {-A ?A1_ /\ exists: ?A2_ -} ] =>
+    eapply DSCut; first (by repeat dclear; eapply DTAndIntoExists with
+      (A1 := A1_) (A2 := A2_); first by dautoclosed);
+    rewrite /push_assertion_params /=; dclean
+  end.
+
 Lemma DTOrDistrib2 C Delta A1 A2 A3 :
   Context Delta [::] ||- C, {-A
     A1 /\ (A2 \/ A3) <=>
