@@ -907,6 +907,13 @@ Lemma DTAndHA_L C Delta A' H A :
 Proof.
 Admitted.
 
+Ltac dtandha_l :=
+  match goal with
+  | |- Context _ _ ||- _, {-A ?A'_ /\ ?H_ =>> ?A'_ /\ ?A_ -} =>
+    eapply DSCut; first (by repeat dclear; apply DTAndHA_L with
+      (A' := A'_) (H := H_) (A := A_))
+  end.
+
 Lemma DTOrDistrib2 C Delta A1 A2 A3 :
   Context Delta [::] ||- C, {-A
     A1 /\ (A2 \/ A3) <=>
