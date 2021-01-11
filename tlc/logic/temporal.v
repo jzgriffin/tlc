@@ -438,15 +438,20 @@ Lemma DTL102_3 C Z A1 A2 :
 Proof.
 Admitted.
 
-Lemma DTL103_1 C Z A :
-  Z ||- C, {-A (eventually A /\ always^ ~A) =>> A -}.
+Lemma DTL103_1 C Delta A1 A2 :
+  Context Delta [::] ||- C, {-A
+    (eventually (A1 /\ A2) /\ always^ ~A1) =>>
+    A1 /\ A2
+  -}.
 Proof.
 Admitted.
 
-Lemma DTL103_2 C Z A :
-  Z ||- C, {-A (eventuallyp A /\ alwaysp^ ~A) =>> A -}.
+Lemma DTL103_2 C Delta A1 A2 :
+  Context Delta [::] ||- C, {-A
+    (eventuallyp (A1 /\ A2) /\ alwaysp^ ~A1) =>>
+    A1 /\ A2
+  -}.
 Proof.
-  (* Used in PLC *)
 Admitted.
 
 Lemma DTL104 C Z A :
