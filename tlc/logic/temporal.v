@@ -862,6 +862,15 @@ Lemma DTAndAssoc C Delta A1 A2 A3 :
 Proof.
 Admitted.
 
+Lemma DTAndIntoExists C Delta A1 A2 :
+  assertion_closed_in [::] Delta A1 ->
+  Context Delta [::] ||- C, {-A
+    A1 /\ exists: A2 =>>
+    exists: push_assertion_params A1 /\ A2
+  -}.
+Proof.
+Admitted.
+
 Lemma DTOrDistrib2 C Delta A1 A2 A3 :
   Context Delta [::] ||- C, {-A
     A1 /\ (A2 \/ A3) <=>
