@@ -899,6 +899,14 @@ Ltac dtandintoexists :=
     rewrite /push_assertion_params /=; dclean
   end.
 
+Lemma DTAndHA_L C Delta A' H A :
+  Context Delta [::] ||- C, {-A
+    (A' /\ H =>> A' /\ A) <=>
+    (H =>> A)
+  -}.
+Proof.
+Admitted.
+
 Lemma DTOrDistrib2 C Delta A1 A2 A3 :
   Context Delta [::] ||- C, {-A
     A1 /\ (A2 \/ A3) <=>
