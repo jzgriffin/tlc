@@ -873,7 +873,7 @@ Admitted.
 Lemma DTAndIntoExists C Delta A1 A2 :
   assertion_closed_in [::] Delta A1 ->
   Context Delta [::] ||- C, {-A
-    A1 /\ exists: A2 =>>
+    (A1 /\ exists: A2) =>>
     exists: push_assertion_params A1 /\ A2
   -}.
 Proof.
