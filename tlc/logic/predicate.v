@@ -197,6 +197,14 @@ Lemma DPMemberSingleton C Delta :
 Proof.
   (* Used in SLC *)
 Admitted.
+Ltac dpmembersingletonp :=
+  match goal with
+  | |- Context _ ({-A ?x \in [?y] -} :: _) ||- _, _ =>
+    duse DPMemberCons;
+    dforallp x; dforallp y; dforallp {-t [] -};
+    dsplitp; dswap; dclear; difp; first (by []);
+    dorp; last (by dpmembernilp); dswap; dclear
+  end.
 
 (* Membership is closed under mapping *)
 Lemma DPMemberMap C Delta :
