@@ -171,6 +171,11 @@ Lemma DPMemberNil C Delta :
 Proof.
   (* Used in SLC & PLC *)
 Admitted.
+Ltac dpmembernilp :=
+  match goal with
+  | |- Context _ ({-A ?x \in [] -} :: _) ||- _, _ =>
+    duse DPMemberNil; dforallp x; dnotp
+  end.
 
 (* Inductive definition of Member *)
 Lemma DPMemberCons C Delta :
