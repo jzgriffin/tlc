@@ -882,6 +882,14 @@ Lemma DTAndExampleExists C Delta H1 H2 x :
 Proof.
 Admitted.
 
+Lemma DTExistsConstant C Delta A :
+  assertion_closed_in [::] Delta A ->
+  Context Delta [::] ||- C, {-A
+    A <=> exists: A
+  -}.
+Proof.
+Admitted.
+
 Lemma DTAndIntoExists C Delta A1 A2 :
   assertion_closed_in [::] Delta A1 ->
   Context Delta [::] ||- C, {-A
