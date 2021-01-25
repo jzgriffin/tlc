@@ -1012,6 +1012,19 @@ Lemma DTAndImplies C Delta A1 A2 :
 Proof.
 Admitted.
 
+Lemma DTEntailsTrue C Delta H :
+  Context Delta [::] ||- C, {-A
+    (H =>> ATrue) <=> ATrue
+  -}.
+Proof.
+Admitted.
+Ltac dtentailstrue_l :=
+  match goal with
+  | |- context[ {-A ?H_ =>> ATrue -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTEntailsTrue with
+      (H := H_))
+  end.
+
 (* Further tactics *)
 Ltac dtsubstp_l_keep :=
   match goal with
