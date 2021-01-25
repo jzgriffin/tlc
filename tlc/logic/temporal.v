@@ -1073,6 +1073,12 @@ Ltac dtmergeentailsifp :=
     eapply DSCut; first (by repeat dclear; apply DTMergeEntailsIf with
       (H1 := H1_) (H2 := H2_) (A := A_)); dtsubstposp
   end.
+Ltac dtmergeif :=
+  match goal with
+  | |- context[ {-A ?H1_ -> ?H2_ -> ?A_ -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DSMergeIf with
+      (H1 := H1_) (H2 := H2_) (A := A_)); dtgenp; dclean
+  end.
 
 Ltac dtandelimselfap :=
   match goal with
