@@ -110,6 +110,20 @@ Axiom DSEM :
   forall C Z A,
   Z ||- C, {-A A \/ ~A -}.
 
+(* DeMorgan's laws *)
+Lemma DSDeMorgan_1 C Delta A1 A2 :
+  Context Delta [::] ||- C, {-A
+    ~(A1 /\ A2) <-> ~A1 \/ ~A2
+  -}.
+Proof.
+Admitted.
+Ltac dsdemorgan_1r :=
+  match goal with
+  | |- context[ {-A ~?A1_ \/ ~?A2_ -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DSDeMorgan_1 with
+      (A1 := A1_) (A2 := A2_))
+  end.
+
 (* True can always be proven *)
 Lemma DSTrue C Delta Gamma :
   Context Delta Gamma ||- C, ATrue.
