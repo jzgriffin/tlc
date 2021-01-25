@@ -385,10 +385,16 @@ Proof.
 Admitted.
 
 Lemma DTL97 C Z A1 A2 A3 :
-  Z ||- C, {-A (A1 =>> always A2) /\ (A2 =>> A3) -> A1 =>> always A3 -}.
+  Z ||- C, {-A (A1 =>> always A2) /\ (A2 =>> A3) =>> A1 =>> always A3 -}.
 Proof.
   (* Used in PLC *)
 Admitted.
+Ltac dtl97 :=
+  match goal with
+  | |- context[ {-A (?A1_ =>> always ?A2_) /\ (?A2_ =>> ?A3_) -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTL97 with
+      (A1 := A1_) (A2 := A2_) (A3 := A3_))
+  end.
 
 Lemma DTL98_1 C Z A :
   Z ||- C, {-A eventuallyp always A =>> A -}.
