@@ -1025,6 +1025,13 @@ Ltac dtentailstrue_l :=
       (H := H_))
   end.
 
+Lemma DTSelfTrue C Delta :
+  Context Delta [::] ||- C, {-A
+    self ATrue
+  -}.
+Proof.
+Admitted.
+
 (* Further tactics *)
 Ltac dtsubstp_l_keep :=
   match goal with
