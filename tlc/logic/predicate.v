@@ -257,3 +257,11 @@ Ltac dpmembersetunion :=
     dforallp y; dforallp z; dforallp x; dclean;
     dsplitp; dswap; dclear; difp; last by []
   end.
+
+Lemma DPCountSingleton C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: (* x *)
+    FCount ' $$0 ' [$$0] = 1
+  -}.
+Proof.
+Admitted.
