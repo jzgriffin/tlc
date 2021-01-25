@@ -939,6 +939,23 @@ Ltac dtandha_l :=
       (A' := A'_) (H := H_) (A := A_))
   end.
 
+Lemma DTConcludeHypothesis C Delta H1 H2 A :
+  Context Delta [::] ||- C, {-A
+    (H1 /\ H2 =>> A) <=>
+    (H1 /\ H2 =>> H1 /\ A)
+  -}.
+Proof.
+Admitted.
+Ltac dtconclhyp_intro_p :=
+  match goal with
+  | |- Context _ ({-A ?H1_ /\ ?H2_ =>> ?A_ -} :: _) ||- _, _ =>
+    eapply DSCut; first (by repeat dclear; apply DTConcludeHypothesis with
+      (H1 := H1_) (H2 := H2_) (A := A_));
+    dsplitp; dswap; dclear;
+    dsplitp; dswap; dclear;
+    difp; first by []
+  end.
+
 Lemma DTOrDistrib2 C Delta A1 A2 A3 :
   Context Delta [::] ||- C, {-A
     A1 /\ (A2 \/ A3) <=>
