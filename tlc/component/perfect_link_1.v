@@ -292,7 +292,7 @@ Proof.
   eapply DSCut; first (by repeat dclear; apply DTL105_1 with
     (H := {-A self-event /\ on n, (0, CSLSend ' n' ' (c, m)) \in Fors -})
     (A := {-A self-event /\ on n, (0, CSLSend ' n' ' (c, m')) \in Fors -})).
-  by difp.
+  by dtsubstposp.
 Qed.
 
 Lemma L39 Delta : Context Delta [::] ||- perfect_link, {-A

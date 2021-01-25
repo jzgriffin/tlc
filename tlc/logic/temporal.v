@@ -467,10 +467,16 @@ Proof.
 Admitted.
 
 Lemma DTL105_1 C Z H A :
-  Z ||- C, {-A (H =>> always^ ~A) -> H =>> alwaysp^ ~A -}.
+  Z ||- C, {-A (H =>> always^ ~A) =>> H =>> alwaysp^ ~A -}.
 Proof.
   (* Used in PLC *)
 Admitted.
+Ltac dtl105_1 :=
+  match goal with
+  | |- context[ {-A ?H_ =>> always^ ~?A_ -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTL105_1 with
+      (H := H_) (A := A_))
+  end.
 
 Lemma DTL105_2 C Z H A :
   Z ||- C, {-A (H =>> alwaysp^ ~A) -> H =>> always^ ~A -}.
