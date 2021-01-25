@@ -1005,6 +1005,13 @@ Lemma DTMergeEntailsIf C Delta H1 H2 A :
 Proof.
 Admitted.
 
+Lemma DTAndImplies C Delta A1 A2 :
+  Context Delta [::] ||- C, {-A
+    (A1 /\ A2) =>> (A1 -> A2)
+  -}.
+Proof.
+Admitted.
+
 (* Further tactics *)
 Ltac dtsubstp_l_keep :=
   match goal with
