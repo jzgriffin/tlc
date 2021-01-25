@@ -741,15 +741,6 @@ Proof.
   (* Used in PLC *)
 Admitted.
 
-Lemma DTL132 C Z A1 B1 A2 B2 :
-  Z ||- C, {-A
-    ((A1 =>> B1) /\ (A2 =>> B2)) ->
-    ((A1 /\ A2) =>> (B1 /\ B2))
-  -}.
-Proof.
-  (* Used in PLC *)
-Admitted.
-
 Lemma DTL133 C Z P :
   rigid_predicate P ->
   Z ||- C, {-A eventuallyp P -> P -}.
@@ -782,6 +773,21 @@ Lemma DTAndEntails C Delta H A :
   -}.
 Proof.
 Admitted.
+
+Lemma DTUnionEntails C Delta H1 A1 H2 A2 :
+  Context Delta [::] ||- C, {-A
+    ((H1 =>> A1) /\ (H2 =>> A2)) =>>
+    H1 /\ H2 =>> A1 /\ A2
+  -}.
+Proof.
+  (* Used in PLC *)
+Admitted.
+Ltac dtunionentails :=
+  match goal with
+  | |- context[ {-A (?H1_ =>> ?A1_) /\ (?H2_ =>> ?A2_) -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTUnionEntails with
+      (H1 := H1_) (A1 := A1_) (H2 := H2_) (A2 := A2_))
+  end.
 
 Lemma DTAndElimSelf C Delta A :
   Context Delta [::] ||- C, {-A

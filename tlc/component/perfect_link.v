@@ -100,11 +100,11 @@ Proof.
   dtgenp; dclean; dtsubstp_l.
 
   eapply DSCut.
-    eapply DTL132 with
-      (A1 := {-A on n, event[0]-> CSLSend ' n' ' m -})
-      (B1 := {-A Fd <<< [0] -})
-      (A2 := {-A on n, event[0]-> CSLSend ' n' ' m -})
-      (B2 := {-A Fd <<< [0] =>> eventually on n', event[0]<- CSLDeliver ' n ' m -}).
+    repeat dclear; eapply DTUnionEntails with
+      (H1 := {-A on n, event[0]-> CSLSend ' n' ' m -})
+      (A1 := {-A Fd <<< [0] -})
+      (H2 := {-A on n, event[0]-> CSLSend ' n' ' m -})
+      (A2 := {-A Fd <<< [0] =>> eventually on n', event[0]<- CSLDeliver ' n ' m -}). dsplitp; dswap; dclear.
     difp; first by dsplit; first by
       dtgen; dif; dsplitp; dclear; dsplitp; dtgenp; dtsubste_l;
       repeat dclear; eapply DPExtension.
