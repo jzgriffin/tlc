@@ -789,6 +789,11 @@ Lemma DTAndElimSelf C Delta A :
   -}.
 Proof.
 Admitted.
+Ltac dtandelimself :=
+  match goal with
+  | |- context[ {-A ?A_ /\ ?A_ -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTAndElimSelf with (A := A_))
+  end.
 
 Lemma DTEntailsTautology C Z A :
   Z ||- C, {-A
