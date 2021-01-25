@@ -728,7 +728,7 @@ Proof.
 Admitted.
 
 (* Distribution properties of self *)
-Lemma DTL130 C Z A B :
+Lemma DTSelfDistribAnd C Z A B :
   Z ||- C, {-A self (A /\ B) <-> self A /\ self B -}.
 Proof.
   (* Used in PLC *)
