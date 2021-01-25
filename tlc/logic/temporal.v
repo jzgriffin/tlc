@@ -1005,6 +1005,15 @@ Lemma DTMergeEntailsIf C Delta H1 H2 A :
 Proof.
 Admitted.
 
+Lemma DTMergeIf C Delta Gamma H1 H2 A :
+  Context Delta Gamma ||- C, {-A
+    (H1 -> H2 -> A)
+    <=>
+    (H1 /\ H2 -> A)
+   -}.
+Proof.
+Admitted.
+
 Lemma DTAndImplies C Delta A1 A2 :
   Context Delta [::] ||- C, {-A
     (A1 /\ A2) =>> (A1 -> A2)
@@ -1121,8 +1130,8 @@ Ltac dtmergeentailsifp :=
 Ltac dtmergeif :=
   match goal with
   | |- context[ {-A ?H1_ -> ?H2_ -> ?A_ -} ] =>
-    eapply DSCut; first (by repeat dclear; apply DSMergeIf with
-      (H1 := H1_) (H2 := H2_) (A := A_)); dtgenp; dclean
+    eapply DSCut; first (by repeat dclear; apply DTMergeIf with
+      (H1 := H1_) (H2 := H2_) (A := A_))
   end.
 
 Ltac dtandelimselfap :=
