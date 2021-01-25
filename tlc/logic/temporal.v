@@ -632,12 +632,24 @@ Lemma DTL124 C Z Ap Ac :
 Proof.
   (* Used in PLC *)
 Admitted.
+Ltac dtl124 :=
+  match goal with
+  | |- context[ {-A ?Ac_ /\ always^ (?Ap_ -> ?Ac_) -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTL124 with
+      (Ap := Ap_) (Ac := Ac_))
+  end.
 
 Lemma DTL125 C Z Ap Ac :
   Z ||- C, {-A (Ap -> (Ap =>> Ac)) =>> (Ap =>> Ac) -}.
 Proof.
   (* Used in PLC *)
 Admitted.
+Ltac dtl125 :=
+  match goal with
+  | |- context[ {-A ?Ap_ -> (?Ap_ =>> ?Ac_) -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTL125 with
+      (Ap := Ap_) (Ac := Ac_))
+  end.
 
 Lemma DTL126 C Delta A1 A2 :
   Context Delta [::] ||- C, {-A

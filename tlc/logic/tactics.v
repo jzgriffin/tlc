@@ -9,6 +9,7 @@ Require Import mathcomp.ssreflect.ssreflect.
 Require Import tlc.logic.context.
 Require Import tlc.logic.derives.
 Require Import tlc.logic.sequent.
+Require Import tlc.logic.temporal.
 Require Import tlc.semantics.all_semantics.
 Require Import tlc.syntax.all_syntax.
 Require Import tlc.utility.result.
@@ -55,3 +56,9 @@ Ltac dcase a_ :=
       [by apply DCaseAnalysis with (a := a_) (cs := cs_); first by [] |
       simpl]
   end.
+
+(* Simplify a restricted assertion *)
+Ltac dsimplrestrictp :=
+  rewrite /restrict_assertion /=; dclean;
+  repeat (dtl124; dtsubstposp);
+  repeat (dtl125; dtsubstposp).
