@@ -188,6 +188,17 @@ Proof.
   by dtifsubste_pl.
 Qed.
 
+Lemma DPIISe C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: (* i, e *)
+    self (
+      event[$$1]<- $$0 =>>
+      (Fs' ' Fn, Fors, Fois) = indication C ' Fn ' (Fs ' Fn) ' ($$1, $$0)
+    )
+  -}.
+Proof.
+Admitted.
+
 Lemma DPInvSe C Delta A :
   assertion_closed_in [::] Delta A ->
   Context Delta [::] ||- C, {-A
