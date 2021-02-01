@@ -22,6 +22,8 @@ Unset Printing Implicit Defensive.
 
 Lemma L44 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: forall: forall: (* n, n', m, c, c' *)
+  (on $$3, event[]-> CPLSend ' $$4 ' $$2 =>>
+    alwaysp^ ~on $$3, event[]-> CPLSend ' $$4 ' $$2) ->
   self (
     ((on $$4, event[0]<- CSLDeliver ' $$3 ' ($$1, $$2)) /\
       eventuallyp on $$4, event[0]<- CSLDeliver ' $$3 ' ($$0, $$2)) =>>
@@ -33,10 +35,12 @@ Admitted.
 
 Lemma L43 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: forall: (* n, n', m, c *)
+  (on $$2, event[]-> CPLSend ' $$3 ' $$1 =>>
+    alwaysp^ ~on $$2, event[]-> CPLSend ' $$3 ' $$1) ->
   self (
     (($$2, $$0) \in (Fs ' $$3).2 /\
       eventuallyp on $$3, event[0]<- CSLDeliver ' $$2 ' ($$0, $$1)) =>>
-    on $$3, CPLDeliver ' $$2 ' $$1 \notin Fois
+      Fn = $$3 -> CPLDeliver ' $$2 ' $$1 \notin Fois
   )
 -}.
 Proof.
@@ -44,6 +48,8 @@ Admitted.
 
 Lemma L42 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: (* n, n', m *)
+  (on $$1, event[]-> CPLSend ' $$2 ' $$0 =>>
+    alwaysp^ ~on $$1, event[]-> CPLSend ' $$2 ' $$0) ->
   self (
     (Fn = $$2 /\ CPLDeliver ' $$1 ' $$0 \in Fois) =>>
     always^ (Fn = $$2 -> CPLDeliver ' $$1 ' $$0 \notin Fois) /\
@@ -149,7 +155,7 @@ Proof.
   dtsubstposp.
 
   (* From lemma 42 *)
-  duse L42; dforallp n; dforallp n'; dforallp m.
+  duse L42; dforallp n; dforallp n'; dforallp m; difp; first by dassumption.
 
   (* By SInv in (4) *)
   dhave {-A
