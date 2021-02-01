@@ -83,6 +83,15 @@ Proof.
   (* Used in PLC *)
 Admitted.
 
+Lemma DPEqual3 C Delta :
+  Context Delta [::] ||- C, {-A
+    forall: forall: forall: (* x, y1, y2 *)
+    $$2 = $$1 /\ $$2 = $$0 <->
+    $$1 = $$0
+  -}.
+Proof.
+Admitted.
+
 (* Less than *)
 
 (* Equality is a subset of less-than or equal *)
