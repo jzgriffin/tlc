@@ -371,6 +371,21 @@ Proof.
   (* Used in PLC *)
 Admitted.
 
+Lemma DPASASe' C Delta S A A' :
+  assertion_univ S ->
+  assertion_closed_in [:: 1] Delta S ->
+  assertion_closed_in [::] Delta A ->
+  assertion_closed_in [::] Delta A' ->
+  Context Delta [::] ||- C, {-A
+    forall: (* n *)
+    self (A =>> exists: (S ' (Fs' ' $$1))) ->
+    (forall: self (S ' (Fs ' $$1) =>> always A')) ->
+    self (A =>> always^ A')
+  -}.
+Proof.
+  (* Used in PLC *)
+Admitted.
+
 Lemma DPASA C Delta S A A' :
   assertion_univ S ->
   assertion_closed_in [::] Delta S ->
