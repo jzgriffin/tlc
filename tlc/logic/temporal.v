@@ -897,6 +897,20 @@ Lemma DTOrEntails C Z H1 H2 A :
 Proof.
 Admitted.
 
+Lemma DTOrEntailsP C Delta H1 H2 A :
+  Context Delta [::] ||- C, {-A
+    (H1 =>> A) /\ (H2 =>> A) ->
+    (H1 \/ H2 =>> A)
+  -}.
+Proof.
+Admitted.
+Ltac dtorentailsp_c :=
+  match goal with
+  | |- context[ {-A ?H1_ \/ ?H2_ =>> ?A_ -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTOrEntailsP with
+      (H1 := H1_) (H2 := H2_) (A := A_))
+  end.
+
 Lemma DTEntailsOrTautL C Z H A1 A2 :
   Z ||- C, {-A H =>> A2 -} ->
   Z ||- C, {-A H =>> A1 \/ A2 -}.
