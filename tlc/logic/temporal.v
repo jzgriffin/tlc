@@ -136,7 +136,7 @@ Ltac dtsubstposp_keep :=
 Ltac dtsubstposp := dtsubstposp_keep; do 2 (dswap; dclear); repeat dautoeq.
 
 (* Negative polarity *)
-Axiom DTSubstNeg :
+Axiom DTSubstNegP :
   forall C Z R RH RA uss RH' RA' A,
   split_implication R = Some (AEntails, RH, RA) ->
   unify_sub_assertion RA A = Some uss ->
@@ -150,12 +150,33 @@ Axiom DTSubstNeg :
 Ltac dtsubstnegp_keep :=
   match goal with
   | |- Context _ (?R_ :: ?A_ :: _) ||- _, _ =>
-    eapply DSCut; [eapply DTSubstNeg with (R := R_) (A := A_);
+    eapply DSCut; [eapply DTSubstNegP with (R := R_) (A := A_);
       [by dsplitimpl | by dunify | by [] | by [] |
         by rewrite /all_assertion_occ_neg /=; repeat dautoeq | by [] ] |
       dclean; dsplitp; dswap; dclear; difp; first by dassumption]
   end.
 Ltac dtsubstnegp := dtsubstnegp_keep; do 2 (dswap; dclear); repeat dautoeq.
+
+Axiom DTSubstNeg :
+  forall C Z R RH RA uss RH' RA' A,
+  split_implication R = Some (AEntails, RH, RA) ->
+  unify_sub_assertion RH A = Some uss ->
+  open_assertion_multi uss RH = Success RH' ->
+  open_assertion_multi uss RA = Success RA' ->
+  all_assertion_occ_neg RA' A ->
+  Z ||- C, R ->
+  Z ||- C, {-A
+    replace_assertion RH' RA' A =>> A
+  -}.
+Ltac dtsubstneg_keep :=
+  match goal with
+  | |- Context _ (?R_ :: _) ||- _, ?A_ =>
+    eapply DSCut; [eapply DTSubstNeg with (R := R_) (A := A_);
+      [by dsplitimpl | by dunify | by [] | by [] |
+        by rewrite /all_assertion_occ_neg /=; repeat dautoeq | by [] ] |
+      dclean; dsplitp; dswap; dclear; difp; last by [] ]
+  end; repeat dautoeq.
+Ltac dtsubstneg := dtsubstneg_keep; dclear.
 
 (* Reflexivity of equality *)
 Axiom DTReflE :
