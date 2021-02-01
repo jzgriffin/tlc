@@ -992,6 +992,14 @@ Ltac dtandha_l :=
       (A' := A'_) (H := H_) (A := A_))
   end.
 
+Lemma DTAndHA_R C Delta A' H A :
+  Context Delta [::] ||- C, {-A
+    (H /\ A' =>> A /\ A') <=>
+    (H =>> A)
+  -}.
+Proof.
+Admitted.
+
 Lemma DTConcludeHypothesis C Delta H1 H2 A :
   Context Delta [::] ||- C, {-A
     (H1 /\ H2 =>> A) <=>
