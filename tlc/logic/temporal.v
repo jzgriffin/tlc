@@ -1084,6 +1084,15 @@ Lemma DTSelfTrue C Delta :
 Proof.
 Admitted.
 
+Lemma DTEventuallyPAlways C Delta A :
+  assertion_rigid A ->
+  non_temporal_assertion A ->
+  Context Delta [::] ||- C, {-A
+    eventuallyp A =>> always A
+  -}.
+Proof.
+Admitted.
+
 (* Further tactics *)
 Ltac dtsubstp_l_keep :=
   match goal with
