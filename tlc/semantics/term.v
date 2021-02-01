@@ -200,6 +200,7 @@ Fixpoint open_term_at k us t :=
     if i == k then
       if onth us j is Some u then pure u
       else Failure (k, P i j)
+    else if i > k then pure (TParameter (P i.-1 j))
     else pure t
   | TVariable _ => pure t
   | TConstructor _ => pure t
