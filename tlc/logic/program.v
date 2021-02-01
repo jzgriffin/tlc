@@ -36,6 +36,20 @@ Proof.
   (* Used in PLC *)
 Admitted.
 
+Lemma DPTopRequestSelfElimIf C Delta A :
+  Context Delta [::] ||- C, {-A
+    forall: (* e *)
+    (self-event -> event[]-> $$0 -> A) <=> (event[]-> $$0 -> A)
+  -}.
+Proof.
+Admitted.
+Ltac dptoprequestselfelimif_l :=
+  match goal with
+  | |- context[ {-A self-event -> event[]-> ?e_ -> ?A_ -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DPTopRequestSelfElimIf with
+      (A := A_))
+  end.
+
 Lemma DPTopRequestSelfElim C Delta :
   Context Delta [::] ||- C, {-A
     forall: (* e *)
@@ -61,6 +75,20 @@ Ltac dptoprequestself :=
     by duse DPTopRequestSelf; dforallp e
   end.
 
+Lemma DPSubIndicationSelfElimIf C Delta A :
+  Context Delta [::] ||- C, {-A
+    forall: forall: (* i, e *)
+    (self-event -> event[$$1]<- $$0 -> A) <=> (event[$$1]<- $$0 -> A)
+  -}.
+Proof.
+Admitted.
+Ltac dpsubindicationselfelimif_l :=
+  match goal with
+  | |- context[ {-A self-event -> event[?i_]-> ?e_ -> ?A_ -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DPSubIndicationSelfElimIf with
+      (A := A_))
+  end.
+
 Lemma DPSubIndicationSelfElim C Delta :
   Context Delta [::] ||- C, {-A
     forall: forall: (* i, e *)
@@ -84,6 +112,19 @@ Ltac dpsubindicationself :=
   match goal with
   | |- _ ||- _, {-A event[?i]<- ?e =>> self-event -} =>
     by duse DPSubIndicationSelf; dforallp i; dforallp e
+  end.
+
+Lemma DPTopPeriodicSelfElimIf C Delta A :
+  Context Delta [::] ||- C, {-A
+    (self-event -> event[]~> CPE -> A) <=> (event[]~> CPE -> A)
+  -}.
+Proof.
+Admitted.
+Ltac dptopperiodicselfelimif_l :=
+  match goal with
+  | |- context[ {-A self-event -> event[]~> TConstructor CPE -> ?A_ -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DPTopPeriodicSelfElimIf with
+      (A := A_))
   end.
 
 (* These rules and lemmas are taken directly from the appendix *)
