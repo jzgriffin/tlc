@@ -31,7 +31,356 @@ Lemma L44 Delta : Context Delta [::] ||- perfect_link, {-A
   )
 -}.
 Proof.
-Admitted.
+  dforall n; dforall n'; dforall m; dforall c; dforall c'; dif.
+
+  (* This proof is simpler to write without the self operator *)
+  match goal with
+  | |- Context _ _ ||- _, {-A self ?A_ -} =>
+    eapply DSCut; first (by repeat dclear; apply DPSInv_2 with (A := A_))
+  end; difp; last by [].
+  rewrite /restrict_assertion /=; dclean.
+
+  dtmergeif; dtsubst_r; dclear.
+  match goal with
+  | |- context[ {-A always^ (?A1_ /\ ?A2_ /\ ?A3_ -> _) -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTAndAssoc with
+      (A1 := A1_) (A2 := A2_) (A3 := A3_))
+  end; dtsubst_l; dclear.
+  dhave {-A
+    (on n, event[0]<- CSLDeliver ' n' ' (c, m)) <->
+    (self-event /\ on n, event[0]<- CSLDeliver ' n' ' (c, m))
+  -}.
+  {
+    dsplit; dif.
+    - dsplit; last by [].
+      dsplitp; dclear.
+      dleft; dexists {-t 0 -}; dsplit; dsplitp; first by [].
+      by dclear; dsplitp.
+    - by dsplitp; dclear.
+  }
+  dtgenp; dclean; dtsubst_l; dclear.
+
+  (* c *)
+    (* By SL_2 *)
+    duse PL_SL_2; dforallp n; dforallp n'; dforallp {-t (c, m) -}.
+
+    (* By OR' *)
+    duse DPOR'; dforallp n'; dforallp {-t 0 -}; dforallp {-t CSLSend ' n ' (c, m) -}.
+    eapply DSCut; first (by repeat dclear; apply DTL123 with
+      (A := {-A self-event /\ (on n', (0, CSLSend ' n ' (c, m)) \in Fors) -}));
+      dtsubstposp.
+
+    (* By InvL *)
+    eapply DSCut; first (by repeat dclear; apply DPInvL with
+      (A := {-A
+        (on n', (0, CSLSend ' n ' (c, m)) \in Fors) ->
+        (on n', event[]-> CPLSend ' n ' m) /\
+        (Fs' ' n').1 = c
+      -});
+      [by dautoclosed | repeat constructor]).
+    (* request *)
+    difp.
+    {
+      repeat dclear; dforall e; dsimpl.
+      dif; dsplitp; dswap.
+      dif; dsplitp; dtgenp.
+      dxchg 1 2; dtsubstep_l; dswap; dtsubste_l; dclear.
+      dcase {-t ? e -}; dexistsp e_m; dexistsp e_n'; dtgenp;
+        dtsubstep_l; dautoeq; dsimplp; dxchg 0 3; dswap;
+        dtsubstep_l; dautoeq; dswap; dclear; dxchg 0 2.
+      dcase {-t ? Fs ' ? n' -}; dexistsp s_r; dexistsp s_c; dtgenp;
+        dtsubstep_l; dsimplp; dswap;
+        dtsubste_l; dclear.
+      dtinjectionp; repeat dsplitp.
+      dsplit; first dsplit.
+      - by repeat dclear; exact: DPEqual.
+      - dclear; dtgenp; dswap; dclear; dtsubstep_l; dswap; dclear.
+        dpmembersingletonp; dtinjectionp; repeat (dsplitp; dswap).
+        dtgenp; dtsubste_l; dautoeq; dclear.
+        dclear.
+        dtgenp; dtsubste_l; dautoeq; dclear.
+        by dswap.
+      - dtgenp; dtsubste_l; dautoeq; dclear; dsimpl.
+        dswap; dclear; dtgenp; dtsubstep_l; dswap; dclear.
+        dpmembersingletonp; dtinjectionp; repeat (dsplitp; dswap).
+        dclear; dtgenp; dtsubste_l; dautoeq.
+        by repeat dclear; exact: DPEqual.
+    }
+    (* indication *)
+    difp.
+    {
+      repeat dclear; dforall i; dforall e; dsimpl.
+      dif; dsplitp; dswap.
+      dif; dsplitp; dtgenp.
+      dxchg 1 2; dtsubstep_l; dswap; dtsubste_l; dclear.
+      dcase {-t (? i, ? e) -}; dexistsp e_m; dexistsp e_c; dexistsp e_n;
+        dtinjectionp.
+      dsplitp; do 2 (dtgenp; dswap); dxchg 1 2.
+      dtsubstep_l; dautoeq; dswap; dxchg 1 4.
+      dtsubstep_l; dautoeq; dswap; dclear; dswap.
+      dtsubstep_l; dautoeq; dswap; dxchg 1 3.
+      dtsubstep_l; dautoeq; dswap; dclear.
+      dcase {-t ? Fs ' ? n' -}; dexistsp s_r; dexistsp s_c; dtgenp;
+        dtsubstep_l; dswap; dclear; dsimplp.
+      dcase {-t FCount ' (? e_n, ? e_c) ' ? s_r == 0 -}; dorp; dtgenp;
+        dtsubstep_l; dswap; dclear; dsimplp;
+        dtinjectionp; repeat dsplitp; dclear; dtgenp;
+        dswap; dclear;
+        dtsubstep_l;
+        by dpmembernilp.
+    }
+    (* periodic *)
+    difp.
+    {
+      repeat dclear; dsimpl.
+      dif; dsplitp; dclear.
+      dif; dsplitp; dclear.
+      dswap; dtinjectionp; repeat dsplitp.
+      dclear; dswap; dclear; dtgenp.
+      by dtsubstep_l; dpmembernilp.
+    }
+    dtmergeentailsifp.
+
+    (* By lemma 89 and lemma 99 on (1), (2), and (3) *)
+    dxchg 0 2; dswap; dtsubstposp.
+    dswap; dtsubstposp.
+    eapply DSCut; first (by repeat dclear; apply DTL83_1 with
+      (A := {-A (on n', event[]-> CPLSend ' n ' m) /\ (Fs' ' n').1 = c -}));
+      dtsubstp_r.
+
+  (* c' *)
+    (* By SL_2 *)
+    duse PL_SL_2; dforallp n; dforallp n'; dforallp {-t (c', m) -}.
+
+    (* By OR' *)
+    duse DPOR'; dforallp n'; dforallp {-t 0 -}; dforallp {-t CSLSend ' n ' (c', m) -}.
+    eapply DSCut; first (by repeat dclear; apply DTL123 with
+      (A := {-A self-event /\ (on n', (0, CSLSend ' n ' (c', m)) \in Fors) -}));
+      dtsubstposp.
+
+    (* By InvL *)
+    eapply DSCut; first (by repeat dclear; apply DPInvL with
+      (A := {-A
+        (on n', (0, CSLSend ' n ' (c', m)) \in Fors) ->
+        (on n', event[]-> CPLSend ' n ' m) /\
+        (Fs' ' n').1 = c'
+      -});
+      [by dautoclosed | repeat constructor]).
+    (* request *)
+    difp.
+    {
+      repeat dclear; dforall e; dsimpl.
+      dif; dsplitp; dswap.
+      dif; dsplitp; dtgenp.
+      dxchg 1 2; dtsubstep_l; dswap; dtsubste_l; dclear.
+      dcase {-t ? e -}; dexistsp e_m; dexistsp e_n'; dtgenp;
+        dtsubstep_l; dautoeq; dsimplp; dxchg 0 3; dswap;
+        dtsubstep_l; dautoeq; dswap; dclear; dxchg 0 2.
+      dcase {-t ? Fs ' ? n' -}; dexistsp s_r; dexistsp s_c; dtgenp;
+        dtsubstep_l; dsimplp; dswap;
+        dtsubste_l; dclear.
+      dtinjectionp; repeat dsplitp.
+      dsplit; first dsplit.
+      - by repeat dclear; exact: DPEqual.
+      - dclear; dtgenp; dswap; dclear; dtsubstep_l; dswap; dclear.
+        dpmembersingletonp; dtinjectionp; repeat (dsplitp; dswap).
+        dtgenp; dtsubste_l; dautoeq; dclear.
+        dclear.
+        dtgenp; dtsubste_l; dautoeq; dclear.
+        by dswap.
+      - dtgenp; dtsubste_l; dautoeq; dclear; dsimpl.
+        dswap; dclear; dtgenp; dtsubstep_l; dswap; dclear.
+        dpmembersingletonp; dtinjectionp; repeat (dsplitp; dswap).
+        dclear; dtgenp; dtsubste_l; dautoeq.
+        by repeat dclear; exact: DPEqual.
+    }
+    (* indication *)
+    difp.
+    {
+      repeat dclear; dforall i; dforall e; dsimpl.
+      dif; dsplitp; dswap.
+      dif; dsplitp; dtgenp.
+      dxchg 1 2; dtsubstep_l; dswap; dtsubste_l; dclear.
+      dcase {-t (? i, ? e) -}; dexistsp e_m; dexistsp e_c; dexistsp e_n;
+        dtinjectionp.
+      dsplitp; do 2 (dtgenp; dswap); dxchg 1 2.
+      dtsubstep_l; dautoeq; dswap; dxchg 1 4.
+      dtsubstep_l; dautoeq; dswap; dclear; dswap.
+      dtsubstep_l; dautoeq; dswap; dxchg 1 3.
+      dtsubstep_l; dautoeq; dswap; dclear.
+      dcase {-t ? Fs ' ? n' -}; dexistsp s_r; dexistsp s_c; dtgenp;
+        dtsubstep_l; dswap; dclear; dsimplp.
+      dcase {-t FCount ' (? e_n, ? e_c) ' ? s_r == 0 -}; dorp; dtgenp;
+        dtsubstep_l; dswap; dclear; dsimplp;
+        dtinjectionp; repeat dsplitp; dclear; dtgenp;
+        dswap; dclear;
+        dtsubstep_l;
+        by dpmembernilp.
+    }
+    (* periodic *)
+    difp.
+    {
+      repeat dclear; dsimpl.
+      dif; dsplitp; dclear.
+      dif; dsplitp; dclear.
+      dswap; dtinjectionp; repeat dsplitp.
+      dclear; dswap; dclear; dtgenp.
+      by dtsubstep_l; dpmembernilp.
+    }
+    dtmergeentailsifp.
+
+    (* By lemma 89 and lemma 99 on (1), (2), and (3) *)
+    dxchg 0 2; dswap; dtsubstposp.
+    dswap; dtsubstposp.
+    eapply DSCut; first (by repeat dclear; apply DTL83_1 with
+      (A := {-A (on n', event[]-> CPLSend ' n ' m) /\ (Fs' ' n').1 = c' -}));
+      dtsubstp_r.
+
+  (* Thus, from (5) and (6), we need to show that *)
+  dtsubstneg; dtsubstneg.
+
+  (* That is *)
+  eapply DSCut; first (by repeat dclear; apply DTL83_1 with
+    (A := {-A (on n', event[]-> CPLSend ' n ' m) /\ (Fs' ' n').1 = c' -}));
+    dtsubst_l; dclear.
+
+  (* By lemma 105, there are two cases that are similar *)
+  match goal with
+  | |- Context _ _ ||- _, {-A (eventuallyp ?H1_) /\ (eventuallyp ?H2_) =>> _ -} =>
+    eapply DSCut; first by (repeat dclear; apply DTL102_2 with
+      (A1 := H1_) (A2 := H2_))
+  end; dttrans; dclear.
+  dtorentailsp_c; difp; last by [].
+  dsplit.
+
+  {
+    (* From assumption A_1, we need to prove *)
+    dhave {-A
+      (on n', event[]-> CPLSend ' n ' m) /\ (Fs' ' n').1 = c =>>
+      (alwaysp^ ~on n', event[]-> CPLSend ' n ' m) /\ (Fs' ' n').1 = c
+    -}.
+    {
+      eapply DSCut; first (by repeat dclear; apply DTAndHA_R with
+        (A' := {-A (Fs' ' n').1 = c -})
+        (H := {-A on n', event[]-> CPLSend ' n ' m -})
+        (A := {-A alwaysp^ ~on n', event[]-> CPLSend ' n ' m -})).
+      dsplitp; dswap; dclear.
+      dsplitp; dclear.
+      by difp.
+    }
+    dtsubstneg.
+
+    (* By lemma 106, we need to prove *)
+    eapply DSCut; first (by repeat dclear; apply DTAndComm with
+      (A1 := {-A alwaysp^ ~on n', event[]-> CPLSend ' n ' m -})
+      (A2 := {-A (Fs' ' n').1 = c -})); dtsubst_r; dclear.
+    eapply DSCut; first (by repeat dclear; apply DTAndAssoc with
+      (A1 := {-A (Fs' ' n').1 = c -})
+      (A2 := {-A alwaysp^ ~on n', event[]-> CPLSend ' n ' m -})
+      (A3 := {-A eventuallyp ((on n', event[]-> CPLSend ' n ' m) /\ (Fs' ' n').1 = c') -}));
+      dtsubst_r; dclear.
+    eapply DSCut; first (by repeat dclear; apply DTAndComm with
+      (A1 := {-A alwaysp^ ~on n', event[]-> CPLSend ' n ' m -})
+      (A2 := {-A eventuallyp ((on n', event[]-> CPLSend ' n ' m) /\ (Fs' ' n').1 = c') -}));
+      dtsubst_r; dclear.
+    eapply DSCut; first (by repeat dclear; apply DTL103_2 with
+      (A1 := {-A on n', event[]-> CPLSend ' n ' m -})
+      (A2 := {-A (Fs' ' n').1 = c' -}));
+      dtsubstneg.
+
+    eapply DSCut; first (by repeat dclear; apply DTAndComm with
+      (A1 := {-A on n', event[]-> CPLSend ' n ' m -})
+      (A2 := {-A (Fs' ' n').1 = c' -}));
+      dtsubst_r; dclear.
+    eapply DSCut; first (by repeat dclear; apply DTAndAssoc with
+      (A1 := {-A (Fs' ' n').1 = c -})
+      (A2 := {-A (Fs' ' n').1 = c' -})
+      (A3 := {-A on n', event[]-> CPLSend ' n ' m -}));
+      dtsubst_l; dclear.
+    eapply DSCut; first (by repeat dclear; apply DTAndComm with
+      (A1 := {-A ((Fs' ' n').1 = c /\ (Fs' ' n').1 = c') -})
+      (A2 := {-A on n', event[]-> CPLSend ' n ' m -}));
+      dtsubst_r; dclear.
+
+    eapply DSCut; first (by repeat dclear; apply DTAndComm with
+      (A1 := {-A (Fs' ' n').1 = c -})
+      (A2 := {-A (Fs' ' n').1 = c' -})); dtsubst_r.
+
+    duse DPEqual3; dforallp {-t (Fs' ' n').1 -}; dforallp c'; dforallp c;
+      dtgenp; dtsubst_r; dclear.
+    eapply DSCut; first (by repeat dclear; apply DTEntailsAndDropLeft with
+      (A1 := {-A on n', event[]-> CPLSend ' n ' m -})
+      (A2 := {-A c' = c -})); dtsubstneg.
+    eapply DSCut; first (by repeat dclear; apply DTEventuallyPAlways with
+      (A := {-A c' = c -}); [| repeat constructor]); dtsubstneg.
+    eapply DSCut; first (by repeat dclear; apply DTL80 with
+      (A := {-A c' = c -})); dtsubstneg.
+    duse DPEqualSymm; dforallp c'; dforallp c; dtgenp; dclean; dtsubst_l; repeat dautoeq.
+    by exact: DTEntailsTautology.
+  }
+
+  {
+    (* From assumption A_1, we need to prove *)
+    dhave {-A
+      (on n', event[]-> CPLSend ' n ' m) /\ (Fs' ' n').1 = c' =>>
+      (alwaysp^ ~on n', event[]-> CPLSend ' n ' m) /\ (Fs' ' n').1 = c'
+    -}.
+    {
+      eapply DSCut; first (by repeat dclear; apply DTAndHA_R with
+        (A' := {-A (Fs' ' n').1 = c' -})
+        (H := {-A on n', event[]-> CPLSend ' n ' m -})
+        (A := {-A alwaysp^ ~on n', event[]-> CPLSend ' n ' m -})).
+      dsplitp; dswap; dclear.
+      dsplitp; dclear.
+      by difp.
+    }
+    dtsubstneg.
+
+    (* By lemma 106, we need to prove *)
+    eapply DSCut; first (by repeat dclear; apply DTAndComm with
+      (A1 := {-A alwaysp^ ~on n', event[]-> CPLSend ' n ' m -})
+      (A2 := {-A (Fs' ' n').1 = c' -})); dtsubst_r; dclear.
+    eapply DSCut; first (by repeat dclear; apply DTAndAssoc with
+      (A1 := {-A (Fs' ' n').1 = c' -})
+      (A2 := {-A alwaysp^ ~on n', event[]-> CPLSend ' n ' m -})
+      (A3 := {-A eventuallyp ((on n', event[]-> CPLSend ' n ' m) /\ (Fs' ' n').1 = c) -}));
+      dtsubst_r; dclear.
+    eapply DSCut; first (by repeat dclear; apply DTAndComm with
+      (A1 := {-A alwaysp^ ~on n', event[]-> CPLSend ' n ' m -})
+      (A2 := {-A eventuallyp ((on n', event[]-> CPLSend ' n ' m) /\ (Fs' ' n').1 = c) -}));
+      dtsubst_r; dclear.
+    eapply DSCut; first (by repeat dclear; apply DTL103_2 with
+      (A1 := {-A on n', event[]-> CPLSend ' n ' m -})
+      (A2 := {-A (Fs' ' n').1 = c -}));
+      dtsubstneg.
+
+    eapply DSCut; first (by repeat dclear; apply DTAndComm with
+      (A1 := {-A on n', event[]-> CPLSend ' n ' m -})
+      (A2 := {-A (Fs' ' n').1 = c -}));
+      dtsubst_r; dclear.
+    eapply DSCut; first (by repeat dclear; apply DTAndAssoc with
+      (A1 := {-A (Fs' ' n').1 = c' -})
+      (A2 := {-A (Fs' ' n').1 = c -})
+      (A3 := {-A on n', event[]-> CPLSend ' n ' m -}));
+      dtsubst_l; dclear.
+    eapply DSCut; first (by repeat dclear; apply DTAndComm with
+      (A1 := {-A ((Fs' ' n').1 = c' /\ (Fs' ' n').1 = c) -})
+      (A2 := {-A on n', event[]-> CPLSend ' n ' m -}));
+      dtsubst_r; dclear.
+
+    duse DPEqual3; dforallp {-t (Fs' ' n').1 -}; dforallp c'; dforallp c;
+      dtgenp; dtsubst_r; dclear.
+    eapply DSCut; first (by repeat dclear; apply DTEntailsAndDropLeft with
+      (A1 := {-A on n', event[]-> CPLSend ' n ' m -})
+      (A2 := {-A c' = c -})); dtsubstneg.
+    eapply DSCut; first (by repeat dclear; apply DTEventuallyPAlways with
+      (A := {-A c' = c -}); [| repeat constructor]); dtsubstneg.
+    eapply DSCut; first (by repeat dclear; apply DTL80 with
+      (A := {-A c' = c -})); dtsubstneg.
+    duse DPEqualSymm; dforallp c'; dforallp c; dtgenp; dclean; dtsubst_l; repeat dautoeq.
+    by exact: DTEntailsTautology.
+  }
+Qed.
 
 Lemma L43 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: forall: (* n, n', m, c *)
