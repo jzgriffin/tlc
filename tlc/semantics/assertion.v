@@ -373,6 +373,14 @@ Fixpoint unify_sub_assertion A' A :=
     | ASelf A => unify_sub_assertion A' A
     end.
 
+(* Split an assertion into its right-associative conjunctions *)
+Fixpoint split_conjunction A :=
+  if A is AAnd A1 A2 then A1 :: split_conjunction A2 else [:: A].
+
+(* Extract the equalities in a list of assertions *)
+Definition extract_equalities A :=
+  foldr (fun A ps => if A is APredicate (PEqual x1 x2) then (x1, x2) :: ps else ps) [::] A.
+
 (* Determine whether all occurrences of A' within A are positive or negative
  * p' is the positivity to check for; true for positive, false for negative.
  * p is the current positivity.

@@ -244,6 +244,16 @@ Lemma DTIfSubstE :
 Proof.
 Admitted.
 
+(* Conditional substitutivity of equality in bulk *)
+Lemma DTIfSubstE' :
+  forall C Z H A,
+  let ps := extract_equalities (split_conjunction H) in
+  all (fun '(t1, t2) => (~~term_rigid t1) || (term_rigid t1 && term_rigid t2)) ps ->
+  let A' := foldr (fun '(t1, t2) A => replace_assertion_term t1 t2 A) A ps in
+  Z ||- C, {-A (H =>> A) <=> (H =>> A') -}.
+Proof.
+Admitted.
+
 (* Quantifier duality *)
 Axiom DTQDual :
   forall C Z A,
@@ -1153,6 +1163,12 @@ Ltac dtifsubste_pl :=
   end;
   dclean; dsplitp; dswap; dclear; dsplitp; dswap; dclear; difp;
     (try by []); (try by dtentails_r).
+Ltac dtifsubste' :=
+  match goal with
+  | |- Context _ _ ||- _, {-A ?H_ =>> ?A_ -} =>
+    eapply DSCut; first (by repeat dclear; apply DTIfSubstE' with
+      (H := H_) (A := A_)); dclean; dsplitp; dswap; dclear
+  end.
 Ltac dtsubstep_l :=
   rewrite /AOn /TFlexible /TRigid; (* Commonly needed for equality *)
   match goal with
