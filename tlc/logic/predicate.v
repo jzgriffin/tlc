@@ -180,6 +180,11 @@ Lemma DPMemberNil C Delta :
 Proof.
   (* Used in SLC & PLC *)
 Admitted.
+Ltac dpmembernil :=
+  rewrite /ANotIn; match goal with
+  | |- context[ {-A ?x_ \in [] -} ] =>
+    duse DPMemberNil; dforallp x_
+  end.
 Ltac dpmembernilp :=
   match goal with
   | |- Context _ ({-A ?x \in [] -} :: _) ||- _, _ =>
