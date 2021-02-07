@@ -943,6 +943,12 @@ Lemma DTAndAssoc C Delta A1 A2 A3 :
   -}.
 Proof.
 Admitted.
+Ltac dtandassoc_l :=
+  match goal with
+  | |- context[ {-A (?A1_ /\ ?A2_) /\ ?A3_ -} ] =>
+    eapply DSCut; first (by repeat dclear; apply DTAndAssoc with
+      (A1 := A1_) (A2 := A2_) (A3 := A3_))
+  end.
 
 Lemma DTAndExampleExists C Delta H1 H2 x :
   Context Delta [::] ||- C, {-A
