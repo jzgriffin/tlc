@@ -84,7 +84,7 @@ Proof.
 Admitted.
 Ltac dpsubindicationselfelimif_l :=
   match goal with
-  | |- context[ {-A self-event -> event[?i_]-> ?e_ -> ?A_ -} ] =>
+  | |- context[ {-A self-event -> event[?i_]<- ?e_ -> ?A_ -} ] =>
     eapply DSCut; first (by repeat dclear; apply DPSubIndicationSelfElimIf with
       (A := A_))
   end.
