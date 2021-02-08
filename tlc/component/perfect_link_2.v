@@ -393,7 +393,265 @@ Lemma L43 Delta : Context Delta [::] ||- perfect_link, {-A
   )
 -}.
 Proof.
-Admitted.
+  dforall n; dforall n'; dforall m; dforall c; dif.
+
+  (* By InvSe *)
+  set A := {-A
+    (n', c) \in (Fs ' n).2 /\
+    (eventuallyp on n, event[0]<- CSLDeliver ' n' ' (c, m)) ->
+    Fn = n -> CPLDeliver ' n' ' m \notin Fois -}.
+  eapply DSCut; first (by repeat dclear; apply DPInvSe with (A := A);
+    [by dautoclosed]).
+
+  (* request *)
+  difp.
+  {
+    (* This proof is simpler to write without the self operator *)
+    match goal with
+    | |- Context _ _ ||- _, {-A self ?A_ -} =>
+      eapply DSCut; first (by repeat dclear; apply DPSInv_2 with (A := A_))
+    end; difp; last by [].
+    rewrite /restrict_assertion /=; dclean.
+    dptoprequestselfelimif_l; dtsubst_r; dclear.
+
+    dforall e.
+    duse DPIR; dforallp e; dsimplp.
+    dcase {-t ? e -}; dexistsp e_m; dexistsp e_n'; dtgenp;
+      dtsubstep_l; dswap; dtsubste_l; dclear; dautoeq.
+    dcase {-t ? Fs ' ? Fn -}; dexistsp s_r; dexistsp s_c; dtgenp;
+      dtsubstep_l; dswap; dclear; dsimplp.
+    dtinjectionp; dtsubstneg.
+
+    repeat (rewrite /AEntails; dtmergeif; dtsubst_r; dclear).
+    repeat (dtandassoc_l; dtsubst_r; dclear).
+    dtifsubste'; dsplitp; dclear; difp; last by [].
+    by dpmembernil; dtgenp; exact: DTEntailsAlwaysC.
+  }
+
+  (* indication *)
+  difp.
+  {
+    (* This proof is simpler to write without the self operator *)
+    match goal with
+    | |- Context _ _ ||- _, {-A self ?A_ -} =>
+      eapply DSCut; first (by repeat dclear; apply DPSInv_2 with (A := A_))
+    end; difp; last by [].
+    rewrite /restrict_assertion /=; dclean.
+    dforall i; dforall e.
+    dpsubindicationselfelimif_l; dtsubst_r; dclear.
+
+    dhave {-A
+      on n, event[i]<- e =>>
+      (Fs' ' n, Fors, Fois) = (indication perfect_link) ' n ' (Fs ' n) ' (i, e)
+    -}.
+    {
+      dclear.
+      duse DPII; dforallp i; dforallp e.
+      dtsubstneg.
+      rewrite /AOn /AEntails; match goal with
+      | |- context[ {-A ?H1_ /\ ?H2_ -> ?A_ -} ] =>
+        eapply DSCut; first (by repeat dclear; apply DTMergeIf with
+          (H1 := H1_) (H2 := H2_) (A := A_))
+      end; dtsubst_l; dclear.
+      dtifsubste'; dsplitp; dclear; difp; last by [].
+      by dtgen; dif; dif.
+    }
+    repeat (rewrite /AEntails; dtmergeif; dtsubst_r; dclear).
+    match goal with
+    | |- Context _ _ ||- _, {-A ?H1_ /\ ?H2_ =>> ?A_ -} =>
+      eapply DSCut; first (by repeat dclear; apply DTAndComm with
+        (A1 := H1_) (A2 := H2_))
+    end; dtsubst_r; dclear.
+    rewrite /AOn; match goal with
+    | |- Context _ _ ||- _, {-A ?H1_ /\ (?H2_ /\ ?H3_) =>> ?A_ -} =>
+      eapply DSCut; first (by repeat dclear; apply DTAndAssoc with
+        (A1 := H1_) (A2 := H2_) (A3 := H3_))
+    end; dtsubst_l; dclear.
+
+    dsimplp.
+    dcase {-t (? i, ? e) -}; dexistsp m'; dexistsp c'; dexistsp n'';
+      dtinjectionp; dsplitp; dtgenp;
+      dtsubste_l; dautoeq; dxchg 1 2;
+      dtsubstep_l; dautoeq; dswap; dclear; dswap; dtgenp;
+      dtsubste_l; dautoeq;
+      dtsubstep_l; dautoeq; dswap; dclear.
+    dcase {-t ? Fs ' ? n -}; dexistsp s_r; dexistsp s_c; dtgenp;
+      dtsubstep_l; dswap;
+      dtsubste_l; dclear;
+      dsimplp.
+    dcase {-t FCount ' (? n'', ? c') ' ? s_r == 0 -}; dorp; dtgenp;
+      dtsubstep_l; dsimplp;
+      dtinjectionp; last first.
+    {
+      dtsubstneg.
+      repeat (rewrite /AEntails; dtmergeif; dtsubst_r; dclear).
+      repeat (dtandassoc_l; dtsubst_r; dclear).
+      dtifsubste'; dsplitp; dclear; difp; last by [].
+      by dpmembernil; dtgenp; exact: DTEntailsAlwaysC.
+    }
+
+    dhave {-A
+      (n'', c') \notin s_r
+    -}.
+    {
+      dswap.
+      duse DPMemberReflect; dforallp {-t (n'', c') -}; dforallp s_r.
+      dswap; dtsubstep_l; dsimplp; dsplitp; dclear.
+      dhave {-A
+        TFalse = TTrue <=> AFalse
+      -}.
+      {
+        dtgen; dsplit; dif.
+        - by eapply DSCut; first (by repeat dclear; apply DPNotEqual with
+          (x1 := TFalse) (x2 := TTrue)); dnotp.
+        - by dexfalso.
+      }
+      dtsubstp_l.
+
+      dnot; dswap; dnotp.
+      dsplit; last by [].
+      by dnot; dnotp.
+    }
+    dxchg 0 2; dclear.
+
+    match goal with
+    | |- Context _ ({-A ?H_ =>> ?A_ -} :: _) ||- _, _ =>
+      dhave {-A H_ =>> H_ /\ A_ -}
+    end.
+    {
+      dsplitp; dswap; dclear.
+      dtgen; dif; dswap; difp; first by [].
+      by dsplit; dassumption.
+    }
+    dswap; dclear.
+    dtsubstneg.
+    repeat (rewrite /AEntails; dtmergeif; dtsubst_r; dclear).
+    repeat (dtandassoc_l; dtsubst_r; dclear).
+    dtifsubste'; dsplitp; dclear; difp; last by [].
+
+    eapply DSCut; first (by repeat dclear; apply DSEM with
+      (A := {-A n'' = n' /\ m' = m -})); dorp.
+
+    (* true *)
+    {
+      dsplitp.
+      dtgenp; dtsubste_l; dxchg 1 2; dtsubstep_l; dautoeq; dswap; dclear; dswap.
+      dtgenp; dtsubste_l; dautoeq; dclear.
+      dsimpl.
+      dhave {-A
+        (on n, event[0]<- CSLDeliver ' n' ' (c', m)) /\
+        Fs' ' n = (s_c, s_r :|: [(n', c')]) /\
+        Fors = [] /\
+        Fois = [CPLDeliver ' n' ' m] /\
+        (n', c) \in s_r /\
+        eventuallyp (on n, event[0]<- CSLDeliver ' n' ' (c, m)) =>>
+        (n', c) \in s_r /\
+        (on n, event[0]<- CSLDeliver ' n' ' (c', m)) /\
+        eventuallyp (on n, event[0]<- CSLDeliver ' n' ' (c, m))
+      -}.
+      {
+        do 3 (match goal with
+        | |- Context _ _ ||- _, {-A ?H1_ /\ ?H2_ /\ ?H3_ =>> _ -} =>
+          eapply DSCut; first (by repeat dclear; apply DTEntailsAndDropLeft with
+            (A1 := H2_) (A2 := H3_))
+        end; dtsubstneg).
+
+        match goal with
+        | |- Context _ _ ||- _, {-A ?H1_ /\ ?H2_ /\ ?H3_ =>> _ -} =>
+          eapply DSCut; first (by repeat dclear; apply DTAndAssoc with
+            (A1 := H1_) (A2 := H2_) (A3 := H3_)); dtsubst_l; dclear;
+          eapply DSCut; first (by repeat dclear; apply DTAndComm with
+            (A1 := H1_) (A2 := H2_)); dtsubst_r; dclear;
+          eapply DSCut; first (by repeat dclear; apply DTAndAssoc with
+            (A1 := H2_) (A2 := H1_) (A3 := H3_)); dtsubst_r; dclear
+        end.
+
+        by exact: DTEntailsTautology.
+      }
+      dtsubstneg.
+
+      duse L44; dforallp n; dforallp n'; dforallp m; dforallp c'; dforallp c;
+        difp; first by dassumption.
+      match goal with
+      | |- Context _ ({-A self ?A_ -} :: _) ||- _, _ =>
+        eapply DSCut; first (by repeat dclear; apply DPSInv_1 with (A := A_))
+      end; difp; first by dhead.
+      rewrite /restrict_assertion /=; dclean.
+      dtmergeif; dtsubstp_l.
+      match goal with
+      | |- context[ {-A self-event /\ ?A1_ /\ ?A2_ -} ] =>
+        eapply DSCut; first (by repeat dclear; apply DTAndAssoc with
+          (A1 := {-A self-event -}) (A2 := A1_) (A3 := A2_))
+      end; dtsubstp_r.
+      rewrite /AOn; match goal with
+      | |- context[ {-A self-event /\ (?A1_ /\ ?A2_) -} ] =>
+        eapply DSCut; first (by repeat dclear; apply DTAndAssoc with
+          (A1 := {-A self-event -}) (A2 := A1_) (A3 := A2_)); dtsubstp_r;
+        eapply DSCut; first (by repeat dclear; apply DTAndComm with
+          (A1 := {-A self-event -}) (A2 := A1_)); dtsubstp_l;
+        eapply DSCut; first (by repeat dclear; apply DTAndAssoc with
+          (A1 := A1_) (A2 := {-A self-event -}) (A3 := A2_)); dtsubstp_l;
+        eapply DSCut; first (by repeat dclear; apply DTAndComm with
+          (A1 := {-A self-event -}) (A2 := A2_)); dtsubstp_l
+      end.
+      duse DPSubIndicationSelfElim; dforallp {-t 0 -}; dforallp {-t CSLDeliver ' n' ' (c', m) -};
+        dtgenp; dclean; dtsubstp_l.
+      dtsubstneg; dclear.
+
+      eapply DSCut; first (by repeat dclear; apply DTAndComm with
+        (A1 := {-A (n', c) \in s_r -}) (A2 := {-A c' = c -})); dtsubst_r; dclear.
+      dtgen; dif; dsplitp.
+      dxchg 1 2; dtgenp; dtsubstep_l; dautoeq; dswap; dclear.
+      by dnotp.
+    }
+
+    (* false *)
+    {
+      dhave {-A
+        always (CPLDeliver ' n' ' m \notin [CPLDeliver ' n'' ' m'])
+      -}.
+      {
+        dtgen; dnot.
+        duse DPMemberCons;
+          dforallp {-t CPLDeliver ' n' ' m -};
+          dforallp {-t CPLDeliver ' n'' ' m' -};
+          dforallp {-t [] -}.
+        dsplitp; dswap; dclear; difp; first by [].
+        dswap; dclear; dorp; last by dpmembernilp.
+        dtinjectionp; dswap; dnotp.
+
+        duse DPEqualSymm; dforallp n'; dforallp n''; dtgenp; dclean;
+          dtsubstp_l; repeat dautoeq.
+        duse DPEqualSymm; dforallp m; dforallp m'; dtgenp; dclean;
+          dtsubstp_l; repeat dautoeq.
+        by [].
+      }
+      by exact: DTEntailsAlwaysC.
+    }
+  }
+
+  (* periodic *)
+  difp.
+  {
+    (* This proof is simpler to write without the self operator *)
+    match goal with
+    | |- Context _ _ ||- _, {-A self ?A_ -} =>
+      eapply DSCut; first (by repeat dclear; apply DPSInv_2 with (A := A_))
+    end; difp; last by [].
+    rewrite /restrict_assertion /=; dclean.
+    dptopperiodicselfelimif_l; dtsubst_r; dclear.
+
+    duse DPPe; dsimplp.
+    dtinjectionp; dtsubstneg.
+
+    repeat (rewrite /AEntails; dtmergeif; dtsubst_r; dclear).
+    repeat (dtandassoc_l; dtsubst_r; dclear).
+    dtifsubste'; dsplitp; dclear; difp; last by [].
+    by dpmembernil; dtgenp; exact: DTEntailsAlwaysC.
+  }
+
+  by dclean.
+Qed.
 
 Lemma L42 Delta : Context Delta [::] ||- perfect_link, {-A
   forall: forall: forall: (* n, n', m *)
