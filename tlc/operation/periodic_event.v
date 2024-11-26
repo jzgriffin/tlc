@@ -4,6 +4,7 @@
  * Purpose: Contains the event type for periodic events.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -33,7 +34,6 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Definition periodic_event_eqMixin := EqMixin periodic_event_eqP.
-  Canonical periodic_event_eqType := EqType periodic_event periodic_event_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build periodic_event periodic_event_eqP.
 
 End eq.

@@ -4,6 +4,7 @@
  * Purpose: Contains the syntax of patterns.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -48,8 +49,7 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Definition pattern_eqMixin := EqMixin pattern_eqP.
-  Canonical pattern_eqType := EqType pattern pattern_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build pattern pattern_eqP.
 
 End eq.
 
@@ -57,25 +57,25 @@ End eq.
 Coercion PConstructor : constructor >-> pattern.
 
 (* Notation scope *)
-Declare Scope pattern_scope.
-Bind Scope pattern_scope with pattern.
-Delimit Scope pattern_scope with pattern.
+Declare Scope tlc_pattern_scope.
+Bind Scope tlc_pattern_scope with pattern.
+Delimit Scope tlc_pattern_scope with tlc_pattern.
 
-Notation "{-p p -}" := (p%pattern)
+Notation "{-p p -}" := (p%tlc_pattern)
   (at level 0, p at level 100, no associativity, only parsing).
 
 (* Constructor notations *)
 Notation "'%'" := PWildcard
-  (at level 0, no associativity) : pattern_scope.
+  (at level 0, no associativity) : tlc_pattern_scope.
 Notation "$ j" := (PParameter j)
-  (at level 0, j at level 0, no associativity, format "'$' j") : pattern_scope.
+  (at level 0, j at level 0, no associativity, format "'$' j") : tlc_pattern_scope.
 Notation "f ' a" := (PApplication f a)
-  (at level 10, left associativity) : pattern_scope.
+  (at level 10, left associativity) : tlc_pattern_scope.
 
 (* Derived constructor notations for pairs *)
 Definition PPair p1 p2 := {-p CPair ' p1 ' p2 -}.
 Notation "( p1 , p2 , .. , pn )" := (PPair (.. (PPair p1 p2) ..) pn)
-  : pattern_scope.
+  : tlc_pattern_scope.
 
 (* Derived constructor notations for booleans *)
 Definition PTrue := PConstructor CTrue.
@@ -86,7 +86,7 @@ Coercion pattern_of_bool : bool >-> pattern.
 (* Derived constructor notations for naturals *)
 Definition PZero := PConstructor CZero.
 Definition PSucc n := {-p CSucc ' n -}.
-Notation "n .+1" := (PSucc n) : pattern_scope.
+Notation "n .+1" := (PSucc n) : tlc_pattern_scope.
 Fixpoint pattern_of_nat n :=
   match n with
   | 0 => PZero
@@ -109,12 +109,12 @@ Definition uint_of_pattern p :=
   | Some n => Some (Nat.to_num_uint n)
   | None => None
   end.
-Numeral Notation pattern pattern_of_uint uint_of_pattern : pattern_scope.
+Number Notation pattern pattern_of_uint uint_of_pattern : tlc_pattern_scope.
 
 (* Derived constructor notations for lists *)
 Definition PNil := PConstructor CNil.
-Notation "[ ]" := PNil : pattern_scope.
+Notation "[ ]" := PNil : tlc_pattern_scope.
 Definition PCons p ps := {-p CCons ' p ' ps -}.
-Notation "p :: ps" := (PCons p ps) : pattern_scope.
+Notation "p :: ps" := (PCons p ps) : tlc_pattern_scope.
 Notation "[ p1 , .. , pn ]" := {-p p1 :: (.. (pn :: []) ..) -}
-  : pattern_scope.
+  : tlc_pattern_scope.

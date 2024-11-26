@@ -26,12 +26,6 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Fixpoint push_term_params_rec t k :=
-  let fix push_match_params_rec cs k :=
-    match cs with
-    | [::] => [::]
-    | (p, t) :: cs =>
-      (p, push_term_params_rec t k) :: push_match_params_rec cs k
-    end in
   match t with
   | TParameter (P i j) =>
     if i >= k then TParameter (P i.+1 j) else TParameter (P i j)
@@ -44,11 +38,17 @@ Fixpoint push_term_params_rec t k :=
       (push_term_params_rec f k)
       (push_term_params_rec a k)
   | TMatch cs => TMatch (push_match_params_rec cs k.+1)
+  end
+with push_match_params_rec cs k :=
+  match cs with
+  | MCNil => MCNil
+  | MCCons (p, t) cs =>
+    MCCons (p, push_term_params_rec t k) (push_match_params_rec cs k)
   end.
 
 Definition push_term_params t := push_term_params_rec t 0.
 
-Definition argument_map := partial_map [eqType of parameter] (option term).
+Definition argument_map := partial_map (Equality.clone parameter _) (option term).
 
 (* Push a argument map to the next binding level when entering a binder *)
 Definition push_argument_map (am : argument_map) :=
@@ -117,17 +117,6 @@ Definition flatten_argument_map (am : argument_map) :=
  * an updated map is returned.
  *)
 Fixpoint unify_term_with t' t am :=
-  let fix unify_cases_with cs' cs am :=
-    match cs', cs with
-    | [::], [::] => pure am
-    | (p', t') :: cs', (p, t) :: cs =>
-      if p' == p then
-        am <- unify_term_with t' t (push_argument_map am);
-        unify_cases_with cs' cs (pop_argument_map am).1
-      else None
-    | _, _ => None
-    end
-  in
   match t', t with
   | TParameter x', t =>
     if am {@ x'} is Some ot' then
@@ -142,7 +131,17 @@ Fixpoint unify_term_with t' t am :=
   | TApplication f' a', TApplication f a =>
     am <- unify_term_with f' f am;
     unify_term_with a' a am
-  | TMatch cs', TMatch cs => unify_cases_with cs' cs am
+  | TMatch cs', TMatch cs => unify_match_cases_with cs' cs am
+  | _, _ => None
+  end
+with unify_match_cases_with cs' cs am :=
+  match cs', cs with
+  | MCNil, MCNil => pure am
+  | MCCons (p', t') cs', MCCons (p, t) cs =>
+    if p' == p then
+      am <- unify_term_with t' t (push_argument_map am);
+      unify_match_cases_with cs' cs (pop_argument_map am).1
+    else None
   | _, _ => None
   end.
 
@@ -211,12 +210,19 @@ Fixpoint open_term_at k us t :=
     a <- open_term_at k us a;
     pure (TApplication f a)
   | TMatch cs =>
-    TMatch <$>
-      (flatten_results ((fun '(p, b) =>
-        match open_term_at k.+1 us b with
-        | Success b => Success (p, b)
-        | Failure e => Failure e
-        end) <$> cs))
+    cs <- open_match_cases_at k us cs;
+    pure (TMatch cs)
+  end
+with open_match_cases_at k us cs :=
+  match cs with
+  | MCNil => pure MCNil
+  | MCCons (p, b) cs =>
+    match open_term_at k.+1 us b with
+    | Success b =>
+      cs <- open_match_cases_at k us cs;
+      pure (MCCons (p, b) cs)
+    | Failure e => Failure e
+    end
   end.
 Definition open_term := open_term_at 0.
 
@@ -232,8 +238,12 @@ Fixpoint term_lc_in ks t :=
   | TUnknown _ => true
   | TApplication f a =>
     term_lc_in ks f && term_lc_in ks a
-  | TMatch cs =>
-    all (fun '(p, b) => term_lc_in (pattern_arity p :: ks) b) cs
+  | TMatch cs => match_cases_lc_in ks cs
+  end
+with match_cases_lc_in ks cs :=
+  match cs with
+  | MCNil => true
+  | MCCons (p, b) cs => term_lc_in (pattern_arity p :: ks) b && match_cases_lc_in ks cs
   end.
 Definition term_lc := term_lc_in [::].
 
@@ -271,7 +281,12 @@ Fixpoint term_flexibles t :=
   | TFunction _ => [::]
   | TUnknown _ => [::]
   | TApplication f a => term_flexibles f ++ term_flexibles a
-  | TMatch cs => foldr cat [::] ((fun '(_, b) => term_flexibles b) <$> cs)
+  | TMatch cs => match_cases_flexibles cs
+  end
+with match_cases_flexibles cs :=
+  match cs with
+  | MCNil => [::]
+  | MCCons (_, b) cs => term_flexibles b ++ match_cases_flexibles cs
   end.
 
 (* Compute the set of rigid variables appearing in a term *)
@@ -284,7 +299,12 @@ Fixpoint term_rigids t :=
   | TFunction _ => [::]
   | TUnknown _ => [::]
   | TApplication f a => term_rigids f ++ term_rigids a
-  | TMatch cs => foldr cat [::] ((fun '(_, b) => term_rigids b) <$> cs)
+  | TMatch cs => match_cases_rigids cs
+  end
+with match_cases_rigids cs :=
+  match cs with
+  | MCNil => [::]
+  | MCCons (_, b) cs => term_rigids b ++ match_cases_rigids cs
   end.
 
 (* Compute the set of variables appearing in a term *)
@@ -339,7 +359,12 @@ Fixpoint term_rigid t :=
   | TFunction _ => true
   | TUnknown _ => true
   | TApplication f a => term_rigid f && term_rigid a
-  | TMatch cs => all (fun '(p, b) => term_rigid b) cs
+  | TMatch cs => match_cases_rigid cs
+  end
+with match_cases_rigid cs :=
+  match cs with
+  | MCNil => true
+  | MCCons (_, b) cs => term_rigid b && match_cases_rigid cs
   end.
 
 (* Replace all instances of term x with term u within t *)
@@ -353,8 +378,13 @@ Fixpoint replace_term (x u t : term) :=
   | TUnknown _ => t
   | TApplication f a =>
     TApplication (replace_term x u f) (replace_term x u a)
-  | TMatch cs =>
-    TMatch ((fun '(p, b) => (p, replace_term x u b)) <$> cs)
+  | TMatch cs => TMatch (replace_term_in_match_cases x u cs)
+  end
+with replace_term_in_match_cases x u cs :=
+  match cs with
+  | MCNil => MCNil
+  | MCCons (p, b) cs =>
+    MCCons (p, replace_term x u b) (replace_term_in_match_cases x u cs)
   end.
 
 (* Replace all instances of variable x with term u within t *)
@@ -396,7 +426,12 @@ Fixpoint term_known t :=
   | TFunction _ => true
   | TUnknown _ => false
   | TApplication f a => term_known f && term_known a
-  | TMatch cs => all (fun '(p, b) => term_known b) cs
+  | TMatch cs => match_cases_known cs
+  end
+with match_cases_known cs :=
+  match cs with
+  | MCNil => true
+  | MCCons (_, b) cs => term_known b && match_cases_known cs
   end.
 
 (* Determine whether all patterns in a term are well-formed *)
@@ -408,7 +443,13 @@ Fixpoint patterns_wf t :=
   | TFunction _ => true
   | TUnknown _ => true
   | TApplication f a => patterns_wf f && patterns_wf a
-  | TMatch cs => all (fun '(p, b) => pattern_wf p && patterns_wf b) cs
+  | TMatch cs => match_cases_patterns_wf cs
+  end
+with match_cases_patterns_wf cs :=
+  match cs with
+  | MCNil => true
+  | MCCons (p, b) cs =>
+    pattern_wf p && patterns_wf b && match_cases_patterns_wf cs
   end.
 
 (* Determine whether a term is computable
@@ -456,8 +497,8 @@ Qed.
  *)
 Fixpoint reduce_match cs a :=
   match cs with
-  | [::] => Failure (EEmptyMatch a)
-  | (p, b) :: cs =>
+  | MCNil => Failure (EEmptyMatch a)
+  | MCCons (p, b) cs =>
     match match_pattern p a with
     | Success us =>
       match open_term us b with

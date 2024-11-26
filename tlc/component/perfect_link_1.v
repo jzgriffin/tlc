@@ -97,7 +97,7 @@ Proof.
   {
     repeat dclear.
     eapply DSCut; first by apply DPInvS with
-      (S0 := {-A forall: (* s *) ($$0).1 >= c -});
+      (S := {-A forall: (* s *) ($$0).1 >= c -});
       [| dautoclosed | repeat constructor].
     dforallp n.
 
@@ -356,7 +356,7 @@ Proof.
 
   (* Instantiate InvSA *)
   eapply DSCut; first (by repeat dclear; apply DPInvSA with
-    (S0 := {-A forall: (* s *) (n, c) \in ($$0).2 -})
+    (S := {-A forall: (* s *) (n, c) \in ($$0).2 -})
     (A := {-A exists: (* m *)
       (on n', event[0]<- CSLDeliver ' n ' (c, $$0) /\
         CPLDeliver ' n ' $$0 \in Fois) -});

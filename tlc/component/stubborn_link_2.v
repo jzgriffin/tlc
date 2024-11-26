@@ -134,7 +134,7 @@ Proof.
   -}.
   {
     eapply DSCut; first by repeat dclear; apply DPInvSA with
-      (S0 := {-A forall: (* s *) on n', (n, m) \in $$0 -})
+      (S := {-A forall: (* s *) on n', (n, m) \in $$0 -})
       (A := {-A event[]-> CSLSend ' n ' m -});
       [by [] | by dautoclosed | by dautoclosed |
         by repeat constructor | by repeat constructor].

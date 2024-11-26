@@ -4,6 +4,7 @@
  * Purpose: Contains the syntax of flexible variables.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -52,7 +53,6 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Definition flexible_eqMixin := EqMixin flexible_eqP.
-  Canonical flexible_eqType := EqType flexible flexible_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build flexible flexible_eqP.
 
 End eq.

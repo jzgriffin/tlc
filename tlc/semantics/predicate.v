@@ -11,6 +11,7 @@ Require Import mathcomp.ssreflect.seq.
 Require Import tlc.semantics.term.
 Require Import tlc.syntax.all_syntax.
 Require Import tlc.utility.monad.
+Require Import tlc.utility.option.
 Require Import tlc.utility.result.
 Require Import tlc.utility.seq.
 

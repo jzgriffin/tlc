@@ -4,6 +4,7 @@
  * Purpose: Contains the syntax of rigid variables.
  *)
 
+From HB Require Import structures.
 Require Import Coq.Strings.String.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -37,8 +38,7 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Definition rigid_eqMixin := EqMixin rigid_eqP.
-  Canonical rigid_eqType := EqType rigid rigid_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build rigid rigid_eqP.
 
   Lemma rigid_eqE x y : rigid_eq x y = (x == y).
   Proof.

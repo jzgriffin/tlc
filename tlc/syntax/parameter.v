@@ -4,6 +4,7 @@
  * Purpose: Contains the syntax of parameters.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.choice.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -41,7 +42,6 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Definition parameter_eqMixin := EqMixin parameter_eqP.
-  Canonical parameter_eqType := EqType parameter parameter_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build parameter parameter_eqP.
 
 End eq.

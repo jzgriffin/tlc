@@ -71,7 +71,7 @@ Proof.
   {
     (* Instantiate InvS'' *)
     set S := {-A forall: (* ts *) (n', m) \in $$0 -}.
-    eapply DSCut; [repeat dclear; apply DPInvS'' with (S0 := S);
+    eapply DSCut; [repeat dclear; apply DPInvS'' with (S := S);
       [by [] | by dautoclosed | by repeat constructor] |].
     dforallp n; dclean.
 
@@ -197,7 +197,7 @@ Proof.
   -}.
   {
     (* Instantiate IIOI *)
-    eapply DSCut; [repeat dclear; eapply DPIIOI with (S0 := {-A forall: ATrue -});
+    eapply DSCut; [repeat dclear; eapply DPIIOI with (S := {-A forall: ATrue -});
       [by [] | by dautoclosed | by repeat econstructor] |];
       dforallp n'; dforallp {-t 0 -};
       dforallp {-t CFLDeliver ' n ' m -};

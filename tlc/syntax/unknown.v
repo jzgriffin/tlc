@@ -4,6 +4,7 @@
  * Purpose: Contains the syntax of unknown values.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.choice.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -36,7 +37,6 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Definition unknown_eqMixin := EqMixin unknown_eqP.
-  Canonical unknown_eqType := EqType unknown unknown_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build unknown unknown_eqP.
 
 End eq.

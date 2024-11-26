@@ -51,7 +51,7 @@ Definition pattern_wf p :=
   set_eq (pattern_params p) (iota 0 (pattern_arity p)).
 
 (* Match a term t against a pattern p and return the map of terms bound by p *)
-Fixpoint match_pattern_rec p t (m : partial_map [eqType of nat] term) :=
+Fixpoint match_pattern_rec p t (m : partial_map (Equality.clone nat _) term) :=
   match p, t with
   | PWildcard, _ => pure m
   | PParameter j, t =>
@@ -119,9 +119,9 @@ Definition destruct_case a (c : match_case) :=
  *)
 Fixpoint destruct_cases a (cs : match_cases) :=
   match cs with
-  | nil => pure ATrue
-  | [:: c] => destruct_case a c
-  | c :: cs =>
+  | MCNil => pure ATrue
+  | MCCons c MCNil => destruct_case a c
+  | MCCons c cs =>
     A <- destruct_case a c;
     As <- destruct_cases a cs;
     pure (AOr A As)

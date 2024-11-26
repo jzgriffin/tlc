@@ -769,7 +769,7 @@ Proof.
   {
     dforall c.
     eapply DSCut; first (by repeat dclear; apply DPInvSSe with
-      (S0 := {-A forall: (* s *) (n', c) \in ($$0).2 -});
+      (S := {-A forall: (* s *) (n', c) \in ($$0).2 -});
       [by [] | by dautoclosed | by repeat constructor]);
       dforallp n.
     (* request *)
@@ -866,7 +866,7 @@ Proof.
 
   (* By ASASe on (1) and (6) *)
   eapply DSCut; first (by repeat dclear; apply DPASASe' with
-    (S0 := {-A forall: (* s *) (n', $$1) \in ($$0).2 /\
+    (S := {-A forall: (* s *) (n', $$1) \in ($$0).2 /\
       eventuallyp on n, event[0]<- CSLDeliver ' n' ' ($$1, m) -})
     (A := {-A on n, CPLDeliver ' n' ' m \in Fois -})
     (A' := {-A Fn = n -> CPLDeliver ' n' ' m \notin Fois -});

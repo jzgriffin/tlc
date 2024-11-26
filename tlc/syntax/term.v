@@ -4,6 +4,7 @@
  * Purpose: Contains the syntax of terms.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -31,21 +32,21 @@ Inductive term :=
 | TFunction (f : function)
 | TUnknown (u : unknown)
 | TApplication (f a : term)
-| TMatch (cs : seq (pattern * term)).
+| TMatch (cs : match_cases)
+with match_cases :=
+| MCNil
+| MCCons (c : pattern * term) (cs : match_cases).
 Definition match_case := prod pattern term.
-Definition match_cases := seq match_case.
+
+Scheme term_match_cases_ind := Induction for term Sort Type
+  with match_cases_term_ind := Induction for match_cases Sort Type.
+Combined Scheme term_match_cases_mutind from term_match_cases_ind, match_cases_term_ind.
 
 (* Equality *)
 Section eq.
 
   (* Boolean equality *)
   Fixpoint term_eq t1 t2 :=
-    let fix cases_eq cs1 cs2 :=
-      match cs1, cs2 with
-      | [::], [::] => true
-      | (p1, t1) :: cs1, (p2, t2) :: cs2 => (p1 == p2) && term_eq t1 t2 && cases_eq cs1 cs2
-      | _, _ => false
-      end in
     match t1, t2 with
     | TParameter x1, TParameter x2 => x1 == x2
     | TVariable x1, TVariable x2 => x1 == x2
@@ -53,40 +54,44 @@ Section eq.
     | TFunction f1, TFunction f2 => f1 == f2
     | TUnknown u1, TUnknown u2 => u1 == u2
     | TApplication f1 a1, TApplication f2 a2 => term_eq f1 f2 && term_eq a1 a2
-    | TMatch cs1, TMatch cs2 => cases_eq cs1 cs2
+    | TMatch cs1, TMatch cs2 => match_cases_eq cs1 cs2
+    | _, _ => false
+    end
+  with match_cases_eq cs1 cs2 :=
+    match cs1, cs2 with
+    | MCNil, MCNil => true
+    | MCCons (p1, t1) cs1, MCCons (p2, t2) cs2 => (p1 == p2) && term_eq t1 t2 && match_cases_eq cs1 cs2
     | _, _ => false
     end.
 
   (* Boolean equality reflection *)
-  Fixpoint term_eqP t1 t2 : reflect (t1 = t2) (term_eq t1 t2).
+  Fixpoint term_eqP t1 t2 : reflect (t1 = t2) (term_eq t1 t2)
+  with match_cases_eqP cs1 cs2 : reflect (cs1 = cs2) (match_cases_eq cs1 cs2).
   Proof.
-    move: t1 t2; case=> [x1 |x1 | c1 | f1 | u1 | f1 a1 | cs1]
-      [x2 | x2 | c2 | f2 | u2 | f2 a2 | cs2] //=; try by constructor.
-    - by have [<- | neqx] := x1 =P x2; last (by right; case); constructor.
-    - by have [<- | neqx] := x1 =P x2; last (by right; case); constructor.
-    - by have [<- | neqx] := c1 =P c2; last (by right; case); constructor.
-    - by have [<- | neqx] := f1 =P f2; last (by right; case); constructor.
-    - by have [<- | neqx] := u1 =P u2; last (by right; case); constructor.
-    - have [<- | neqx] := term_eqP f1 f2; last (by right; case); simpl.
-      have [<- | neqx] := term_eqP a1 a2; last (by right; case); simpl.
-      by constructor.
-    - match goal with |- reflect _ (?f cs1 cs2) => set cases_eq := f end.
-      assert (cases_eqP : Equality.axiom cases_eq).
-      {
-        clear cs1 cs2.
-        move; elim=> [| [p1 t1] cs1 IH] [| [p2 t2] cs2] //=; try by constructor.
-        have [<- | neqx] := p1 =P p2; last (by right; case); simpl.
-        have [<- | neqx] := term_eqP t1 t2; last (by right; case); simpl.
-        have [<- | neqx] := IH cs2; last (by right; case); simpl.
+    - elim: t1 t2 =>
+        [x1 | x1 | c1 | f1 | u1 | f1 IHf1 a1 IHa1 | cs1]
+        [x2 | x2 | c2 | f2 | u2 | f2 a2 | cs2];
+        do [by constructor | simpl].
+      - by have [<- | neqx] := x1 =P x2; last (by right; case); constructor.
+      - by have [<- | neqx] := x1 =P x2; last (by right; case); constructor.
+      - by have [<- | neqx] := c1 =P c2; last (by right; case); constructor.
+      - by have [<- | neqx] := f1 =P f2; last (by right; case); constructor.
+      - by have [<- | neqx] := u1 =P u2; last (by right; case); constructor.
+      - have [<- | neqx] := IHf1 f2; last (by right; case); simpl.
+        have [<- | neqx] := IHa1 a2; last (by right; case); simpl.
         by constructor.
-      }
-      have [<- | neqx] := cases_eqP cs1 cs2; last (by right; case); simpl.
+      - by have [<- | neqx] := match_cases_eqP cs1 cs2; last (by right; case); constructor.
+    - elim: cs1 cs2 => [[| [p2 t2] cs2] | [p1 t1] cs1 IHcs1 [| [p2 t2] cs2]];
+        do [by constructor | simpl].
+      have [<- | neqx] := p1 =P p2; last (by right; case); simpl.
+      have [<- | neqx] := term_eqP t1 t2; last (by right; case); simpl.
+      have [<- | neqx] := IHcs1 cs2; last (by right; case); simpl.
       by constructor.
   Qed.
 
   (* EqType canonical structures *)
-  Definition term_eqMixin := EqMixin term_eqP.
-  Canonical term_eqType := EqType term term_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build term term_eqP.
+  HB.instance Definition _ := hasDecEq.Build match_cases match_cases_eqP.
 
 End eq.
 
@@ -124,10 +129,10 @@ Notation "f ' a" := (TApplication f a)
   (at level 10, left associativity) : term_scope.
 Notation "match: cs" := (TMatch (cs%cases : match_cases))
   (at level 20, right associativity, cs at level 0) : term_scope.
-Notation "p -> b" := ((p%pattern : pattern, b%term : term) : match_case)
+Notation "p -> b" := ((p%tlc_pattern : pattern, b%term : term) : match_case)
   (only parsing) : case_scope.
-Notation "{ }" := ([::]) (only parsing) : cases_scope.
-Notation "{ c1 | .. | cn }" := (c1%case :: (.. [:: cn%case] ..))
+Notation "{ }" := (MCNil) (only parsing) : cases_scope.
+Notation "{ c1 | .. | cn }" := (MCCons c1%case (.. (MCCons cn%case MCNil) ..))
   (only parsing) : cases_scope.
 
 (* Derived constructor notations for pairs *)
@@ -167,7 +172,7 @@ Definition uint_of_term t :=
   | Some t' => Some (Nat.to_num_uint t')
   | None => None
   end.
-Numeral Notation term term_of_uint uint_of_term : term_scope.
+Number Notation term term_of_uint uint_of_term : term_scope.
 
 (* Derived constructor notations for lists *)
 Definition TNil := TConstructor CNil.
@@ -200,7 +205,7 @@ Definition TAbstraction b := {-t match: { $0 -> b } -}.
 Notation "fun: b" := (TAbstraction b%term)
   (at level 20, right associativity, b at level 100) : term_scope.
 Definition TLet s p b := {-t match: s with: { p -> b } -}.
-Notation "let: p := s in: b" := (TLet s%term p%pattern b%term)
+Notation "let: p := s in: b" := (TLet s%term p%tlc_pattern b%term)
   (at level 20, right associativity, s at level 100, b at level 100)
   : term_scope.
 Definition TIf s tb fb := {-t

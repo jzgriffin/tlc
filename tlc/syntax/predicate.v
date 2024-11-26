@@ -4,6 +4,7 @@
  * Purpose: Contains the syntax of predicates.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -55,7 +56,6 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Definition predicate_eqMixin := EqMixin predicate_eqP.
-  Canonical predicate_eqType := EqType predicate predicate_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build predicate predicate_eqP.
 
 End eq.

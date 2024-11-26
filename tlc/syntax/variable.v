@@ -4,6 +4,7 @@
  * Purpose: Contains the syntax of variables.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.choice.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -38,8 +39,7 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Definition variable_eqMixin := EqMixin variable_eqP.
-  Canonical variable_eqType := EqType variable variable_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build variable variable_eqP.
 
 End eq.
 

@@ -4,6 +4,7 @@
  * Purpose: Contains the orientation type for events.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
 Require Import mathcomp.ssreflect.ssreflect.
@@ -37,7 +38,6 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Definition orientation_eqMixin := EqMixin orientation_eqP.
-  Canonical orientation_eqType := EqType orientation orientation_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build orientation orientation_eqP.
 
 End eq.

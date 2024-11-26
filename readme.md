@@ -5,8 +5,8 @@ of Composable Distributed Components.
 
 ## Requirements
 
-- Coq 8.12 or newer
-- SSReflect 1.7 or newer
+- Coq 8.20 or newer
+- SSReflect 2.2 or newer
 
 Additionally, to use the included makefile, the tools used in makefiles
 produced by `coq_makefile` are required.  These tools are typically

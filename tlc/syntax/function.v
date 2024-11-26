@@ -4,6 +4,7 @@
  * Purpose: Contains the syntax of functions.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.choice.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -54,7 +55,6 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Definition function_eqMixin := EqMixin function_eqP.
-  Canonical function_eqType := EqType function function_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build function function_eqP.
 
 End eq.

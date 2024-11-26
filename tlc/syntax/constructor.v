@@ -4,6 +4,7 @@
  * Purpose: Contains the syntax of constructors.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.choice.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -107,7 +108,6 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Definition constructor_eqMixin := EqMixin constructor_eqP.
-  Canonical constructor_eqType := EqType constructor constructor_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build constructor constructor_eqP.
 
 End eq.

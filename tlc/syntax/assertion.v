@@ -4,6 +4,7 @@
  * Purpose: Contains the syntax of assertions.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -95,8 +96,7 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Definition assertion_eqMixin := EqMixin assertion_eqP.
-  Canonical assertion_eqType := EqType assertion assertion_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build assertion assertion_eqP.
 
 End eq.
 

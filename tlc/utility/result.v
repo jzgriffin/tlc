@@ -4,6 +4,7 @@
  * Purpose: Contains the result monad.
  *)
 
+From HB Require Import structures.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.seq.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -47,9 +48,7 @@ Section eq.
   Qed.
 
   (* EqType canonical structures *)
-  Canonical result_eqMixin := EqMixin result_eqP.
-  Canonical result_eqType :=
-    Eval hnf in EqType (result error value) result_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build (result error value) result_eqP.
 
 End eq.
 

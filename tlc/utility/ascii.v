@@ -4,6 +4,7 @@
  * Purpose: Contains the equality type for ASCII characters.
  *)
 
+From HB Require Import structures.
 Require Import Coq.Strings.Ascii.
 Require Import mathcomp.ssreflect.eqtype.
 Require Import mathcomp.ssreflect.ssrbool.
@@ -17,7 +18,6 @@ Unset Printing Implicit Defensive.
 Section eq.
 
   (* EqType canonical structures *)
-  Definition ascii_eqMixin := EqMixin Ascii.eqb_spec.
-  Canonical ascii_eqType := EqType ascii ascii_eqMixin.
+  HB.instance Definition _ := hasDecEq.Build ascii Ascii.eqb_spec.
 
 End eq.
